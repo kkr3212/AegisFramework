@@ -1,0 +1,13 @@
+*.suo
+*.csproj.user
+
+
+references/
+
+Aegis/bin/Aegis.Net/*.*
+Aegis/Aegis.Net/bin/
+Aegis/Aegis.Net/obj/
+
+Aegis/bin/Aegis.Client/*.*
+Aegis/Aegis.Client/bin/
+Aegis/Aegis.Client/obj/
