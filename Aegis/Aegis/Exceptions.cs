@@ -10,6 +10,10 @@ namespace Aegis
 {
     public class AegisException : Exception
     {
+        public Int32 ResultCode { get; private set; }
+
+
+
         public AegisException()
         {
         }
@@ -21,9 +25,23 @@ namespace Aegis
         }
 
 
+        public AegisException(Int32 resultCode, String message)
+            : base(message)
+        {
+            ResultCode = resultCode;
+        }
+
+
         public AegisException(Exception innerException, String message)
             : base(message, innerException)
         {
+        }
+
+
+        public AegisException(Int32 resultCode, Exception innerException, String message)
+            : base(message, innerException)
+        {
+            ResultCode = resultCode;
         }
 
 
@@ -33,9 +51,23 @@ namespace Aegis
         }
 
 
+        public AegisException(Int32 resultCode, String message, params object[] args)
+            : base(String.Format(message, args))
+        {
+            ResultCode = resultCode;
+        }
+
+
         public AegisException(Exception innerException, String message, params object[] args)
             : base(String.Format(message, args), innerException)
         {
+        }
+
+
+        public AegisException(Int32 resultCode, Exception innerException, String message, params object[] args)
+            : base(String.Format(message, args), innerException)
+        {
+            ResultCode = resultCode;
         }
     }
 

@@ -136,8 +136,9 @@ namespace Aegis
 
                     action();
                 }
-                catch (Exception)
+                catch (Exception e)
                 {
+                    Logger.Write(LogType.Err, 1, e.ToString());
                 }
             }
         }

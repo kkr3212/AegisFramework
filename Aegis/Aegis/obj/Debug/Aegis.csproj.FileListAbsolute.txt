@@ -1,0 +1,10 @@
+D:\Project\SyncZone\AegisNetwork\Aegis\Aegis.Net\obj\Debug\Aegis.csprojResolveAssemblyReference.cache
+D:\Project\SyncZone\AegisNetwork\Aegis\Aegis.Net\bin\Debug\Aegis.dll
+D:\Project\SyncZone\AegisNetwork\Aegis\Aegis.Net\bin\Debug\Aegis.pdb
+D:\Project\SyncZone\AegisNetwork\Aegis\Aegis.Net\obj\Debug\Aegis.dll
+D:\Project\SyncZone\AegisNetwork\Aegis\Aegis.Net\obj\Debug\Aegis.pdb
+D:\Project\SyncZone\AegisNetwork\Aegis\Aegis\bin\Debug\Aegis.dll
+D:\Project\SyncZone\AegisNetwork\Aegis\Aegis\bin\Debug\Aegis.pdb
+D:\Project\SyncZone\AegisNetwork\Aegis\Aegis\obj\Debug\Aegis.csprojResolveAssemblyReference.cache
+D:\Project\SyncZone\AegisNetwork\Aegis\Aegis\obj\Debug\Aegis.dll
+D:\Project\SyncZone\AegisNetwork\Aegis\Aegis\obj\Debug\Aegis.pdb
