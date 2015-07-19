@@ -21,6 +21,9 @@ namespace Aegis.Network
         public Int32 ActiveSessionCount { get { return _activeSessionCount; } }
 
 
+        public SessionGenerator GenerateSession = delegate { return new Session(1024); };
+
+
 
 
 
@@ -44,7 +47,7 @@ namespace Aegis.Network
                 if (_inactiveSessions.Count == 0)
                 {
                     Interlocked.Increment(ref _sessionId);
-                    session = new Session(this, _sessionId, 4096);
+                    session = GenerateSession();
                 }
                 else
                     session = _inactiveSessions.Dequeue();
@@ -55,13 +58,14 @@ namespace Aegis.Network
 
 
             session.Clear();
+            session.OnSessionClosed = InactivateSession;
             session.Socket = socket;
 
             return session;
         }
 
 
-        public void InactivateSession(Session session)
+        private void InactivateSession(Session session)
         {
             lock (this)
             {

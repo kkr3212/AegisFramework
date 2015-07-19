@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Net.Sockets;
 using Aegis;
@@ -12,24 +13,26 @@ namespace Aegis.Network
 {
     public class Session
     {
+        private static Int32 NextSessionId = 0;
+
         public Int32 SessionId { get; private set; }
         public Socket Socket { get; internal set; }
         public byte[] ReceivedBuffer { get; private set; }
         public Int32 ReceivedBytes { get; private set; }
         public Boolean IsConnected { get { return (Socket == null ? false : Socket.Connected); } }
 
-        private SessionManager _sessionManager;
+        internal Action<Session> OnSessionClosed;
         private AsyncCallback _acReceive;
 
 
 
 
 
-        internal Session(SessionManager parent, Int32 sessionId, Int32 recvBufferSize)
+        public Session(Int32 recvBufferSize)
         {
-            _sessionManager = parent;
-            SessionId = sessionId;
+            Interlocked.Increment(ref NextSessionId);
 
+            SessionId = NextSessionId;
             _acReceive = new AsyncCallback(OnRead);
             ReceivedBuffer = new byte[recvBufferSize];
 
@@ -48,13 +51,17 @@ namespace Aegis.Network
 
         internal void OnSocket_Accepted()
         {
-            //  OnReceive보다 OnAccept가 먼저 호출되기 위해서는
-            //  BeginReceive보다 먼저 Post해야 한다.
+            try
             {
-                SessionJob job = SessionJob.NewJob(IOType.Accept, this, 0);
-                _sessionManager.NetworkChannel.IoWorker.Post(job);
+                lock (this)
+                    OnAccept();
+
+                WaitForReceive();
             }
-            BeginReceive();
+            catch (Exception e)
+            {
+                Logger.Write(LogType.Err, 1, e.ToString());
+            }
         }
 
 
@@ -62,12 +69,22 @@ namespace Aegis.Network
         {
             Clear();
 
-            SessionJob job = SessionJob.NewJob(IOType.Close, this, 0);
-            _sessionManager.NetworkChannel.IoWorker.Post(job);
+            try
+            {
+                lock (this)
+                    OnClose();
+            }
+            catch (Exception e)
+            {
+                Logger.Write(LogType.Err, 1, e.ToString());
+            }
+
+
+            OnSessionClosed(this);
         }
 
 
-        private void BeginReceive()
+        private void WaitForReceive()
         {
             Int32 remainBufferSize = ReceivedBuffer.Length - ReceivedBytes;
             Socket.BeginReceive(ReceivedBuffer, ReceivedBytes, remainBufferSize, 0, _acReceive, null);
@@ -93,11 +110,19 @@ namespace Aegis.Network
 
                 //  패킷 하나가 정상적으로 수신되었는지 확인
                 Int32 realPacketSize;
-                if (IsValidPacket(ReceivedBytes - transBytes, out realPacketSize) == true)
+                if (IsValidPacket(transBytes, ReceivedBytes - transBytes, out realPacketSize) == true)
                 {
-                    //  수신 이벤트 (#! 수신된 패킷을 전달해야 함)
-                    SessionJob job = SessionJob.NewJob(IOType.Receive, this, transBytes);
-                    _sessionManager.NetworkChannel.IoWorker.Post(job);
+                    try
+                    {
+                        //  수신 이벤트 (#! 수신된 패킷을 전달해야 함)
+                        lock (this)
+                            OnReceive(transBytes);
+
+                    }
+                    catch (Exception e)
+                    {
+                        Logger.Write(LogType.Err, 1, e.ToString());
+                    }
 
 
                     //  패킷을 버퍼에서 제거
@@ -105,7 +130,7 @@ namespace Aegis.Network
                     ReceivedBytes -= realPacketSize;
                 }
 
-                BeginReceive();
+                WaitForReceive();
             }
             catch (Exception e)
             {
@@ -114,20 +139,7 @@ namespace Aegis.Network
         }
 
 
-        internal void DoSessionJob(SessionJob job)
-        {
-            switch (job.Type)
-            {
-                case IOType.Accept: OnAccept(); break;
-                case IOType.Connect: OnConnect(job.Value == 1); break;
-                case IOType.Close: OnClose(); break;
-                case IOType.Send: OnSend(job.Value); break;
-                case IOType.Receive: OnReceive(job.Value); break;
-            }
-        }
-
-
-        protected virtual Boolean IsValidPacket(Int32 headerIndex, out Int32 realPacketSize)
+        protected virtual Boolean IsValidPacket(Int32 recvBytes, Int32 headerIndex, out Int32 realPacketSize)
         {
             realPacketSize = BitConverter.ToInt16(ReceivedBuffer, headerIndex);
             return (realPacketSize > 0 && ReceivedBytes >= realPacketSize);

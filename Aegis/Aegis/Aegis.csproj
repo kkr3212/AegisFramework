@@ -45,7 +45,6 @@
     <Compile Include="Logger.cs" />
     <Compile Include="MinMaxValue.cs" />
     <Compile Include="Network\Acceptor.cs" />
-    <Compile Include="Network\SessionJob.cs" />
     <Compile Include="Network\NetworkChannel.cs" />
     <Compile Include="Network\Session.cs" />
     <Compile Include="Network\SessionManager.cs" />

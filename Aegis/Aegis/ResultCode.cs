@@ -12,6 +12,7 @@ namespace Aegis
     {
         public const Int32 Ok = 0;
 
+        public const Int32 NoNetworkChannelName = 0;    //  존재하지 않는 NetworkChannel 이름입니다.
         public const Int32 NetworkError = 0;            //  네트워크 관련 에러가 발생했습니다. (InnerException 참고)
         public const Int32 AcceptorIsRunning = 0;       //  Acceptor가 이미 실행중입니다.
 

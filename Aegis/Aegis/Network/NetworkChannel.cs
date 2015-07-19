@@ -14,7 +14,19 @@ namespace Aegis.Network
         public String Name { get; private set; }
         internal SessionManager SessionManager { get; private set; }
         internal Acceptor Acceptor { get; private set; }
-        internal WorkerThread IoWorker { get; private set; }
+
+        /// <summary>
+        /// Session 객체를 생성하는 Delegator를 설정합니다.
+        /// SessionManager에서는 내부적으로 Session Pool을 관리하는데, Pool에 객체가 부족할 때 이 Delegator가 호출됩니다.
+        /// 그러므로 이 Delegator에서는 ObjectPool 대신 new를 사용해 인스턴스를 생성하는 것이 좋습니다.
+        /// </summary>
+        public SessionGenerator SessionGenerator
+        {
+            set { SessionManager.GenerateSession = value; }
+        }
+
+
+        private static List<NetworkChannel> Channels = new List<NetworkChannel>();
 
 
 
@@ -22,21 +34,42 @@ namespace Aegis.Network
 
         public static NetworkChannel CreateChannel(String name)
         {
-            NetworkChannel channel = new NetworkChannel(name);
-            return channel;
+            lock (Channels)
+            {
+                NetworkChannel channel = new NetworkChannel(name);
+                Channels.Add(channel);
+
+                return channel;
+            }
         }
 
 
         public static void Release(NetworkChannel channel)
         {
-            channel.Release();
+            lock (Channels)
+            {
+                Channels.Remove(channel);
+                channel.Release();
+            }
+        }
+
+
+        public static NetworkChannel GetChannel(String name)
+        {
+            lock (Channels)
+            {
+                NetworkChannel channel = Channels.Find(v => v.Name == name);
+                if (channel != null)
+                    return channel;
+
+                throw new AegisException(ResultCode.NoNetworkChannelName, "Invalid NetworkChannel name({0}).", name);
+            }
         }
 
 
         private NetworkChannel(String name)
         {
             Name = name;
-            IoWorker = new WorkerThread(name + " IOWorker");
 
             SessionManager = new SessionManager(this);
             Acceptor = new Acceptor(this);
@@ -45,11 +78,9 @@ namespace Aegis.Network
 
         private void Release()
         {
-            IoWorker.Stop();
             Acceptor.Close();
             SessionManager.Clear();
 
-            IoWorker = null;
             Acceptor = null;
             SessionManager = null;
         }

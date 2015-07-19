@@ -23,4 +23,8 @@ namespace Aegis
         Send,
         Receive
     }
+
+
+
+    public delegate Network.Session SessionGenerator();
 }

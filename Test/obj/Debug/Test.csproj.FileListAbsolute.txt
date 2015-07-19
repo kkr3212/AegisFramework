@@ -1,8 +1,0 @@
-D:\Project\SyncZone\AegisNetwork\Test\bin\Debug\Test.exe.config
-D:\Project\SyncZone\AegisNetwork\Test\bin\Debug\Test.exe
-D:\Project\SyncZone\AegisNetwork\Test\bin\Debug\Test.pdb
-D:\Project\SyncZone\AegisNetwork\Test\bin\Debug\Aegis.dll
-D:\Project\SyncZone\AegisNetwork\Test\bin\Debug\Aegis.pdb
-D:\Project\SyncZone\AegisNetwork\Test\obj\Debug\Test.csprojResolveAssemblyReference.cache
-D:\Project\SyncZone\AegisNetwork\Test\obj\Debug\Test.exe
-D:\Project\SyncZone\AegisNetwork\Test\obj\Debug\Test.pdb
