@@ -9,65 +9,23 @@ using System.Threading.Tasks;
 
 namespace Aegis
 {
+    public interface WorkerThreadItem
+    {
+        void DoJob();
+    }
+
+
+
+
+
     public class WorkerThread
     {
-        private class WorkItemQueue
-        {
-            private Queue<Action> _queue = new Queue<Action>();
-
-
-            public void Post(Action item)
-            {
-                lock (_queue)
-                {
-                    _queue.Enqueue(item);
-                    Monitor.PulseAll(_queue);
-                }
-
-            }
-
-
-            public Action Pop()
-            {
-                lock (_queue)
-                {
-                    while (_queue.Count == 0)
-                        Monitor.Wait(_queue);
-
-                    return _queue.Dequeue();
-                }
-            }
-
-
-            public void Clear()
-            {
-                lock (_queue)
-                {
-                    _queue.Clear();
-                    Monitor.PulseAll(_queue);
-                }
-            }
-
-
-            public Int32 Count()
-            {
-                lock (_queue)
-                {
-                    return _queue.Count();
-                }
-            }
-        }
-
-
-
-
-
-        private WorkItemQueue _works = new WorkItemQueue();
-        private Boolean _isRun;
+        private SafeQueue<WorkerThreadItem> _works = new SafeQueue<WorkerThreadItem>();
+        private Boolean _running;
         private Thread[] _threads;
 
         public String Name { get; private set; }
-        public Int32 QueuedCount { get { return _works.Count(); } }
+        public Int32 QueuedCount { get { return _works.QueuedCount; } }
         public Int32 ThreadCount { get { return (_threads == null ? 0 : _threads.Count()); } }
 
 
@@ -86,7 +44,7 @@ namespace Aegis
             {
                 _works.Clear();
 
-                _isRun = true;
+                _running = true;
                 _threads = new Thread[threadCount];
                 for (Int32 i = 0; i < threadCount; ++i)
                 {
@@ -102,39 +60,41 @@ namespace Aegis
         {
             lock (this)
             {
-                if (_isRun == false || _threads == null)
+                if (_running == false || _threads == null)
                     return;
 
 
-                //  Thread를 즉시 종료시키기 위해 포스팅된 작업을 모두 삭제
-                _works.Clear();
-                _isRun = false;
+                _running = false;
+                _works.Cancel();
 
                 foreach (Thread th in _threads)
-                    Post(null);
-
+                    th.Join();
                 _threads = null;
             }
         }
 
 
-        public void Post(Action action)
+        public void Post(WorkerThreadItem item)
         {
-            _works.Post(action);
+            _works.Post(item);
         }
 
 
         private void Run()
         {
-            while (_isRun)
+            while (_running)
             {
                 try
                 {
-                    Action action = _works.Pop();
-                    if (action == null)
+                    WorkerThreadItem item = _works.Pop();
+                    if (item == null)
                         break;
 
-                    action();
+                    item.DoJob();
+                }
+                catch (JobCanceledException)
+                {
+                    break;
                 }
                 catch (Exception e)
                 {

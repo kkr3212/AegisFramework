@@ -12,4 +12,15 @@ namespace Aegis
     {
         public const Int32 BuildNo = 2;
     }
+
+
+
+    internal enum IOType
+    {
+        Accept = 0,
+        Connect,
+        Close,
+        Send,
+        Receive
+    }
 }

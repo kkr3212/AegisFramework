@@ -79,4 +79,13 @@ namespace Aegis
         {
         }
     }
+
+
+    public class JobCanceledException : AegisException
+    {
+        public JobCanceledException(String message, params object[] args)
+            : base(message, args)
+        {
+        }
+    }
 }

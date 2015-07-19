@@ -13,7 +13,7 @@ namespace Aegis.Network
 {
     public class SessionManager
     {
-        private NetworkChannel _networkChannel;
+        internal NetworkChannel NetworkChannel { get; private set; }
         private Queue<Session> _inactiveSessions;
         private Dictionary<Int32, Session> _activeSessions;
         private Int32 _sessionId = 0, _activeSessionCount;
@@ -26,7 +26,7 @@ namespace Aegis.Network
 
         internal SessionManager(NetworkChannel networkChannel)
         {
-            _networkChannel = networkChannel;
+            NetworkChannel = networkChannel;
             _inactiveSessions = new Queue<Session>();
             _activeSessions = new Dictionary<Int32, Session>();
         }
@@ -44,7 +44,7 @@ namespace Aegis.Network
                 if (_inactiveSessions.Count == 0)
                 {
                     Interlocked.Increment(ref _sessionId);
-                    session = new Session(_sessionId);
+                    session = new Session(this, _sessionId, 4096);
                 }
                 else
                     session = _inactiveSessions.Dequeue();
@@ -77,6 +77,7 @@ namespace Aegis.Network
 
         public void Clear()
         {
+            //  #!  모든 Active Session을 종료시키는 기능이 있으면...
         }
     }
 }

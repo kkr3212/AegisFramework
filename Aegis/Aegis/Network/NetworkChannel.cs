@@ -14,6 +14,7 @@ namespace Aegis.Network
         public String Name { get; private set; }
         internal SessionManager SessionManager { get; private set; }
         internal Acceptor Acceptor { get; private set; }
+        internal WorkerThread IoWorker { get; private set; }
 
 
 
@@ -35,6 +36,8 @@ namespace Aegis.Network
         private NetworkChannel(String name)
         {
             Name = name;
+            IoWorker = new WorkerThread(name + " IOWorker");
+
             SessionManager = new SessionManager(this);
             Acceptor = new Acceptor(this);
         }
@@ -42,9 +45,11 @@ namespace Aegis.Network
 
         private void Release()
         {
+            IoWorker.Stop();
             Acceptor.Close();
             SessionManager.Clear();
 
+            IoWorker = null;
             Acceptor = null;
             SessionManager = null;
         }

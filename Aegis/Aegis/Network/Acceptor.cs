@@ -30,7 +30,7 @@ namespace Aegis.Network
         public void Listen(String ipAddress, Int32 portNo)
         {
             if (_isRunning == true)
-                throw new AegisException(ResultCode.AcceptorIsRunning, "Another Acceptor is already running.");
+                throw new AegisException(ResultCode.AcceptorIsRunning, "Acceptor is already running.");
 
             try
             {
@@ -44,15 +44,15 @@ namespace Aegis.Network
                 _listenSocket.Bind(_listenEndPoint);
                 _listenSocket.Listen(100);
 
-                Logger.Write(LogType.Info, 1, "Listening on {0}, {1}", ipAddress, portNo);
+                Logger.Write(LogType.Info, 1, "Listening on {0}, {1}", _listenEndPoint.Address, _listenEndPoint.Port);
+
+                _isRunning = true;
+                (new Thread(Run)).Start();
             }
             catch (Exception e)
             {
                 throw new AegisException(e, e.Message);
             }
-
-            _isRunning = true;
-            (new Thread(Run)).Start();
         }
 
 
@@ -66,7 +66,7 @@ namespace Aegis.Network
             _listenSocket.Dispose();
 
 
-            Logger.Write(LogType.Info, 1, "Listen closed from {0}, {1}", _listenEndPoint.Address, _listenEndPoint.Port);
+            Logger.Write(LogType.Info, 1, "{0}, {1} Listener closed.", _listenEndPoint.Address, _listenEndPoint.Port);
 
 
             _listenSocket = null;
@@ -83,7 +83,7 @@ namespace Aegis.Network
                     Socket acceptedSocket = _listenSocket.Accept();
                     Session acceptedSession = _networkChannel.SessionManager.ActivateSession(acceptedSocket);
 
-                    acceptedSession.Accepted();
+                    acceptedSession.OnSocket_Accepted();
                 }
             }
             catch (Exception e)

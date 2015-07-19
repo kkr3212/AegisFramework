@@ -20,16 +20,19 @@ namespace Test
             {
                 Logger.AddLogger(new LogConsole());
 
-                NetworkChannel nc = NetworkChannel.CreateChannel("test");
-                nc.StartNetwork("192.168.0.100", 10100);
 
-                Thread.Sleep(100000);
+                NetworkChannel nc = NetworkChannel.CreateChannel("test");
+                nc.StartNetwork("", 10100);
             }
             catch (AegisException e)
             {
+                Logger.Write(LogType.Err, 2, e.ToString());
             }
         }
     }
+
+
+
 
 
     public class LogConsole : ILogMedia
