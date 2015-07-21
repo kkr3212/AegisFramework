@@ -10,7 +10,7 @@ namespace Aegis
 {
     public class AegisException : Exception
     {
-        public Int32 ResultCode { get; private set; }
+        public Int32 ResultCodeNo { get; private set; }
 
 
 
@@ -28,7 +28,7 @@ namespace Aegis
         public AegisException(Int32 resultCode, String message)
             : base(message)
         {
-            ResultCode = resultCode;
+            ResultCodeNo = resultCode;
         }
 
 
@@ -41,7 +41,7 @@ namespace Aegis
         public AegisException(Int32 resultCode, Exception innerException, String message)
             : base(message, innerException)
         {
-            ResultCode = resultCode;
+            ResultCodeNo = resultCode;
         }
 
 
@@ -54,7 +54,7 @@ namespace Aegis
         public AegisException(Int32 resultCode, String message, params object[] args)
             : base(String.Format(message, args))
         {
-            ResultCode = resultCode;
+            ResultCodeNo = resultCode;
         }
 
 
@@ -67,7 +67,7 @@ namespace Aegis
         public AegisException(Int32 resultCode, Exception innerException, String message, params object[] args)
             : base(String.Format(message, args), innerException)
         {
-            ResultCode = resultCode;
+            ResultCodeNo = resultCode;
         }
     }
 
