@@ -49,7 +49,7 @@
     <None Include="App.config" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Aegis\Aegis\Aegis.csproj">
+    <ProjectReference Include="..\Aegis\Aegis.csproj">
       <Project>{870dbab9-4b58-45fb-a75f-8b51584585a8}</Project>
       <Name>Aegis</Name>
     </ProjectReference>

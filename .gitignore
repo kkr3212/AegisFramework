@@ -4,13 +4,8 @@
 
 references/
 
-Aegis/bin/Aegis.Net/*.*
-Aegis/Aegis.Net/bin/
-Aegis/Aegis.Net/obj/
-
-Aegis/bin/Aegis.Client/*.*
-Aegis/Aegis.Client/bin/
-Aegis/Aegis.Client/obj/
+Aegis/bin/
+Aegis/obj/
 
 Test/bin/
 Test/obj/
