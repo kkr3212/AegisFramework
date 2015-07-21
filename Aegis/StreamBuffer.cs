@@ -55,6 +55,16 @@ namespace Aegis
         }
 
 
+        public StreamBuffer(byte[] source, Int32 index, Int32 size)
+        {
+            ReadIndex = 0;
+            WriteIndex = 0;
+
+            Capacity(size);
+            Write(source, index, size);
+        }
+
+
         public StreamBuffer(StreamBuffer source, Int32 index, Int32 size)
         {
             ReadIndex = 0;

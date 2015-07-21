@@ -78,8 +78,7 @@ namespace Aegis.Network
 
         private void Release()
         {
-            Acceptor.Close();
-            SessionManager.Clear();
+            StopNetwork();
 
             Acceptor = null;
             SessionManager = null;
@@ -89,6 +88,13 @@ namespace Aegis.Network
         public void StartNetwork(String ipAddress, Int32 portNo)
         {
             Acceptor.Listen(ipAddress, portNo);
+        }
+
+
+        public void StopNetwork()
+        {
+            Acceptor.Close();
+            SessionManager.Clear();
         }
     }
 }

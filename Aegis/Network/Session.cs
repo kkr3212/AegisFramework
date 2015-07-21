@@ -18,11 +18,11 @@ namespace Aegis.Network
         public Int32 SessionId { get; private set; }
         public Socket Socket { get; internal set; }
         public byte[] ReceivedBuffer { get; private set; }
-        public Int32 ReceivedBytes { get; private set; }
         public Boolean IsConnected { get { return (Socket == null ? false : Socket.Connected); } }
 
         internal Action<Session> OnSessionClosed;
         private AsyncCallback _acReceive;
+        private Int32 _receivedBytes;
 
 
 
@@ -42,9 +42,13 @@ namespace Aegis.Network
 
         internal void Clear()
         {
+            if (Socket == null)
+                return;
+
+            Socket.Dispose();
             Socket = null;
 
-            ReceivedBytes = 0;
+            _receivedBytes = 0;
             Array.Clear(ReceivedBuffer, 0, ReceivedBuffer.Length);
         }
 
@@ -65,14 +69,15 @@ namespace Aegis.Network
         }
 
 
-        private void OnSocket_Closed()
+        internal void OnSocket_Closed()
         {
-            Clear();
-
             try
             {
                 lock (this)
+                {
                     OnClose();
+                    Clear();
+                }
             }
             catch (Exception e)
             {
@@ -86,8 +91,8 @@ namespace Aegis.Network
 
         private void WaitForReceive()
         {
-            Int32 remainBufferSize = ReceivedBuffer.Length - ReceivedBytes;
-            Socket.BeginReceive(ReceivedBuffer, ReceivedBytes, remainBufferSize, 0, _acReceive, null);
+            Int32 remainBufferSize = ReceivedBuffer.Length - _receivedBytes;
+            Socket.BeginReceive(ReceivedBuffer, _receivedBytes, remainBufferSize, 0, _acReceive, null);
         }
 
 
@@ -105,19 +110,21 @@ namespace Aegis.Network
                     return;
                 }
 
-                ReceivedBytes += transBytes;
+                _receivedBytes += transBytes;
 
 
                 //  패킷 하나가 정상적으로 수신되었는지 확인
                 Int32 realPacketSize;
-                if (IsValidPacket(transBytes, ReceivedBytes - transBytes, out realPacketSize) == true)
+                if (IsValidPacket(transBytes, _receivedBytes - transBytes, out realPacketSize) == true)
                 {
                     try
                     {
-                        //  수신 이벤트 (#! 수신된 패킷을 전달해야 함)
+                        //  수신 이벤트
                         lock (this)
-                            OnReceive(transBytes);
-
+                        {
+                            if (Socket != null)
+                                OnReceive(realPacketSize);
+                        }
                     }
                     catch (Exception e)
                     {
@@ -126,8 +133,8 @@ namespace Aegis.Network
 
 
                     //  패킷을 버퍼에서 제거
-                    Array.Copy(ReceivedBuffer, ReceivedBytes, ReceivedBuffer, 0, ReceivedBuffer.Length - realPacketSize);
-                    ReceivedBytes -= realPacketSize;
+                    Array.Copy(ReceivedBuffer, _receivedBytes, ReceivedBuffer, 0, ReceivedBuffer.Length - realPacketSize);
+                    _receivedBytes -= realPacketSize;
                 }
 
                 WaitForReceive();
@@ -142,7 +149,7 @@ namespace Aegis.Network
         protected virtual Boolean IsValidPacket(Int32 recvBytes, Int32 headerIndex, out Int32 realPacketSize)
         {
             realPacketSize = BitConverter.ToInt16(ReceivedBuffer, headerIndex);
-            return (realPacketSize > 0 && ReceivedBytes >= realPacketSize);
+            return (realPacketSize > 0 && _receivedBytes >= realPacketSize);
         }
 
 
@@ -166,7 +173,7 @@ namespace Aegis.Network
         }
 
 
-        protected virtual void OnReceive(Int32 transBytes)
+        protected virtual void OnReceive(Int32 receivedPacketSize)
         {
         }
     }

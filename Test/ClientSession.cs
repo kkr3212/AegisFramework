@@ -43,9 +43,13 @@ namespace Test
         }
 
 
-        protected override void OnReceive(int transBytes)
+        protected override void OnReceive(Int32 receivedPacketSize)
         {
-            Logger.Write(LogType.Info, 2, "Received {0} bytes", transBytes);
+            String str = "";
+            for (Int32 i = 0; i < receivedPacketSize; ++i)
+                str += String.Format("0x{0:X} ", ReceivedBuffer[i]);
+
+            Logger.Write(LogType.Info, 2, "Received {0} bytes [{1}].", receivedPacketSize, str);
         }
 
 

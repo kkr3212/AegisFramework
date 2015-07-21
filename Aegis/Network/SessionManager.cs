@@ -73,7 +73,6 @@ namespace Aegis.Network
                 _activeSessions.Remove(session.SessionId);
                 _inactiveSessions.Enqueue(session);
 
-
                 _activeSessionCount = _activeSessions.Count();
             }
         }
@@ -81,7 +80,17 @@ namespace Aegis.Network
 
         public void Clear()
         {
-            //  #!  모든 Active Session을 종료시키는 기능이 있으면...
+            lock (this)
+            {
+                foreach (Session session in _activeSessions.Select(v => v.Value))
+                    session.OnSocket_Closed();
+
+
+                _activeSessions.Clear();
+                _inactiveSessions.Clear();
+
+                _activeSessionCount = 0;
+            }
         }
     }
 }
