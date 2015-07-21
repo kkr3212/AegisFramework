@@ -32,7 +32,7 @@ namespace Aegis
             ReadIndex = 0;
             WriteIndex = 0;
 
-            Allocate(256);
+            Capacity(256);
         }
 
 
@@ -41,7 +41,7 @@ namespace Aegis
             ReadIndex = 0;
             WriteIndex = 0;
 
-            Allocate(size);
+            Capacity(size);
         }
 
 
@@ -50,7 +50,7 @@ namespace Aegis
             ReadIndex = 0;
             WriteIndex = 0;
 
-            Allocate(source.BufferSize);
+            Capacity(source.BufferSize);
             Write(source.Buffer);
         }
 
@@ -60,7 +60,7 @@ namespace Aegis
             ReadIndex = 0;
             WriteIndex = 0;
 
-            Allocate(size);
+            Capacity(size);
             Write(source.Buffer, index, size);
         }
 
@@ -76,7 +76,7 @@ namespace Aegis
         }
 
 
-        public void Allocate(Int32 size)
+        public void Capacity(Int32 size)
         {
             Int32 allocSize = AllocateBlockSize(size);
             Buffer = new byte[allocSize];
@@ -96,9 +96,23 @@ namespace Aegis
         }
 
 
-        public void Clear()
+        public virtual void Clear()
         {
             Array.Clear(Buffer, 0, Buffer.Length);
+            ReadIndex = 0;
+            WriteIndex = 0;
+        }
+
+
+        public void ResetReadIndex()
+        {
+            ReadIndex = 0;
+        }
+
+
+        public void ResetWriteIndex()
+        {
+            WriteIndex = 0;
         }
 
 
