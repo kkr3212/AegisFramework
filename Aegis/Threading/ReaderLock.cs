@@ -6,7 +6,7 @@ using System.Threading;
 
 
 
-namespace Aegis
+namespace Aegis.Threading
 {
     public sealed class ReaderLock : IDisposable
     {

@@ -53,6 +53,12 @@ namespace Aegis.Network
         }
 
 
+        public Packet(byte[] source, Int32 startIndex, Int32 size)
+        {
+            Write(source, startIndex, size);
+        }
+
+
         public override void Clear()
         {
             UInt16 pid = PID;

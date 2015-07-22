@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 
 
-namespace Aegis
+namespace Aegis.Threading
 {
     /// <summary>
     /// 이 클래스는 System.Threading.Tasks.Task의 각 메서드 기능과 완전히 동일합니다.

@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 
 
-namespace Aegis
+namespace Aegis.Threading
 {
     public interface WorkerThreadItem
     {

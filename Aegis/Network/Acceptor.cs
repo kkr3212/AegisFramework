@@ -66,7 +66,7 @@ namespace Aegis.Network
             _listenSocket.Dispose();
 
 
-            Logger.Write(LogType.Info, 1, "{0}, {1} Listener closed.", _listenEndPoint.Address, _listenEndPoint.Port);
+            Logger.Write(LogType.Info, 1, "Listening stopped({0}, {1})", _listenEndPoint.Address, _listenEndPoint.Port);
 
 
             _listenSocket = null;
@@ -93,11 +93,18 @@ namespace Aegis.Network
                     acceptedSession.OnSocket_Accepted();
                 }
             }
+            catch (SocketException e)
+            {
+                if (e.SocketErrorCode != SocketError.Interrupted)
+                    Logger.Write(LogType.Err, 1, e.ToString());
+            }
             catch (Exception e)
             {
                 Logger.Write(LogType.Err, 1, e.ToString());
-                Close();
             }
+
+
+            Close();
         }
     }
 }

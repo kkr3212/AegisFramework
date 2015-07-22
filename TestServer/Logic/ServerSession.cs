@@ -8,7 +8,7 @@ using Aegis.Network;
 
 
 
-namespace Test
+namespace TestServer.Logic
 {
     public class ServerSession : Session
     {
@@ -38,20 +38,16 @@ namespace Test
         }
 
 
-        protected override void OnReceive(Int32 receivedPacketSize)
+        protected override bool IsValidPacket(byte[] receiveBuffer, Int32 receiveBytes, out Int32 packetSize)
         {
-            String str = "";
-            for (Int32 i = 0; i < receivedPacketSize; ++i)
-                str += String.Format("0x{0:X} ", ReceivedBuffer[i]);
-
-            Logger.Write(LogType.Info, 2, "Received {0} bytes [{1}].", receivedPacketSize, str);
+            //  수신된 모든 패킷을 정상으로 간주
+            packetSize = receiveBytes;
+            return true;
         }
 
 
-        protected override bool IsValidPacket(int recvBytes, int headerIndex, out int realPacketSize)
+        protected override void OnReceive(byte[] receiveBuffer, Int32 packetSize)
         {
-            realPacketSize = recvBytes;
-            return true;
         }
     }
 }

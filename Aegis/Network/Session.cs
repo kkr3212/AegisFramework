@@ -18,11 +18,11 @@ namespace Aegis.Network
 
         public Int32 SessionId { get; private set; }
         public Socket Socket { get; internal set; }
-        public byte[] ReceivedBuffer { get; private set; }
         public Boolean IsConnected { get { return (Socket == null ? false : Socket.Connected); } }
 
         internal Action<Session> OnSessionClosed;
         private AsyncCallback _acConnect, _acReceive;
+        private byte[] _receivedBuffer;
         private Int32 _receivedBytes;
 
 
@@ -36,7 +36,7 @@ namespace Aegis.Network
             SessionId = NextSessionId;
             _acConnect = new AsyncCallback(OnSocket_Connect);
             _acReceive = new AsyncCallback(OnSocket_Read);
-            ReceivedBuffer = new byte[recvBufferSize];
+            _receivedBuffer = new byte[recvBufferSize];
 
             Clear();
         }
@@ -51,14 +51,14 @@ namespace Aegis.Network
             Socket = null;
 
             _receivedBytes = 0;
-            Array.Clear(ReceivedBuffer, 0, ReceivedBuffer.Length);
+            Array.Clear(_receivedBuffer, 0, _receivedBuffer.Length);
         }
 
 
         private void WaitForReceive()
         {
-            Int32 remainBufferSize = ReceivedBuffer.Length - _receivedBytes;
-            Socket.BeginReceive(ReceivedBuffer, _receivedBytes, remainBufferSize, 0, _acReceive, null);
+            Int32 remainBufferSize = _receivedBuffer.Length - _receivedBytes;
+            Socket.BeginReceive(_receivedBuffer, _receivedBytes, remainBufferSize, 0, _acReceive, null);
         }
 
 
@@ -67,6 +67,8 @@ namespace Aegis.Network
             if (Socket != null)
                 throw new AegisException(ResultCode.ActivatedSession, "Sessions is already active.");
 
+
+            //  연결 시도
             IPEndPoint ipEndPoint = new IPEndPoint(IPAddress.Parse(ipAddress), portNo);
 
             Socket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
@@ -150,8 +152,8 @@ namespace Aegis.Network
 
 
                 //  패킷 하나가 정상적으로 수신되었는지 확인
-                Int32 realPacketSize;
-                if (IsValidPacket(transBytes, _receivedBytes - transBytes, out realPacketSize) == true)
+                Int32 packetSize;
+                if (IsValidPacket(_receivedBuffer, _receivedBytes, out packetSize) == true)
                 {
                     try
                     {
@@ -159,7 +161,7 @@ namespace Aegis.Network
                         lock (this)
                         {
                             if (Socket != null)
-                                OnReceive(realPacketSize);
+                                OnReceive(_receivedBuffer, packetSize);
                         }
                     }
                     catch (Exception e)
@@ -169,10 +171,11 @@ namespace Aegis.Network
 
 
                     //  패킷을 버퍼에서 제거
-                    Array.Copy(ReceivedBuffer, _receivedBytes, ReceivedBuffer, 0, ReceivedBuffer.Length - realPacketSize);
-                    _receivedBytes -= realPacketSize;
+                    Array.Copy(_receivedBuffer, _receivedBytes, _receivedBuffer, 0, _receivedBuffer.Length - packetSize);
+                    _receivedBytes -= packetSize;
                 }
 
+                //  ReceiveBuffer의 안정적인 처리를 위해 OnReceive 작업이 끝난 후에 다시 수신대기
                 WaitForReceive();
             }
             catch (Exception e)
@@ -182,10 +185,11 @@ namespace Aegis.Network
         }
 
 
-        protected virtual Boolean IsValidPacket(Int32 recvBytes, Int32 headerIndex, out Int32 realPacketSize)
+        protected virtual Boolean IsValidPacket(byte[] receiveBuffer, Int32 receiveBytes, out Int32 packetSize)
         {
-            realPacketSize = BitConverter.ToInt16(ReceivedBuffer, headerIndex);
-            return (realPacketSize > 0 && _receivedBytes >= realPacketSize);
+            //  최초 2바이트를 수신할 패킷의 크기로 처리
+            packetSize = BitConverter.ToInt16(receiveBuffer, 0);
+            return (packetSize > 0 && receiveBytes >= packetSize);
         }
 
 
@@ -209,7 +213,7 @@ namespace Aegis.Network
         }
 
 
-        protected virtual void OnReceive(Int32 receivedPacketSize)
+        protected virtual void OnReceive(byte[] receiveBuffer, Int32 packetSize)
         {
         }
     }
