@@ -12,6 +12,11 @@ namespace Aegis.Network
     public class NetworkChannel
     {
         public String Name { get; private set; }
+        public Int32 InitSessionPoolSize { get; set; }
+        public Int32 MaxSessionPoolSize { get; set; }
+        public String ListenIpAddress { get; set; }
+        public Int32 ListenPortNo { get; set; }
+
         internal SessionManager SessionManager { get; private set; }
         internal Acceptor Acceptor { get; private set; }
 
@@ -26,7 +31,7 @@ namespace Aegis.Network
         }
 
 
-        private static List<NetworkChannel> Channels = new List<NetworkChannel>();
+        private static List<NetworkChannel> _channels = new List<NetworkChannel>();
 
 
 
@@ -34,31 +39,33 @@ namespace Aegis.Network
 
         public static NetworkChannel CreateChannel(String name)
         {
-            lock (Channels)
+            lock (_channels)
             {
                 NetworkChannel channel = new NetworkChannel(name);
-                Channels.Add(channel);
+                _channels.Add(channel);
 
                 return channel;
             }
         }
 
 
-        public static void Release(NetworkChannel channel)
+        public static void Release()
         {
-            lock (Channels)
+            lock (_channels)
             {
-                Channels.Remove(channel);
-                channel.Release();
+                foreach (NetworkChannel networkChannel in _channels)
+                    networkChannel.StopNetwork();
+
+                _channels.Clear();
             }
         }
 
 
         public static NetworkChannel GetChannel(String name)
         {
-            lock (Channels)
+            lock (_channels)
             {
-                NetworkChannel channel = Channels.Find(v => v.Name == name);
+                NetworkChannel channel = _channels.Find(v => v.Name == name);
                 if (channel != null)
                     return channel;
 
@@ -71,30 +78,29 @@ namespace Aegis.Network
         {
             Name = name;
 
+            InitSessionPoolSize = 0;
+            ListenIpAddress = "";
+            ListenPortNo = 0;
+
             SessionManager = new SessionManager(this);
             Acceptor = new Acceptor(this);
         }
 
 
-        private void Release()
+        public void StartNetwork()
         {
-            StopNetwork();
+            SessionManager.CreatePool(InitSessionPoolSize);
+            SessionManager.MaxSessionPoolSize = MaxSessionPoolSize;
 
-            Acceptor = null;
-            SessionManager = null;
-        }
-
-
-        public void StartNetwork(String ipAddress, Int32 portNo)
-        {
-            Acceptor.Listen(ipAddress, portNo);
+            if (ListenIpAddress.Length > 0  && ListenPortNo > 0)
+                Acceptor.Listen(ListenIpAddress, ListenPortNo);
         }
 
 
         public void StopNetwork()
         {
             Acceptor.Close();
-            SessionManager.Clear();
+            SessionManager.Release();
         }
     }
 }

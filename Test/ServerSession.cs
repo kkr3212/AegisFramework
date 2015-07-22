@@ -10,17 +10,19 @@ using Aegis.Network;
 
 namespace Test
 {
-    public class ClientSession : Session
+    public class ServerSession : Session
     {
-        public ClientSession()
+        public ServerSession()
             : base(4096)
         {
+            Connect("192.168.0.100", 20100);
         }
 
 
-        protected override void OnAccept()
+        protected override void OnConnect(bool connected)
         {
-            Logger.Write(LogType.Info, 2, "Accepted");
+            if (connected == true)
+                Logger.Write(LogType.Info, 2, "Connected");
         }
 
 

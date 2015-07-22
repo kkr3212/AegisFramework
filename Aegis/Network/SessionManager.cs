@@ -11,16 +11,15 @@ using Aegis;
 
 namespace Aegis.Network
 {
-    public class SessionManager
+    internal class SessionManager
     {
         internal NetworkChannel NetworkChannel { get; private set; }
         private Queue<Session> _inactiveSessions;
         private Dictionary<Int32, Session> _activeSessions;
         private Int32 _sessionId = 0, _activeSessionCount;
 
+        public Int32 MaxSessionPoolSize { get; set; }
         public Int32 ActiveSessionCount { get { return _activeSessionCount; } }
-
-
         public SessionGenerator GenerateSession = delegate { return new Session(1024); };
 
 
@@ -35,6 +34,39 @@ namespace Aegis.Network
         }
 
 
+        public void CreatePool(Int32 sessionCount)
+        {
+            lock (this)
+            {
+                for (Int32 i = 0 ; i < sessionCount ; ++i)
+                {
+                    if (_inactiveSessions.Count() + _activeSessions.Count() >= MaxSessionPoolSize)
+                        break;
+
+
+                    Session session = GenerateSession();
+                    _inactiveSessions.Enqueue(session);
+                }
+            }
+        }
+
+
+        public void Release()
+        {
+            lock (this)
+            {
+                foreach (Session session in _activeSessions.Select(v => v.Value))
+                    session.OnSocket_Closed();
+
+
+                _activeSessions.Clear();
+                _inactiveSessions.Clear();
+
+                _activeSessionCount = 0;
+            }
+        }
+
+
         public Session ActivateSession(Socket socket)
         {
             Session session;
@@ -46,6 +78,10 @@ namespace Aegis.Network
             {
                 if (_inactiveSessions.Count == 0)
                 {
+                    if (MaxSessionPoolSize > 0 && _activeSessions.Count() >= MaxSessionPoolSize)
+                        return null;
+
+
                     Interlocked.Increment(ref _sessionId);
                     session = GenerateSession();
                 }
@@ -74,22 +110,6 @@ namespace Aegis.Network
                 _inactiveSessions.Enqueue(session);
 
                 _activeSessionCount = _activeSessions.Count();
-            }
-        }
-
-
-        public void Clear()
-        {
-            lock (this)
-            {
-                foreach (Session session in _activeSessions.Select(v => v.Value))
-                    session.OnSocket_Closed();
-
-
-                _activeSessions.Clear();
-                _inactiveSessions.Clear();
-
-                _activeSessionCount = 0;
             }
         }
     }

@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Net;
 using System.Net.Sockets;
 using Aegis;
 
@@ -21,7 +22,7 @@ namespace Aegis.Network
         public Boolean IsConnected { get { return (Socket == null ? false : Socket.Connected); } }
 
         internal Action<Session> OnSessionClosed;
-        private AsyncCallback _acReceive;
+        private AsyncCallback _acConnect, _acReceive;
         private Int32 _receivedBytes;
 
 
@@ -33,7 +34,8 @@ namespace Aegis.Network
             Interlocked.Increment(ref NextSessionId);
 
             SessionId = NextSessionId;
-            _acReceive = new AsyncCallback(OnRead);
+            _acConnect = new AsyncCallback(OnSocket_Connect);
+            _acReceive = new AsyncCallback(OnSocket_Read);
             ReceivedBuffer = new byte[recvBufferSize];
 
             Clear();
@@ -50,6 +52,25 @@ namespace Aegis.Network
 
             _receivedBytes = 0;
             Array.Clear(ReceivedBuffer, 0, ReceivedBuffer.Length);
+        }
+
+
+        private void WaitForReceive()
+        {
+            Int32 remainBufferSize = ReceivedBuffer.Length - _receivedBytes;
+            Socket.BeginReceive(ReceivedBuffer, _receivedBytes, remainBufferSize, 0, _acReceive, null);
+        }
+
+
+        public void Connect(String ipAddress, Int32 portNo)
+        {
+            if (Socket != null)
+                throw new AegisException(ResultCode.ActivatedSession, "Sessions is already active.");
+
+            IPEndPoint ipEndPoint = new IPEndPoint(IPAddress.Parse(ipAddress), portNo);
+
+            Socket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
+            Socket.BeginConnect(ipEndPoint, _acConnect, null);
         }
 
 
@@ -73,6 +94,7 @@ namespace Aegis.Network
         {
             try
             {
+                //  Close 작업 중 다른 이벤트가 처리되지 못하도록 Clear까지 lock을 걸어야 한다.
                 lock (this)
                 {
                     OnClose();
@@ -89,14 +111,28 @@ namespace Aegis.Network
         }
 
 
-        private void WaitForReceive()
+        private void OnSocket_Connect(IAsyncResult ar)
         {
-            Int32 remainBufferSize = ReceivedBuffer.Length - _receivedBytes;
-            Socket.BeginReceive(ReceivedBuffer, _receivedBytes, remainBufferSize, 0, _acReceive, null);
+            Socket.EndConnect(ar);
+
+            if (Socket.Connected == true)
+            {
+                lock (this)
+                    OnConnect(true);
+
+                WaitForReceive();
+            }
+            else
+            {
+                Socket = null;
+
+                lock (this)
+                    OnConnect(false);
+            }
         }
 
 
-        private void OnRead(IAsyncResult ar)
+        private void OnSocket_Read(IAsyncResult ar)
         {
             try
             {

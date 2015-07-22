@@ -23,7 +23,15 @@ namespace Test
 
                 NetworkChannel nc = NetworkChannel.CreateChannel("test");
                 nc.SessionGenerator = delegate { return new ClientSession(); };
-                nc.StartNetwork("", 10100);
+                nc.InitSessionPoolSize = 1;
+                nc.MaxSessionPoolSize = 1;
+                nc.ListenIpAddress = "192.168.0.100";
+                nc.ListenPortNo = 10100;
+                nc.StartNetwork();
+
+                //ServerSession s = new ServerSession();
+
+                Thread.Sleep(9999999);
             }
             catch (AegisException e)
             {

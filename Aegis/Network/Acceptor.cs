@@ -51,7 +51,7 @@ namespace Aegis.Network
             }
             catch (Exception e)
             {
-                throw new AegisException(e, e.Message);
+                throw new AegisException(ResultCode.NetworkError, e, e.Message);
             }
         }
 
@@ -82,6 +82,13 @@ namespace Aegis.Network
                 {
                     Socket acceptedSocket = _listenSocket.Accept();
                     Session acceptedSession = _networkChannel.SessionManager.ActivateSession(acceptedSocket);
+
+                    if (acceptedSession == null)
+                    {
+                        acceptedSocket.Close();
+                        Logger.Write(LogType.Warn, 1, "Cannot activate any more sessions. Please check MaxSessionPoolSize.");
+                        continue;
+                    }
 
                     acceptedSession.OnSocket_Accepted();
                 }
