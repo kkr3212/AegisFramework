@@ -16,6 +16,10 @@ namespace TestServer
 {
     public partial class FormMain : Form
     {
+        private Thread _threadStatistics;
+
+
+
         public FormMain()
         {
             InitializeComponent();
@@ -33,7 +37,8 @@ namespace TestServer
             _tbLog.Text = "";
 
             ServerMain.Instance.StartServer(_tbLog);
-            (new Thread(Run)).Start();
+            _threadStatistics = new Thread(Run);
+            _threadStatistics.Start();
         }
 
 
@@ -42,12 +47,19 @@ namespace TestServer
             _btnStart.Enabled = true;
             _btnStop.Enabled = false;
 
+
+            _threadStatistics.Join();
             ServerMain.Instance.StopServer();
         }
 
 
         private void OnFormClosed(object sender, FormClosedEventArgs e)
         {
+            _btnStart.Enabled = true;
+            _btnStop.Enabled = false;
+
+
+            _threadStatistics.Join();
             ServerMain.Instance.StopServer();
         }
 

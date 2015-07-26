@@ -33,6 +33,8 @@
             this._btnStop = new System.Windows.Forms.Button();
             this._tbClientCount = new System.Windows.Forms.TextBox();
             this.label1 = new System.Windows.Forms.Label();
+            this.label2 = new System.Windows.Forms.Label();
+            this._tbBufferSize = new System.Windows.Forms.TextBox();
             this.SuspendLayout();
             // 
             // _tbLog
@@ -69,7 +71,7 @@
             // 
             // _tbClientCount
             // 
-            this._tbClientCount.Location = new System.Drawing.Point(94, 29);
+            this._tbClientCount.Location = new System.Drawing.Point(97, 12);
             this._tbClientCount.Name = "_tbClientCount";
             this._tbClientCount.Size = new System.Drawing.Size(100, 21);
             this._tbClientCount.TabIndex = 69;
@@ -78,17 +80,36 @@
             // label1
             // 
             this.label1.AutoSize = true;
-            this.label1.Location = new System.Drawing.Point(14, 32);
+            this.label1.Location = new System.Drawing.Point(17, 15);
             this.label1.Name = "label1";
             this.label1.Size = new System.Drawing.Size(74, 12);
             this.label1.TabIndex = 70;
             this.label1.Text = "Client Count";
+            // 
+            // label2
+            // 
+            this.label2.AutoSize = true;
+            this.label2.Location = new System.Drawing.Point(17, 42);
+            this.label2.Name = "label2";
+            this.label2.Size = new System.Drawing.Size(66, 12);
+            this.label2.TabIndex = 72;
+            this.label2.Text = "Buffer Size";
+            // 
+            // _tbBufferSize
+            // 
+            this._tbBufferSize.Location = new System.Drawing.Point(97, 39);
+            this._tbBufferSize.Name = "_tbBufferSize";
+            this._tbBufferSize.Size = new System.Drawing.Size(100, 21);
+            this._tbBufferSize.TabIndex = 71;
+            this._tbBufferSize.Text = "65000";
             // 
             // FormMain
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 12F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(536, 293);
+            this.Controls.Add(this.label2);
+            this.Controls.Add(this._tbBufferSize);
             this.Controls.Add(this.label1);
             this.Controls.Add(this._tbClientCount);
             this.Controls.Add(this._tbLog);
@@ -111,6 +132,8 @@
         private System.Windows.Forms.Button _btnStop;
         private System.Windows.Forms.TextBox _tbClientCount;
         private System.Windows.Forms.Label label1;
+        private System.Windows.Forms.Label label2;
+        private System.Windows.Forms.TextBox _tbBufferSize;
     }
 }
 

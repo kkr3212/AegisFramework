@@ -22,6 +22,7 @@ namespace TestServer.Logic
 
         private ServerMain()
         {
+            System.Threading.ThreadPool.SetMinThreads(8, 8);
         }
 
 
@@ -56,7 +57,7 @@ namespace TestServer.Logic
             {
                 Logger.Write(LogType.Info, 2, "TestServer (Build {0})", Aegis.Definitions.BuildNo);
 
-                _networkClient.StartNetwork(delegate { return new ClientSession(); }, 1, 10, "192.168.0.100", 10100);
+                _networkClient.StartNetwork(delegate { return new ClientSession(); }, 1, 100, "192.168.0.100", 10100);
             }
             catch (Exception e)
             {

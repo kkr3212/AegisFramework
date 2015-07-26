@@ -10,7 +10,7 @@ namespace Aegis
 {
     public class Definitions
     {
-        public const Int32 BuildNo = 6;
+        public const Int32 BuildNo = 7;
     }
 
 

@@ -12,6 +12,12 @@ namespace TestClient
 {
     public partial class FormMain : Form
     {
+        public static Int32 BufferSize { get; set; }
+
+
+
+
+
         public FormMain()
         {
             InitializeComponent();
@@ -23,11 +29,17 @@ namespace TestClient
 
         private void OnClick_Start(object sender, EventArgs e)
         {
-            Int32 count;
+            Int32 count, bufferSize;
             if (Int32.TryParse(_tbClientCount.Text, out count) == false ||
                 count < 1 || count > 50)
             {
                 MessageBox.Show("클라이언트 개수는 1 - 50 사이의 숫자로 입력해야 합니다.");
+                return;
+            }
+            if (Int32.TryParse(_tbBufferSize.Text, out bufferSize) == false ||
+                count < 1)
+            {
+                MessageBox.Show("버퍼 크기는 1 이상의 숫자로 입력해야 합니다.");
                 return;
             }
 
@@ -37,7 +49,7 @@ namespace TestClient
             _tbClientCount.Enabled = false;
 
             _tbLog.Text = "";
-
+            BufferSize = bufferSize;
             Logic.ClientMain.Instance.StartServer(count, _tbLog);
         }
 

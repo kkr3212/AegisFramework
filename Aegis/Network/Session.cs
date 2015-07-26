@@ -74,6 +74,9 @@ namespace Aegis.Network
 
         private void WaitForReceive()
         {
+            if (_receivedBuffer.WritableSize == 0)
+                throw new AegisException(ResultCode.NotEnoughBuffer, "There is no remaining capacity of the receive buffer.");
+
             Socket.BeginReceive(_receivedBuffer.Buffer, _receivedBuffer.WrittenBytes, _receivedBuffer.WritableSize, 0, OnSocket_Read, null);
         }
 
@@ -124,9 +127,10 @@ namespace Aegis.Network
                     SessionManager.ActivateSession(this);
 
                 lock (this)
+                {
                     OnAccept();
-
-                WaitForReceive();
+                    WaitForReceive();
+                }
             }
             catch (Exception e)
             {
@@ -139,35 +143,38 @@ namespace Aegis.Network
         {
             try
             {
-                try
+                lock (this)
                 {
-                    Socket.EndConnect(ar);
-                }
-                catch (Exception)
-                {
-                    //  Nothing to do.
-                }
+                    try
+                    {
+                        if (Socket == null)
+                            return;
+
+                        Socket.EndConnect(ar);
+                    }
+                    catch (Exception)
+                    {
+                        //  Nothing to do.
+                    }
 
 
 
-                if (Socket.Connected == true)
-                {
-                    if (SessionManager != null)
-                        SessionManager.ActivateSession(this);
+                    if (Socket.Connected == true)
+                    {
+                        if (SessionManager != null)
+                            SessionManager.ActivateSession(this);
 
-                    lock (this)
                         OnConnect(true);
+                        WaitForReceive();
+                    }
+                    else
+                    {
+                        Clear();
+                        if (SessionManager != null)
+                            SessionManager.InactivateSession(this);
 
-                    WaitForReceive();
-                }
-                else
-                {
-                    Clear();
-                    if (SessionManager != null)
-                        SessionManager.InactivateSession(this);
-
-                    lock (this)
                         OnConnect(false);
+                    }
                 }
             }
             catch (Exception e)
@@ -181,28 +188,31 @@ namespace Aegis.Network
         {
             try
             {
-                //  transBytes가 0이면 원격지 혹은 네트워크에 의해 연결이 끊긴 상태
-                Int32 transBytes = Socket.EndReceive(ar);
-                if (transBytes == 0)
+                lock (this)
                 {
-                    CloseSocket();
-                    return;
-                }
+                    if (Socket == null)
+                        return;
 
-
-                _receivedBuffer.Write(transBytes);
-                _dispatchBuffer.Clear();
-                _dispatchBuffer.Write(_receivedBuffer.Buffer, 0, _receivedBuffer.WrittenBytes);
-                while (_dispatchBuffer.ReadableSize > 0)
-                {
-                    //  패킷 하나가 정상적으로 수신되었는지 확인
-                    Int32 packetSize;
-                    if (IsValidPacket(_dispatchBuffer, out packetSize) == false)
-                        break;
-
-                    try
+                    //  transBytes가 0이면 원격지 혹은 네트워크에 의해 연결이 끊긴 상태
+                    Int32 transBytes = Socket.EndReceive(ar);
+                    if (transBytes == 0)
                     {
-                        lock (this)
+                        CloseSocket();
+                        return;
+                    }
+
+
+                    _receivedBuffer.Write(transBytes);
+                    _dispatchBuffer.Clear();
+                    _dispatchBuffer.Write(_receivedBuffer.Buffer, 0, _receivedBuffer.WrittenBytes);
+                    while (_dispatchBuffer.ReadableSize > 0)
+                    {
+                        //  패킷 하나가 정상적으로 수신되었는지 확인
+                        Int32 packetSize;
+                        if (IsValidPacket(_dispatchBuffer, out packetSize) == false)
+                            break;
+
+                        try
                         {
                             //  수신 이벤트 처리 중 종료 이벤트가 발생한 경우
                             if (Socket == null)
@@ -216,19 +226,19 @@ namespace Aegis.Network
                             _dispatchBuffer.Read(packetSize);
                             _receivedBuffer.Read(packetSize);
                         }
+                        catch (Exception e)
+                        {
+                            Logger.Write(LogType.Err, 1, e.ToString());
+                        }
                     }
-                    catch (Exception e)
-                    {
-                        Logger.Write(LogType.Err, 1, e.ToString());
-                    }
+
+
+                    //  처리된 패킷을 버퍼에서 제거
+                    _receivedBuffer.PopReadBuffer();
+
+                    //  ReceiveBuffer의 안정적인 처리를 위해 OnReceive 작업이 끝난 후에 다시 수신대기
+                    WaitForReceive();
                 }
-
-
-                //  처리된 패킷을 버퍼에서 제거
-                _receivedBuffer.PopReadBuffer();
-
-                //  ReceiveBuffer의 안정적인 처리를 위해 OnReceive 작업이 끝난 후에 다시 수신대기
-                WaitForReceive();
             }
             catch (SocketException)
             {
@@ -245,10 +255,14 @@ namespace Aegis.Network
         {
             try
             {
-                Int32 transBytes = Socket.EndSend(ar);
-
                 lock (this)
+                {
+                    if (Socket == null)
+                        return;
+
+                    Int32 transBytes = Socket.EndSend(ar);
                     OnSend(transBytes);
+                }
             }
             catch (SocketException)
             {
