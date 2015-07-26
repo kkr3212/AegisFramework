@@ -40,6 +40,14 @@ namespace Aegis
         }
 
 
+        public void Reset()
+        {
+            _sw = Stopwatch.StartNew();
+            _prevValue = 0;
+            _curValue = 0;
+        }
+
+
         public void Add(Int32 value)
         {
             Check();

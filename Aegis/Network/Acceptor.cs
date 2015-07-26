@@ -12,7 +12,7 @@ using Aegis;
 
 namespace Aegis.Network
 {
-    public class Acceptor
+    internal class Acceptor
     {
         private NetworkChannel _networkChannel;
         private IPEndPoint _listenEndPoint;

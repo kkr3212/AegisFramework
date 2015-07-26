@@ -22,7 +22,6 @@ namespace TestServer.Logic
 
         private ServerMain()
         {
-            System.Threading.ThreadPool.SetMinThreads(8, 8);
         }
 
 

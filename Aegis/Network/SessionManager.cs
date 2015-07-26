@@ -18,14 +18,20 @@ namespace Aegis.Network
         private Dictionary<Int32, Session> _activeSessions;
         private Int32 _sessionId = 0, _activeSessionCount;
 
-        /// <summary>
-        /// Session 객체를 생성하는 Delegator를 설정합니다.
-        /// SessionManager에서는 내부적으로 Session Pool을 관리하는데, Pool에 객체가 부족할 때 이 Delegator가 호출됩니다.
-        /// 그러므로 이 Delegator에서는 ObjectPool 대신 new를 사용해 인스턴스를 생성하는 것이 좋습니다.
-        /// </summary>
+
         internal SessionGenerateDelegator SessionGenerator = delegate { return new Session(1024); };
+        /// <summary>
+        /// 최대 값으로 지정된 Session의 개수를 가져옵니다.
+        /// 이 값은 NetworkChannel을 Start할 때 지정한 값입니다.
+        /// </summary>
         public Int32 MaxSessionPoolSize { get; internal set; }
+        /// <summary>
+        /// 현재 활성화 상태인 Session 개수를 가져옵니다.
+        /// </summary>
         public Int32 ActiveSessionCount { get { return _activeSessionCount; } }
+        /// <summary>
+        /// 현재 활성화 상태인 Session 목록을 가져옵니다.
+        /// </summary>
         public List<Session> ActiveSessions
         {
             get

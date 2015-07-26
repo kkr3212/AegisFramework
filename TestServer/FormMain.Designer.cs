@@ -44,7 +44,7 @@
             // _tbLog
             // 
             this._tbLog.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this._tbLog.Location = new System.Drawing.Point(12, 218);
+            this._tbLog.Location = new System.Drawing.Point(14, 133);
             this._tbLog.MaxLength = 1048576;
             this._tbLog.Multiline = true;
             this._tbLog.Name = "_tbLog";
@@ -75,7 +75,7 @@
             // 
             // label1
             // 
-            this.label1.Location = new System.Drawing.Point(12, 132);
+            this.label1.Location = new System.Drawing.Point(12, 109);
             this.label1.Name = "label1";
             this.label1.Size = new System.Drawing.Size(115, 21);
             this.label1.TabIndex = 66;
@@ -85,7 +85,7 @@
             // _lbReceiveCount
             // 
             this._lbReceiveCount.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this._lbReceiveCount.Location = new System.Drawing.Point(133, 132);
+            this._lbReceiveCount.Location = new System.Drawing.Point(133, 109);
             this._lbReceiveCount.Name = "_lbReceiveCount";
             this._lbReceiveCount.Size = new System.Drawing.Size(123, 21);
             this._lbReceiveCount.TabIndex = 67;
@@ -95,7 +95,7 @@
             // _lbReceiveBytes
             // 
             this._lbReceiveBytes.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this._lbReceiveBytes.Location = new System.Drawing.Point(133, 158);
+            this._lbReceiveBytes.Location = new System.Drawing.Point(383, 109);
             this._lbReceiveBytes.Name = "_lbReceiveBytes";
             this._lbReceiveBytes.Size = new System.Drawing.Size(123, 21);
             this._lbReceiveBytes.TabIndex = 69;
@@ -104,7 +104,7 @@
             // 
             // label4
             // 
-            this.label4.Location = new System.Drawing.Point(12, 158);
+            this.label4.Location = new System.Drawing.Point(262, 109);
             this.label4.Name = "label4";
             this.label4.Size = new System.Drawing.Size(115, 21);
             this.label4.TabIndex = 68;
@@ -114,7 +114,7 @@
             // _lbActiveSession
             // 
             this._lbActiveSession.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this._lbActiveSession.Location = new System.Drawing.Point(133, 106);
+            this._lbActiveSession.Location = new System.Drawing.Point(133, 83);
             this._lbActiveSession.Name = "_lbActiveSession";
             this._lbActiveSession.Size = new System.Drawing.Size(123, 21);
             this._lbActiveSession.TabIndex = 71;
@@ -123,7 +123,7 @@
             // 
             // label6
             // 
-            this.label6.Location = new System.Drawing.Point(12, 106);
+            this.label6.Location = new System.Drawing.Point(12, 83);
             this.label6.Name = "label6";
             this.label6.Size = new System.Drawing.Size(115, 21);
             this.label6.TabIndex = 70;
@@ -133,7 +133,7 @@
             // _lbTaskCount
             // 
             this._lbTaskCount.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this._lbTaskCount.Location = new System.Drawing.Point(383, 106);
+            this._lbTaskCount.Location = new System.Drawing.Point(383, 83);
             this._lbTaskCount.Name = "_lbTaskCount";
             this._lbTaskCount.Size = new System.Drawing.Size(123, 21);
             this._lbTaskCount.TabIndex = 73;
@@ -142,7 +142,7 @@
             // 
             // label3
             // 
-            this.label3.Location = new System.Drawing.Point(262, 106);
+            this.label3.Location = new System.Drawing.Point(262, 83);
             this.label3.Name = "label3";
             this.label3.Size = new System.Drawing.Size(115, 21);
             this.label3.TabIndex = 72;
@@ -153,7 +153,7 @@
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 12F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(543, 418);
+            this.ClientSize = new System.Drawing.Size(543, 344);
             this.Controls.Add(this._lbTaskCount);
             this.Controls.Add(this.label3);
             this.Controls.Add(this._lbActiveSession);

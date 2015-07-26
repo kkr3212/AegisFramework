@@ -16,7 +16,7 @@ namespace TestServer
 {
     public partial class FormMain : Form
     {
-        private Thread _threadStatistics;
+        private CancellationTokenSource _cts;
 
 
 
@@ -37,8 +37,9 @@ namespace TestServer
             _tbLog.Text = "";
 
             ServerMain.Instance.StartServer(_tbLog);
-            _threadStatistics = new Thread(Run);
-            _threadStatistics.Start();
+
+            _cts = new CancellationTokenSource();
+            (new Thread(Run)).Start();
         }
 
 
@@ -48,7 +49,8 @@ namespace TestServer
             _btnStop.Enabled = false;
 
 
-            _threadStatistics.Join();
+            if (_cts != null)
+                _cts.Cancel();
             ServerMain.Instance.StopServer();
         }
 
@@ -59,22 +61,32 @@ namespace TestServer
             _btnStop.Enabled = false;
 
 
-            _threadStatistics.Join();
+            if (_cts != null)
+                _cts.Cancel();
             ServerMain.Instance.StopServer();
         }
 
 
-        private void Run()
+        private async void Run()
         {
             while (_btnStart.Enabled == false)
             {
-                if (InvokeRequired)
-                    Invoke((MethodInvoker)delegate { UpdateStatistics(); });
-                else
-                    UpdateStatistics();
+                await Task.Run(() =>
+                {
+                    try
+                    {
+                        if (InvokeRequired)
+                            Invoke((MethodInvoker)delegate { UpdateStatistics(); });
+                        else
+                            UpdateStatistics();
+                    }
+                    catch (Exception)
+                    {
+                    }
+                }, _cts.Token);
 
 
-                Thread.Sleep(100);
+                await Task.Delay(100);
             }
         }
 
