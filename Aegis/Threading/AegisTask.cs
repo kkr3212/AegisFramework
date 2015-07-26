@@ -16,10 +16,22 @@ namespace Aegis.Threading
     /// </summary>
     public static class AegisTask
     {
+        private static Int32 _taskCount = 0;
+
+        /// <summary>
+        /// 현재 실행중인 Task의 갯수를 가져옵니다.
+        /// </summary>
+        public static Int32 TaskCount { get { return _taskCount; } }
+
+
+
+
+
         public static Task Run(Action action)
         {
             return Task.Run(() =>
             {
+                Interlocked.Increment(ref _taskCount);
                 try
                 {
                     action();
@@ -31,6 +43,7 @@ namespace Aegis.Threading
                 {
                     Logger.Write(LogType.Err, 1, e.ToString());
                 }
+                Interlocked.Decrement(ref _taskCount);
             });
         }
 
@@ -39,6 +52,7 @@ namespace Aegis.Threading
         {
             return Task<TResult>.Run<TResult>(() =>
             {
+                Interlocked.Increment(ref _taskCount);
                 try
                 {
                     return function();
@@ -50,6 +64,7 @@ namespace Aegis.Threading
                 {
                     Logger.Write(LogType.Err, 1, e.ToString());
                 }
+                Interlocked.Decrement(ref _taskCount);
                 return null;
             });
         }
@@ -59,6 +74,7 @@ namespace Aegis.Threading
         {
             return Task.Run(() =>
             {
+                Interlocked.Increment(ref _taskCount);
                 try
                 {
                     action();
@@ -70,6 +86,7 @@ namespace Aegis.Threading
                 {
                     Logger.Write(LogType.Err, 1, e.ToString());
                 }
+                Interlocked.Decrement(ref _taskCount);
             }, cancellationToken);
         }
 
@@ -78,6 +95,7 @@ namespace Aegis.Threading
         {
             return Task<TResult>.Run<TResult>(() =>
             {
+                Interlocked.Increment(ref _taskCount);
                 try
                 {
                     return function();
@@ -89,6 +107,7 @@ namespace Aegis.Threading
                 {
                     Logger.Write(LogType.Err, 1, e.ToString());
                 }
+                Interlocked.Decrement(ref _taskCount);
                 return null;
             }, cancellationToken);
         }
@@ -98,6 +117,7 @@ namespace Aegis.Threading
         {
             return Task.Run(async () =>
             {
+                Interlocked.Increment(ref _taskCount);
                 while (cancellationToken.IsCancellationRequested == false)
                 {
                     try
@@ -114,6 +134,7 @@ namespace Aegis.Threading
                         Logger.Write(LogType.Err, 1, e.ToString());
                     }
                 }
+                Interlocked.Decrement(ref _taskCount);
             });
         }
 

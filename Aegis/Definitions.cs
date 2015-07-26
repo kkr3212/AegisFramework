@@ -26,5 +26,5 @@ namespace Aegis
 
 
 
-    public delegate Network.Session SessionGenerator();
+    public delegate Network.Session SessionGenerateDelegator();
 }

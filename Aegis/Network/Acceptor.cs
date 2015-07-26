@@ -12,7 +12,7 @@ using Aegis;
 
 namespace Aegis.Network
 {
-    internal class Acceptor
+    public class Acceptor
     {
         private NetworkChannel _networkChannel;
         private IPEndPoint _listenEndPoint;
@@ -21,13 +21,15 @@ namespace Aegis.Network
 
 
 
-        public Acceptor(NetworkChannel networkChannel)
+
+
+        internal Acceptor(NetworkChannel networkChannel)
         {
             _networkChannel = networkChannel;
         }
 
 
-        public void Listen(String ipAddress, Int32 portNo)
+        internal void Listen(String ipAddress, Int32 portNo)
         {
             if (_isRunning == true)
                 throw new AegisException(ResultCode.AcceptorIsRunning, "Acceptor is already running.");
@@ -56,7 +58,7 @@ namespace Aegis.Network
         }
 
 
-        public void Close()
+        internal void Close()
         {
             if (_isRunning == false)
                 return;
@@ -81,7 +83,7 @@ namespace Aegis.Network
                 while (_isRunning == true)
                 {
                     Socket acceptedSocket = _listenSocket.Accept();
-                    Session acceptedSession = _networkChannel.SessionManager.ActivateSession(acceptedSocket);
+                    Session acceptedSession = _networkChannel.SessionManager.AttackSocket(acceptedSocket);
 
                     if (acceptedSession == null)
                     {

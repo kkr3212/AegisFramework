@@ -5,8 +5,12 @@ using System.Data;
 using System.Drawing;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using TestServer.Logic;
+
+
 
 namespace TestServer
 {
@@ -28,7 +32,8 @@ namespace TestServer
 
             _tbLog.Text = "";
 
-            Logic.ServerMain.Instance.StartServer(_tbLog);
+            ServerMain.Instance.StartServer(_tbLog);
+            (new Thread(Run)).Start();
         }
 
 
@@ -37,13 +42,42 @@ namespace TestServer
             _btnStart.Enabled = true;
             _btnStop.Enabled = false;
 
-            Logic.ServerMain.Instance.StopServer();
+            ServerMain.Instance.StopServer();
         }
 
 
         private void OnFormClosed(object sender, FormClosedEventArgs e)
         {
-            Logic.ServerMain.Instance.StopServer();
+            ServerMain.Instance.StopServer();
+        }
+
+
+        private void Run()
+        {
+            while (_btnStart.Enabled == false)
+            {
+                if (InvokeRequired)
+                    Invoke((MethodInvoker)delegate { UpdateStatistics(); });
+                else
+                    UpdateStatistics();
+
+
+                Thread.Sleep(100);
+            }
+        }
+
+
+        private void UpdateStatistics()
+        {
+            Int32 sessionCount = ServerMain.Instance.GetActiveSessionCount();
+            Int32 receiveCount = ServerMain.Instance.GetReceiveCount();
+            Int32 receiveBytes = ServerMain.Instance.GetReceiveBytes();
+
+
+            _lbActiveSession.Text = String.Format("{0:N0}", sessionCount);
+            _lbReceiveCount.Text = String.Format("{0:N0}", receiveCount);
+            _lbReceiveBytes.Text = String.Format("{0:N0}", receiveBytes);
+            _lbTaskCount.Text = Aegis.Threading.AegisTask.TaskCount.ToString();
         }
     }
 }

@@ -20,13 +20,23 @@ namespace Aegis.Network
         public Socket Socket { get; internal set; }
         public Boolean IsConnected { get { return (Socket == null ? false : Socket.Connected); } }
 
-        internal Action<Session> OnSessionClosed;
-        private AsyncCallback _acConnect, _acReceive;
-        private byte[] _receivedBuffer;
-        private Int32 _receivedBytes;
+        internal SessionManager SessionManager;
+        private StreamBuffer _receivedBuffer, _dispatchBuffer;
 
 
 
+
+
+        public Session()
+        {
+            Interlocked.Increment(ref NextSessionId);
+
+            SessionId = NextSessionId;
+            _receivedBuffer = new StreamBuffer();
+            _dispatchBuffer = new StreamBuffer();
+
+            Clear();
+        }
 
 
         public Session(Int32 recvBufferSize)
@@ -34,11 +44,16 @@ namespace Aegis.Network
             Interlocked.Increment(ref NextSessionId);
 
             SessionId = NextSessionId;
-            _acConnect = new AsyncCallback(OnSocket_Connect);
-            _acReceive = new AsyncCallback(OnSocket_Read);
-            _receivedBuffer = new byte[recvBufferSize];
+            _receivedBuffer = new StreamBuffer(recvBufferSize);
+            _dispatchBuffer = new StreamBuffer();
 
             Clear();
+        }
+
+
+        internal Session(SessionManager sessionManager)
+        {
+            SessionManager = sessionManager;
         }
 
 
@@ -47,18 +62,19 @@ namespace Aegis.Network
             if (Socket == null)
                 return;
 
-            Socket.Dispose();
+            if (Socket.Connected == true)
+                Socket.Shutdown(SocketShutdown.Both);
+
+            Socket.Close();
             Socket = null;
 
-            _receivedBytes = 0;
-            Array.Clear(_receivedBuffer, 0, _receivedBuffer.Length);
+            _receivedBuffer.Clear();
         }
 
 
         private void WaitForReceive()
         {
-            Int32 remainBufferSize = _receivedBuffer.Length - _receivedBytes;
-            Socket.BeginReceive(_receivedBuffer, _receivedBytes, remainBufferSize, 0, _acReceive, null);
+            Socket.BeginReceive(_receivedBuffer.Buffer, _receivedBuffer.WrittenBytes, _receivedBuffer.WritableSize, 0, OnSocket_Read, null);
         }
 
 
@@ -70,9 +86,33 @@ namespace Aegis.Network
 
             //  연결 시도
             IPEndPoint ipEndPoint = new IPEndPoint(IPAddress.Parse(ipAddress), portNo);
-
             Socket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
-            Socket.BeginConnect(ipEndPoint, _acConnect, null);
+            Socket.BeginConnect(ipEndPoint, OnSocket_Connect, null);
+        }
+
+
+        public void CloseSocket()
+        {
+            try
+            {
+                //  작업 중 다른 이벤트가 처리되지 못하도록 Clear까지 lock을 걸어야 한다.
+                lock (this)
+                {
+                    if (Socket == null)
+                        return;
+
+                    OnClose();
+                    Clear();
+                }
+            }
+            catch (Exception e)
+            {
+                Logger.Write(LogType.Err, 1, e.ToString());
+            }
+
+
+            if (SessionManager != null)
+                SessionManager.InactivateSession(this);
         }
 
 
@@ -80,6 +120,9 @@ namespace Aegis.Network
         {
             try
             {
+                if (SessionManager != null)
+                    SessionManager.ActivateSession(this);
+
                 lock (this)
                     OnAccept();
 
@@ -92,44 +135,44 @@ namespace Aegis.Network
         }
 
 
-        internal void OnSocket_Closed()
+        private void OnSocket_Connect(IAsyncResult ar)
         {
             try
             {
-                //  Close 작업 중 다른 이벤트가 처리되지 못하도록 Clear까지 lock을 걸어야 한다.
-                lock (this)
+                try
                 {
-                    OnClose();
+                    Socket.EndConnect(ar);
+                }
+                catch (Exception)
+                {
+                    //  Nothing to do.
+                }
+
+
+
+                if (Socket.Connected == true)
+                {
+                    if (SessionManager != null)
+                        SessionManager.ActivateSession(this);
+
+                    lock (this)
+                        OnConnect(true);
+
+                    WaitForReceive();
+                }
+                else
+                {
                     Clear();
+                    if (SessionManager != null)
+                        SessionManager.InactivateSession(this);
+
+                    lock (this)
+                        OnConnect(false);
                 }
             }
             catch (Exception e)
             {
                 Logger.Write(LogType.Err, 1, e.ToString());
-            }
-
-
-            OnSessionClosed(this);
-        }
-
-
-        private void OnSocket_Connect(IAsyncResult ar)
-        {
-            Socket.EndConnect(ar);
-
-            if (Socket.Connected == true)
-            {
-                lock (this)
-                    OnConnect(true);
-
-                WaitForReceive();
-            }
-            else
-            {
-                Socket = null;
-
-                lock (this)
-                    OnConnect(false);
             }
         }
 
@@ -138,45 +181,58 @@ namespace Aegis.Network
         {
             try
             {
-                Int32 transBytes = Socket.EndReceive(ar);
-
-
                 //  transBytes가 0이면 원격지 혹은 네트워크에 의해 연결이 끊긴 상태
+                Int32 transBytes = Socket.EndReceive(ar);
                 if (transBytes == 0)
                 {
-                    OnSocket_Closed();
+                    CloseSocket();
                     return;
                 }
 
-                _receivedBytes += transBytes;
 
-
-                //  패킷 하나가 정상적으로 수신되었는지 확인
-                Int32 packetSize;
-                if (IsValidPacket(_receivedBuffer, _receivedBytes, out packetSize) == true)
+                _receivedBuffer.Write(transBytes);
+                _dispatchBuffer.Clear();
+                _dispatchBuffer.Write(_receivedBuffer.Buffer, 0, _receivedBuffer.WrittenBytes);
+                while (_dispatchBuffer.ReadableSize > 0)
                 {
+                    //  패킷 하나가 정상적으로 수신되었는지 확인
+                    Int32 packetSize;
+                    if (IsValidPacket(_dispatchBuffer, out packetSize) == false)
+                        break;
+
                     try
                     {
-                        //  수신 이벤트
                         lock (this)
                         {
-                            if (Socket != null)
-                                OnReceive(_receivedBuffer, packetSize);
+                            //  수신 이벤트 처리 중 종료 이벤트가 발생한 경우
+                            if (Socket == null)
+                                return;
+
+
+                            //  수신처리(Dispatch)
+                            _dispatchBuffer.ResetReadIndex();
+                            OnReceive(_dispatchBuffer);
+
+                            _dispatchBuffer.Read(packetSize);
+                            _receivedBuffer.Read(packetSize);
                         }
                     }
                     catch (Exception e)
                     {
                         Logger.Write(LogType.Err, 1, e.ToString());
                     }
-
-
-                    //  패킷을 버퍼에서 제거
-                    Array.Copy(_receivedBuffer, _receivedBytes, _receivedBuffer, 0, _receivedBuffer.Length - packetSize);
-                    _receivedBytes -= packetSize;
                 }
+
+
+                //  처리된 패킷을 버퍼에서 제거
+                _receivedBuffer.PopReadBuffer();
 
                 //  ReceiveBuffer의 안정적인 처리를 위해 OnReceive 작업이 끝난 후에 다시 수신대기
                 WaitForReceive();
+            }
+            catch (SocketException)
+            {
+                CloseSocket();
             }
             catch (Exception e)
             {
@@ -185,11 +241,68 @@ namespace Aegis.Network
         }
 
 
-        protected virtual Boolean IsValidPacket(byte[] receiveBuffer, Int32 receiveBytes, out Int32 packetSize)
+        private void OnSocket_Send(IAsyncResult ar)
         {
+            try
+            {
+                Int32 transBytes = Socket.EndSend(ar);
+
+                lock (this)
+                    OnSend(transBytes);
+            }
+            catch (SocketException)
+            {
+            }
+            catch (Exception e)
+            {
+                Logger.Write(LogType.Err, 1, e.ToString());
+            }
+        }
+
+
+        public virtual void SendPacket(byte[] source, Int32 offset, Int32 size)
+        {
+            try
+            {
+                Socket.BeginSend(source, offset, size, SocketFlags.None, OnSocket_Send, null);
+            }
+            catch (SocketException)
+            {
+            }
+            catch (Exception e)
+            {
+                Logger.Write(LogType.Err, 1, e.ToString());
+            }
+        }
+
+
+        public virtual void SendPacket(StreamBuffer source)
+        {
+            try
+            {
+                Socket.BeginSend(source.Buffer, 0, source.WrittenBytes, SocketFlags.None, OnSocket_Send, null);
+            }
+            catch (SocketException)
+            {
+            }
+            catch (Exception e)
+            {
+                Logger.Write(LogType.Err, 1, e.ToString());
+            }
+        }
+
+
+        protected virtual Boolean IsValidPacket(StreamBuffer buffer, out Int32 packetSize)
+        {
+            if (buffer.WrittenBytes < 4)
+            {
+                packetSize = 0;
+                return false;
+            }
+
             //  최초 2바이트를 수신할 패킷의 크기로 처리
-            packetSize = BitConverter.ToInt16(receiveBuffer, 0);
-            return (packetSize > 0 && receiveBytes >= packetSize);
+            packetSize = buffer.GetUInt16();
+            return (packetSize > 0 && buffer.WrittenBytes >= packetSize);
         }
 
 
@@ -213,7 +326,7 @@ namespace Aegis.Network
         }
 
 
-        protected virtual void OnReceive(byte[] receiveBuffer, Int32 packetSize)
+        protected virtual void OnReceive(StreamBuffer buffer)
         {
         }
     }

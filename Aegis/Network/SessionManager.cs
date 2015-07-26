@@ -11,16 +11,29 @@ using Aegis;
 
 namespace Aegis.Network
 {
-    internal class SessionManager
+    public class SessionManager
     {
         internal NetworkChannel NetworkChannel { get; private set; }
-        private Queue<Session> _inactiveSessions;
+        private List<Session> _inactiveSessions;
         private Dictionary<Int32, Session> _activeSessions;
         private Int32 _sessionId = 0, _activeSessionCount;
 
-        public Int32 MaxSessionPoolSize { get; set; }
+        /// <summary>
+        /// Session 객체를 생성하는 Delegator를 설정합니다.
+        /// SessionManager에서는 내부적으로 Session Pool을 관리하는데, Pool에 객체가 부족할 때 이 Delegator가 호출됩니다.
+        /// 그러므로 이 Delegator에서는 ObjectPool 대신 new를 사용해 인스턴스를 생성하는 것이 좋습니다.
+        /// </summary>
+        internal SessionGenerateDelegator SessionGenerator = delegate { return new Session(1024); };
+        public Int32 MaxSessionPoolSize { get; internal set; }
         public Int32 ActiveSessionCount { get { return _activeSessionCount; } }
-        public SessionGenerator GenerateSession = delegate { return new Session(1024); };
+        public List<Session> ActiveSessions
+        {
+            get
+            {
+                lock (this)
+                    return _activeSessions.Select(v => v.Value).ToList();
+            }
+        }
 
 
 
@@ -29,12 +42,12 @@ namespace Aegis.Network
         internal SessionManager(NetworkChannel networkChannel)
         {
             NetworkChannel = networkChannel;
-            _inactiveSessions = new Queue<Session>();
+            _inactiveSessions = new List<Session>();
             _activeSessions = new Dictionary<Int32, Session>();
         }
 
 
-        public void CreatePool(Int32 sessionCount)
+        internal void CreatePool(Int32 sessionCount)
         {
             lock (this)
             {
@@ -44,30 +57,33 @@ namespace Aegis.Network
                         break;
 
 
-                    Session session = GenerateSession();
-                    _inactiveSessions.Enqueue(session);
+                    Session session = SessionGenerator();
+                    session.SessionManager = this;
+                    _inactiveSessions.Add(session);
                 }
             }
         }
 
 
-        public void Release()
+        internal void Release()
         {
             lock (this)
             {
                 foreach (Session session in _activeSessions.Select(v => v.Value))
-                    session.OnSocket_Closed();
+                {
+                    session.SessionManager = null;
+                    session.CloseSocket();
+                }
 
 
                 _activeSessions.Clear();
                 _inactiveSessions.Clear();
-
                 _activeSessionCount = 0;
             }
         }
 
 
-        public Session ActivateSession(Socket socket)
+        internal Session AttackSocket(Socket socket)
         {
             Session session;
 
@@ -83,31 +99,42 @@ namespace Aegis.Network
 
 
                     Interlocked.Increment(ref _sessionId);
-                    session = GenerateSession();
+                    session = SessionGenerator();
+                    session.SessionManager = this;
                 }
                 else
-                    session = _inactiveSessions.Dequeue();
-
-                _activeSessions.Add(session.SessionId, session);
-                _activeSessionCount = _activeSessions.Count();
+                {
+                    session = _inactiveSessions.First();
+                    _inactiveSessions.Remove(session);
+                }
             }
 
 
             session.Clear();
-            session.OnSessionClosed = InactivateSession;
             session.Socket = socket;
 
             return session;
         }
 
 
-        private void InactivateSession(Session session)
+        internal void ActivateSession(Session session)
         {
             lock (this)
             {
-                //  Inactive queue로 반환
+                _inactiveSessions.Remove(session);
+                _activeSessions.Add(session.SessionId, session);
+
+                _activeSessionCount = _activeSessions.Count();
+            }
+        }
+
+
+        internal void InactivateSession(Session session)
+        {
+            lock (this)
+            {
                 _activeSessions.Remove(session.SessionId);
-                _inactiveSessions.Enqueue(session);
+                _inactiveSessions.Add(session);
 
                 _activeSessionCount = _activeSessions.Count();
             }

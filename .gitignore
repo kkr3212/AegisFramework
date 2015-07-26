@@ -9,3 +9,6 @@ Aegis/obj/
 
 TestServer/bin/
 TestServer/obj/
+
+TestClient/bin/
+TestClient/obj/

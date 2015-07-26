@@ -39,6 +39,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="IntervalCounter.cs" />
     <Compile Include="Threading\AegisTask.cs" />
     <Compile Include="Definitions.cs" />
     <Compile Include="Exceptions.cs" />

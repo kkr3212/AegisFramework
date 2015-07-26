@@ -49,7 +49,7 @@ namespace Aegis.Network
 
         public Packet(StreamBuffer src)
         {
-            Write(src.Buffer);
+            Write(src.Buffer, 0, src.WrittenBytes);
         }
 
 
@@ -71,10 +71,15 @@ namespace Aegis.Network
         }
 
 
+        protected override void OnSizeChanged()
+        {
+            Size = (UInt16)WrittenBytes;
+        }
+
+
         public virtual void SkipHeader()
         {
             ResetReadIndex();
-            ResetWriteIndex();
 
             GetUInt16();        //  Size
             GetUInt16();        //  PID

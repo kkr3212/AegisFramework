@@ -12,36 +12,30 @@ namespace Aegis.Network
     public class NetworkChannel
     {
         public String Name { get; private set; }
-        public Int32 InitSessionPoolSize { get; set; }
-        public Int32 MaxSessionPoolSize { get; set; }
-        public String ListenIpAddress { get; set; }
-        public Int32 ListenPortNo { get; set; }
-
-        internal SessionManager SessionManager { get; private set; }
-        internal Acceptor Acceptor { get; private set; }
-
-        /// <summary>
-        /// Session 객체를 생성하는 Delegator를 설정합니다.
-        /// SessionManager에서는 내부적으로 Session Pool을 관리하는데, Pool에 객체가 부족할 때 이 Delegator가 호출됩니다.
-        /// 그러므로 이 Delegator에서는 ObjectPool 대신 new를 사용해 인스턴스를 생성하는 것이 좋습니다.
-        /// </summary>
-        public SessionGenerator SessionGenerator
-        {
-            set { SessionManager.GenerateSession = value; }
-        }
-
-
+        public SessionManager SessionManager { get; private set; }
+        public Acceptor Acceptor { get; private set; }
         private static List<NetworkChannel> _channels = new List<NetworkChannel>();
 
 
 
 
 
+        /// <summary>
+        /// NetworkChannel 객체를 생성합니다.
+        /// name은 이전에 생성된 NetworkChannel과 동일한 문자열을 사용할 수 없습니다.
+        /// </summary>
+        /// <param name="name">생성할 NetworkChannel의 고유한 이름.</param>
+        /// <returns>생성된 NetworkChannel 객체</returns>
         public static NetworkChannel CreateChannel(String name)
         {
             lock (_channels)
             {
-                NetworkChannel channel = new NetworkChannel(name);
+                NetworkChannel channel = _channels.Find(v => v.Name == name);
+                if (channel != null)
+                    throw new AegisException(ResultCode.AlreadyExistName, "Already exists same name.");
+
+
+                channel = new NetworkChannel(name);
                 _channels.Add(channel);
 
                 return channel;
@@ -49,6 +43,10 @@ namespace Aegis.Network
         }
 
 
+        /// <summary>
+        /// 생성된 모든 NetworkChannel을 종료하고 사용중인 리소스를 반환합니다.
+        /// 활성화된 Acceptor, Session 등 모든 네트워크 작업이 종료됩니다.
+        /// </summary>
         public static void Release()
         {
             lock (_channels)
@@ -61,7 +59,12 @@ namespace Aegis.Network
         }
 
 
-        public static NetworkChannel GetChannel(String name)
+        /// <summary>
+        /// name을 사용하여 NetworkChannel을 가져옵니다.
+        /// </summary>
+        /// <param name="name">검색할 NetworkChannel의 이름</param>
+        /// <returns>검색된 NetworkChannel 객체</returns>
+        public static NetworkChannel FindChannel(String name)
         {
             lock (_channels)
             {
@@ -78,25 +81,40 @@ namespace Aegis.Network
         {
             Name = name;
 
-            InitSessionPoolSize = 0;
-            ListenIpAddress = "";
-            ListenPortNo = 0;
-
             SessionManager = new SessionManager(this);
             Acceptor = new Acceptor(this);
         }
 
 
-        public void StartNetwork()
+        /// <summary>
+        /// 네트워크 작업을 시작합니다.
+        /// </summary>
+        public void StartNetwork(SessionGenerateDelegator generator, Int32 initPoolSize, Int32 maxPoolSize)
         {
-            SessionManager.CreatePool(InitSessionPoolSize);
-            SessionManager.MaxSessionPoolSize = MaxSessionPoolSize;
-
-            if (ListenIpAddress.Length > 0  && ListenPortNo > 0)
-                Acceptor.Listen(ListenIpAddress, ListenPortNo);
+            SessionManager.SessionGenerator = generator;
+            SessionManager.MaxSessionPoolSize = maxPoolSize;
+            SessionManager.CreatePool(initPoolSize);
         }
 
 
+        /// <summary>
+        /// 네트워크 작업을 시작합니다.
+        /// 지정된 ipAddress를 사용해 Acceptor를 실행합니다.
+        /// </summary>
+        public void StartNetwork(SessionGenerateDelegator generator, Int32 initPoolSize, Int32 maxPoolSize, String ipAddress, Int32 portNo)
+        {
+            SessionManager.SessionGenerator = generator;
+            SessionManager.MaxSessionPoolSize = maxPoolSize;
+            SessionManager.CreatePool(initPoolSize);
+
+            Acceptor.Listen(ipAddress, portNo);
+        }
+
+
+        /// <summary>
+        /// 네트워크 작업을 종료하고 사용중인 리소스를 반환합니다.
+        /// Acceptor와 활성화된 Session의 네트워크 작업이 중단됩니다.
+        /// </summary>
         public void StopNetwork()
         {
             Acceptor.Close();

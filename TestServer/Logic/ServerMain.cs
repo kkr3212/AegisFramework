@@ -13,9 +13,8 @@ namespace TestServer.Logic
 {
     public class ServerMain : ServiceBase
     {
-        private NetworkChannel _channelClient;
-
         public static ServerMain Instance { get { return Singleton<ServerMain>.Instance; } }
+        private NetworkChannel _networkClient = NetworkChannel.CreateChannel("ClientNetwork");
 
 
 
@@ -57,14 +56,7 @@ namespace TestServer.Logic
             {
                 Logger.Write(LogType.Info, 2, "TestServer (Build {0})", Aegis.Definitions.BuildNo);
 
-
-                _channelClient = NetworkChannel.CreateChannel("ClientNetwork");
-                _channelClient.SessionGenerator = delegate { return new ClientSession(); };
-                _channelClient.InitSessionPoolSize = 1;
-                _channelClient.MaxSessionPoolSize = 1;
-                _channelClient.ListenIpAddress = "192.168.0.100";
-                _channelClient.ListenPortNo = 10100;
-                _channelClient.StartNetwork();
+                _networkClient.StartNetwork(delegate { return new ClientSession(); }, 1, 10, "192.168.0.100", 10100);
             }
             catch (Exception e)
             {
@@ -75,8 +67,34 @@ namespace TestServer.Logic
 
         public void StopServer()
         {
-            _channelClient.StopNetwork();
+            _networkClient.StopNetwork();
             Logger.Release();
+        }
+
+
+        public Int32 GetActiveSessionCount()
+        {
+            return _networkClient.SessionManager.ActiveSessionCount;
+        }
+
+
+        public Int32 GetReceiveCount()
+        {
+            Int32 totalCount = 0;
+            foreach (Session session in _networkClient.SessionManager.ActiveSessions)
+                totalCount += ((ClientSession)session).Counter_ReceiveCount.Value;
+
+            return totalCount;
+        }
+
+
+        public Int32 GetReceiveBytes()
+        {
+            Int32 totalBytes = 0;
+            foreach (ClientSession session in _networkClient.SessionManager.ActiveSessions)
+                totalBytes += session.Counter_ReceiveBytes.Value;
+
+            return totalBytes;
         }
     }
 }
