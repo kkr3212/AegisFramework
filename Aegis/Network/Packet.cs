@@ -88,7 +88,7 @@ namespace Aegis.Network
 
 
         /// <summary>
-        /// 패킷 버퍼를 초기화합니다.
+        /// 패킷 버퍼를 초기화합니다. 기존의 PID 값은 유지됩니다.
         /// </summary>
         public override void Clear()
         {
@@ -103,10 +103,42 @@ namespace Aegis.Network
 
 
         /// <summary>
+        /// 패킷 버퍼를 초기화하고 source 데이터를 저장합니다. Packet Header의 Size는 source 버퍼의 헤더값이 사용됩니다.
+        /// </summary>
+        /// <param name="source">저장할 데이터</param>
+        public void Clear(StreamBuffer source)
+        {
+            if (source.BufferSize < 4)
+                throw new AegisException(ResultCode.InvalidArgument, "The source size must be at lest 4 bytes.");
+
+            base.Clear();
+            Write(source.Buffer, 0, source.WrittenBytes);
+            Size = GetUInt16(0);
+        }
+
+
+        /// <summary>
+        /// 패킷 버퍼를 초기화하고 source 데이터를 저장합니다. Packet Header의 Size는 source 버퍼의 헤더값이 사용됩니다.
+        /// </summary>
+        /// <param name="source">저장할 데이터</param>
+        /// <param name="index">저장할 데이터의 시작위치</param>
+        /// <param name="size">저장할 데이터 크기(Byte)</param>
+        public void Clear(byte[] source, Int32 index, Int32 size)
+        {
+            if (size < 4)
+                throw new AegisException(ResultCode.InvalidArgument, "The source size must be at lest 4 bytes.");
+
+            Clear();
+            Write(source, index, size);
+            Size = GetUInt16(0);
+        }
+
+
+        /// <summary>
         /// 패킷의 크기가 변경되었을 때 호출됩니다.
         /// 이 함수가 호출되어야 패킷의 Size값이 변경됩니다.
         /// </summary>
-        protected override void OnSizeChanged()
+        protected override void OnWritten()
         {
             Size = (UInt16)WrittenBytes;
         }

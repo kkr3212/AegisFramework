@@ -94,8 +94,8 @@ namespace TestServer
         private void UpdateStatistics()
         {
             Int32 sessionCount = ServerMain.Instance.GetActiveSessionCount();
-            Int32 receiveCount = ServerMain.Instance.GetReceiveCount();
-            Int32 receiveBytes = ServerMain.Instance.GetReceiveBytes();
+            Int32 receiveCount = ClientSession.Counter_ReceiveCount.Value;
+            Int32 receiveBytes = ClientSession.Counter_ReceiveBytes.Value;
 
 
             _lbActiveSession.Text = String.Format("{0:N0}", sessionCount);

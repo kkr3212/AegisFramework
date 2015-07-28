@@ -56,7 +56,7 @@ namespace TestServer.Logic
             {
                 Logger.Write(LogType.Info, 2, "TestServer (Build {0})", Aegis.Definitions.BuildNo);
 
-                _networkClient.StartNetwork(delegate { return new ClientSession(); }, 1, 100, "192.168.0.100", 10100);
+                _networkClient.StartNetwork(delegate { return new ClientSession(); }, 1, 100, "192.168.0.100", 20100);
             }
             catch (Exception e)
             {
@@ -75,26 +75,6 @@ namespace TestServer.Logic
         public Int32 GetActiveSessionCount()
         {
             return _networkClient.SessionManager.ActiveSessionCount;
-        }
-
-
-        public Int32 GetReceiveCount()
-        {
-            Int32 totalCount = 0;
-            foreach (Session session in _networkClient.SessionManager.ActiveSessions)
-                totalCount += ((ClientSession)session).Counter_ReceiveCount.Value;
-
-            return totalCount;
-        }
-
-
-        public Int32 GetReceiveBytes()
-        {
-            Int32 totalBytes = 0;
-            foreach (ClientSession session in _networkClient.SessionManager.ActiveSessions)
-                totalBytes += session.Counter_ReceiveBytes.Value;
-
-            return totalBytes;
         }
     }
 }

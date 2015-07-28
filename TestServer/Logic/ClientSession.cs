@@ -13,8 +13,8 @@ namespace TestServer.Logic
 {
     public class ClientSession : Session
     {
-        public IntervalCounter Counter_ReceiveCount { get; private set; }
-        public IntervalCounter Counter_ReceiveBytes { get; private set; }
+        public static IntervalCounter Counter_ReceiveCount = new IntervalCounter(1000);
+        public static IntervalCounter Counter_ReceiveBytes = new IntervalCounter(1000);
 
 
 
@@ -23,8 +23,6 @@ namespace TestServer.Logic
         public ClientSession()
             : base(1024 * 1024)
         {
-            Counter_ReceiveCount = new IntervalCounter(1000);
-            Counter_ReceiveBytes = new IntervalCounter(1000);
         }
 
 
@@ -49,6 +47,7 @@ namespace TestServer.Logic
         {
             Counter_ReceiveCount.Add(1);
             Counter_ReceiveBytes.Add(buffer.WrittenBytes);
+
 
             Packet packet = new Packet(buffer);
             AegisTask.Run(() =>

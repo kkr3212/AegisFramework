@@ -55,7 +55,7 @@ namespace Aegis.Network
 
 
         /// <summary>
-        /// 수신버퍼의 크기를 지정하여 Session 객체를 생성합니다.
+        /// 수신버퍼의 크기를 지정하여 Session 객체를 생성합니다. 수신버퍼의 크기는 패킷 하나의 크기 이상으로 설정하는 것이 좋습니다.
         /// </summary>
         /// <param name="recvBufferSize">수신버퍼의 크기(Byte)</param>
         public Session(Int32 recvBufferSize)
