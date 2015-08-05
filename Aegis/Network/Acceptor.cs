@@ -17,7 +17,7 @@ namespace Aegis.Network
         private NetworkChannel _networkChannel;
         private IPEndPoint _listenEndPoint;
         private Socket _listenSocket;
-        private Boolean _isRunning = false;
+        private SocketAsyncEventArgs _eventAccept;
 
 
 
@@ -26,12 +26,14 @@ namespace Aegis.Network
         internal Acceptor(NetworkChannel networkChannel)
         {
             _networkChannel = networkChannel;
+            _eventAccept = new SocketAsyncEventArgs();
+            _eventAccept.Completed += OnAccepted;
         }
 
 
         internal void Listen(String ipAddress, Int32 portNo)
         {
-            if (_isRunning == true)
+            if (_listenSocket != null)
                 throw new AegisException(ResultCode.AcceptorIsRunning, "Acceptor is already running.");
 
             try
@@ -47,9 +49,7 @@ namespace Aegis.Network
                 _listenSocket.Listen(100);
 
                 Logger.Write(LogType.Info, 1, "Listening on {0}, {1}", _listenEndPoint.Address, _listenEndPoint.Port);
-
-                _isRunning = true;
-                (new Thread(Run)).Start();
+                _listenSocket.AcceptAsync(_eventAccept);
             }
             catch (Exception e)
             {
@@ -60,14 +60,10 @@ namespace Aegis.Network
 
         internal void Close()
         {
-            if (_isRunning == false)
+            if (_listenSocket == null)
                 return;
 
-            _isRunning = false;
             _listenSocket.Close();
-            _listenSocket.Dispose();
-
-
             Logger.Write(LogType.Info, 1, "Listening stopped({0}, {1})", _listenEndPoint.Address, _listenEndPoint.Port);
 
 
@@ -76,24 +72,29 @@ namespace Aegis.Network
         }
 
 
-        private void Run()
+        private void OnAccepted(object sender, SocketAsyncEventArgs eventArgs)
         {
             try
             {
-                while (_isRunning == true)
+                Socket acceptedSocket = eventArgs.AcceptSocket;
+                if (acceptedSocket.Connected == false)
+                    return;
+
+
+                Session acceptedSession = _networkChannel.SessionManager.AttackSocket(acceptedSocket);
+                if (acceptedSession == null)
                 {
-                    Socket acceptedSocket = _listenSocket.Accept();
-                    Session acceptedSession = _networkChannel.SessionManager.AttackSocket(acceptedSocket);
-
-                    if (acceptedSession == null)
-                    {
-                        acceptedSocket.Close();
-                        Logger.Write(LogType.Warn, 1, "Cannot activate any more sessions. Please check MaxSessionPoolSize.");
-                        continue;
-                    }
-
-                    acceptedSession.OnSocket_Accepted();
+                    acceptedSocket.Close();
+                    Logger.Write(LogType.Warn, 1, "Cannot activate any more sessions. Please check MaxSessionPoolSize.");
+                    return;
                 }
+
+
+                acceptedSession.OnSocket_Accepted();
+
+
+                eventArgs.AcceptSocket = null;
+                _listenSocket.AcceptAsync(_eventAccept);
             }
             catch (SocketException e)
             {
@@ -104,9 +105,6 @@ namespace Aegis.Network
             {
                 Logger.Write(LogType.Err, 1, e.ToString());
             }
-
-
-            Close();
         }
     }
 }

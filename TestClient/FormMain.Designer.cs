@@ -101,7 +101,7 @@
             this._tbBufferSize.Name = "_tbBufferSize";
             this._tbBufferSize.Size = new System.Drawing.Size(100, 21);
             this._tbBufferSize.TabIndex = 71;
-            this._tbBufferSize.Text = "65000";
+            this._tbBufferSize.Text = "120";
             // 
             // FormMain
             // 

@@ -13,7 +13,7 @@ namespace Aegis
     /// 데이터 쓰기의 경우, 버퍼가 부족하면 자동으로 증가시킵니다.
     /// 데이터 읽기의 경우, 쓰기된 크기 이상으로 읽어들일 수 없습니다.
     /// </summary>
-    public class StreamBuffer : IDisposable
+    public class StreamBuffer
     {
         private const Int32 AllocBlockSize = 128;
 
@@ -74,11 +74,6 @@ namespace Aegis
 
             Capacity(size);
             Write(source.Buffer, index, size);
-        }
-
-
-        public void Dispose()
-        {
         }
 
 
