@@ -16,9 +16,11 @@ namespace Aegis.Network
     /// <summary>
     /// 원격지의 호스트와 네트워킹을 할 수 있는 기능을 제공합니다.
     /// </summary>
-    public class Session : SessionBase
+    public class SessionAsync : SessionBase
     {
         private StreamBuffer _receivedBuffer, _dispatchBuffer;
+        private SocketAsyncEventArgs _saeaRecv;
+        private Queue<SocketAsyncEventArgs> _queueSaeaSend = new Queue<SocketAsyncEventArgs>();
 
 
 
@@ -27,21 +29,27 @@ namespace Aegis.Network
         /// <summary>
         /// 수신버퍼의 크기는 StreamBuffer의 기본할당크기로 초기화됩니다.
         /// </summary>
-        protected Session()
+        protected SessionAsync()
         {
             _receivedBuffer = new StreamBuffer();
             _dispatchBuffer = new StreamBuffer();
+
+            _saeaRecv = new SocketAsyncEventArgs();
+            _saeaRecv.Completed += OnComplete_Receive;
         }
 
 
         /// <summary>
-        /// 수신버퍼의 크기를 지정하여 Session 객체를 생성합니다. 수신버퍼의 크기는 패킷 하나의 크기 이상으로 설정하는 것이 좋습니다.
+        /// 수신버퍼의 크기를 지정하여 SessionAsync 객체를 생성합니다. 수신버퍼의 크기는 패킷 하나의 크기 이상으로 설정하는 것이 좋습니다.
         /// </summary>
         /// <param name="recvBufferSize">수신버퍼의 크기(Byte)</param>
-        protected Session(Int32 recvBufferSize)
+        protected SessionAsync(Int32 recvBufferSize)
         {
             _receivedBuffer = new StreamBuffer(recvBufferSize);
             _dispatchBuffer = new StreamBuffer();
+
+            _saeaRecv = new SocketAsyncEventArgs();
+            _saeaRecv.Completed += OnComplete_Receive;
         }
 
 
@@ -57,6 +65,9 @@ namespace Aegis.Network
         {
             AegisTask.Run(() =>
             {
+                Boolean ret = true;
+
+
                 try
                 {
                     lock (this)
@@ -65,27 +76,33 @@ namespace Aegis.Network
                             throw new AegisException(ResultCode.NotEnoughBuffer, "There is no remaining capacity of the receive buffer.");
 
                         if (Socket != null && Socket.Connected)
-                            Socket.BeginReceive(_receivedBuffer.Buffer, _receivedBuffer.WrittenBytes, _receivedBuffer.WritableSize, 0, OnSocket_Read, null);
+                        {
+                            _saeaRecv.SetBuffer(_receivedBuffer.Buffer, _receivedBuffer.WrittenBytes, _receivedBuffer.WritableSize);
+                            ret = Socket.ReceiveAsync(_saeaRecv);
+                        }
                     }
                 }
                 catch (Exception)
                 {
                 }
+
+                if (ret == false)
+                    OnComplete_Receive(null, _saeaRecv);
             });
         }
 
 
-        private void OnSocket_Read(IAsyncResult ar)
+        private void OnComplete_Receive(object sender, SocketAsyncEventArgs saea)
         {
             try
             {
-                lock (this)
+                lock (_receivedBuffer)
                 {
                     if (Socket == null)
                         return;
 
                     //  transBytes가 0이면 원격지 혹은 네트워크에 의해 연결이 끊긴 상태
-                    Int32 transBytes = Socket.EndReceive(ar);
+                    Int32 transBytes = saea.BytesTransferred;
                     if (transBytes == 0)
                     {
                         Close();
@@ -94,6 +111,7 @@ namespace Aegis.Network
 
 
                     _receivedBuffer.Write(transBytes);
+
                     _dispatchBuffer.Clear();
                     _dispatchBuffer.Write(_receivedBuffer.Buffer, 0, _receivedBuffer.WrittenBytes);
                     while (_dispatchBuffer.ReadableSize > 0)
@@ -143,7 +161,7 @@ namespace Aegis.Network
 
 
         /// <summary>
-        /// 클라이언트의 연결요청에 의해 Session이 활성화된 경우 이 함수가 호출됩니다.
+        /// 클라이언트의 연결요청에 의해 SessionAsync이 활성화된 경우 이 함수가 호출됩니다.
         /// </summary>
         protected override void OnAccept()
         {
@@ -152,7 +170,7 @@ namespace Aegis.Network
 
 
         /// <summary>
-        /// 이 Session 객체가 Connect를 사용하여 서버에 연결요청하면 결과가 이 함수로 전달됩니다.
+        /// 이 SessionAsync 객체가 Connect를 사용하여 서버에 연결요청하면 결과가 이 함수로 전달됩니다.
         /// </summary>
         /// <param name="connected">true인 경우 연결에 성공한 상태입니다.</param>
         protected override void OnConnect(bool connected)
@@ -172,10 +190,24 @@ namespace Aegis.Network
         {
             try
             {
-                lock (this)
+                lock (_queueSaeaSend)
                 {
-                    if (Socket != null)
-                        Socket.BeginSend(source, offset, size, SocketFlags.None, OnSocket_Send, null);
+                    if (Socket == null)
+                        return;
+
+
+                    SocketAsyncEventArgs saea;
+                    if (_queueSaeaSend.Count() == 0)
+                    {
+                        saea = new SocketAsyncEventArgs();
+                        saea.Completed += OnComplete_Send;
+                    }
+                    else
+                        saea = _queueSaeaSend.Dequeue();
+
+                    saea.SetBuffer(source, offset, size);
+                    if (Socket.SendAsync(saea) == false)
+                        OnSend(saea.BytesTransferred);
                 }
             }
             catch (SocketException)
@@ -196,10 +228,24 @@ namespace Aegis.Network
         {
             try
             {
-                lock (this)
+                lock (_queueSaeaSend)
                 {
-                    if (Socket != null)
-                        Socket.BeginSend(source.Buffer, 0, source.WrittenBytes, SocketFlags.None, OnSocket_Send, null);
+                    if (Socket == null)
+                        return;
+
+
+                    SocketAsyncEventArgs saea;
+                    if (_queueSaeaSend.Count() == 0)
+                    {
+                        saea = new SocketAsyncEventArgs();
+                        saea.Completed += OnComplete_Send;
+                    }
+                    else
+                        saea = _queueSaeaSend.Dequeue();
+
+                    saea.SetBuffer(source.Buffer, 0, source.WrittenBytes);
+                    if (Socket.SendAsync(saea) == false)
+                        OnSend(saea.BytesTransferred);
                 }
             }
             catch (SocketException)
@@ -212,18 +258,15 @@ namespace Aegis.Network
         }
 
 
-        private void OnSocket_Send(IAsyncResult ar)
+        private void OnComplete_Send(object sender, SocketAsyncEventArgs saea)
         {
             try
             {
-                lock (this)
-                {
-                    if (Socket == null)
-                        return;
+                if (Socket == null)
+                    return;
 
-                    Int32 transBytes = Socket.EndSend(ar);
-                    OnSend(transBytes);
-                }
+                Int32 transBytes = saea.BytesTransferred;
+                OnSend(transBytes);
             }
             catch (SocketException)
             {
@@ -232,6 +275,15 @@ namespace Aegis.Network
             {
                 Logger.Write(LogType.Err, 1, e.ToString());
             }
+
+
+            AegisTask.Run(() =>
+            {
+                lock (_queueSaeaSend)
+                {
+                    _queueSaeaSend.Enqueue(saea);
+                }
+            });
         }
 
 

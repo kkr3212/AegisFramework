@@ -11,7 +11,7 @@ using Aegis.Network;
 
 namespace TestClient.Logic
 {
-    public class ServerSession : Session
+    public class ServerSession : SessionAsync
     {
         private byte[] _tempBuffer = new byte[1024 * 1024];
 
@@ -28,6 +28,8 @@ namespace TestClient.Logic
 
         protected override void OnConnect(bool connected)
         {
+            base.OnConnect(connected);
+
             if (connected == true)
                 Logger.Write(LogType.Info, 2, "[{0}] Connected", SessionId);
             else

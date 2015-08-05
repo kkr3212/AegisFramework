@@ -10,7 +10,7 @@ namespace Aegis
 {
     public class Definitions
     {
-        public const Int32 BuildNo = 10;
+        public const Int32 BuildNo = 11;
     }
 
 
@@ -26,5 +26,5 @@ namespace Aegis
 
 
 
-    public delegate Network.Session SessionGenerateDelegator();
+    public delegate Network.SessionBase SessionGenerateDelegator();
 }

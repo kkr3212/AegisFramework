@@ -11,7 +11,7 @@ using Aegis.Network;
 
 namespace TestServer.Logic
 {
-    public class ClientSession : Session
+    public class ClientSession : SessionAsync
     {
         public static IntervalCounter Counter_ReceiveCount = new IntervalCounter(1000);
         public static IntervalCounter Counter_ReceiveBytes = new IntervalCounter(1000);
@@ -28,6 +28,7 @@ namespace TestServer.Logic
 
         protected override void OnAccept()
         {
+            base.OnAccept();
             Logger.Write(LogType.Info, 2, "[{0}] Accepted", SessionId);
 
 

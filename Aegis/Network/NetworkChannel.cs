@@ -100,6 +100,9 @@ namespace Aegis.Network
         /// <param name="maxPoolSize">Session 객체의 최대개수를 지정합니다. 0이 입력되면 Session 생성시 최대개수를 무시합니다.</param>
         public void StartNetwork(SessionGenerateDelegator generator, Int32 initPoolSize, Int32 maxPoolSize)
         {
+            if (generator == null)
+                throw new AegisException(ResultCode.InvalidArgument, "Argument 'generator' cannot be null.");
+
             SessionManager.SessionGenerator = generator;
             SessionManager.MaxSessionPoolSize = maxPoolSize;
             SessionManager.CreatePool(initPoolSize);
@@ -116,6 +119,9 @@ namespace Aegis.Network
         /// <param name="portNo">접속요청 받을 PortNo</param>
         public void StartNetwork(SessionGenerateDelegator generator, Int32 initPoolSize, Int32 maxPoolSize, String ipAddress, Int32 portNo)
         {
+            if (generator == null)
+                throw new AegisException(ResultCode.InvalidArgument, "Argument 'generator' cannot be null.");
+
             SessionManager.SessionGenerator = generator;
             SessionManager.MaxSessionPoolSize = maxPoolSize;
             SessionManager.CreatePool(initPoolSize);

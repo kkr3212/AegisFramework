@@ -58,6 +58,8 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="IntervalCounter.cs" />
+    <Compile Include="Network\SessionBase.cs" />
+    <Compile Include="Network\SessionAsync.cs" />
     <Compile Include="RandomizerT.cs" />
     <Compile Include="Threading\AegisTask.cs" />
     <Compile Include="Definitions.cs" />
