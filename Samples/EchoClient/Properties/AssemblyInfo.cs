@@ -5,12 +5,12 @@ using System.Runtime.InteropServices;
 // General Information about an assembly is controlled through the following 
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
-[assembly: AssemblyTitle("AegisNetwork")]
+[assembly: AssemblyTitle("EchoClient")]
 [assembly: AssemblyDescription("")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("")]
-[assembly: AssemblyProduct("AegisNetwork")]
-[assembly: AssemblyCopyright("SyncZone, 2015")]
+[assembly: AssemblyProduct("EchoClient")]
+[assembly: AssemblyCopyright("Copyright ©  2015")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 
@@ -20,7 +20,7 @@ using System.Runtime.InteropServices;
 [assembly: ComVisible(false)]
 
 // The following GUID is for the ID of the typelib if this project is exposed to COM
-[assembly: Guid("47bf91b0-7d24-496c-847b-9345f6a7cf41")]
+[assembly: Guid("83d2e56e-eb6d-40cd-9140-0cb7ecb7731c")]
 
 // Version information for an assembly consists of the following four values:
 //

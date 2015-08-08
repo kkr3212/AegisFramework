@@ -15,7 +15,7 @@ namespace Aegis
     /// </summary>
     public class StreamBuffer
     {
-        private const Int32 AllocBlockSize = 128;
+        public static Int32 AllocBlockSize = 128;
 
         public Int32 ReadBytes { get; private set; }
         public Int32 WrittenBytes { get; private set; }
@@ -110,11 +110,6 @@ namespace Aegis
         }
 
 
-        protected virtual void OnWritten()
-        {
-        }
-
-
         public void ResetReadIndex()
         {
             ReadBytes = 0;
@@ -125,6 +120,11 @@ namespace Aegis
         {
             WrittenBytes = 0;
             OnWritten();
+        }
+
+
+        protected virtual void OnWritten()
+        {
         }
 
 

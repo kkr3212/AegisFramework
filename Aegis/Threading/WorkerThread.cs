@@ -9,18 +9,9 @@ using System.Threading.Tasks;
 
 namespace Aegis.Threading
 {
-    public interface WorkerThreadItem
-    {
-        void DoJob();
-    }
-
-
-
-
-
     public class WorkerThread
     {
-        private SafeQueue<WorkerThreadItem> _works = new SafeQueue<WorkerThreadItem>();
+        private SafeQueue<Action> _works = new SafeQueue<Action>();
         private Boolean _running;
         private Thread[] _threads;
 
@@ -74,7 +65,7 @@ namespace Aegis.Threading
         }
 
 
-        public void Post(WorkerThreadItem item)
+        public void Post(Action item)
         {
             _works.Post(item);
         }
@@ -86,11 +77,11 @@ namespace Aegis.Threading
             {
                 try
                 {
-                    WorkerThreadItem item = _works.Pop();
+                    Action item = _works.Pop();
                     if (item == null)
                         break;
 
-                    item.DoJob();
+                    item();
                 }
                 catch (JobCanceledException)
                 {

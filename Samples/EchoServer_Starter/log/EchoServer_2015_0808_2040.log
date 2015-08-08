@@ -1,0 +1,5 @@
+[8/8 20:40:57 Info] EchoServer (Build 12)
+[8/8 20:40:57 Err] Aegis.AegisException: The mutex name(TestServer) is already in use.
+   위치: Aegis.Configuration.Starter.LoadConfigFile(String filename)
+   위치: Aegis.Configuration.Starter.Initialize(Assembly assembly, String configFilename)
+   위치: EchoServer.Logic.ServerMain.StartServer(TextBox ctrl) 파일 d:\Project\SyncZone\AegisNetworkSamples\EchoServer_Starter\Logic\ServerMain.cs:줄 45

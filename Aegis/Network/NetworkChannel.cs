@@ -3,12 +3,14 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Diagnostics;
 using Aegis;
 
 
 
 namespace Aegis.Network
 {
+    [DebuggerDisplay("Name={Name}")]
     public class NetworkChannel
     {
         /// <summary>
@@ -20,7 +22,7 @@ namespace Aegis.Network
         /// </summary>
         public SessionManager SessionManager { get; private set; }
         internal Acceptor Acceptor { get; private set; }
-        private static List<NetworkChannel> _channels = new List<NetworkChannel>();
+        public static List<NetworkChannel> Channels = new List<NetworkChannel>();
 
 
 
@@ -34,15 +36,15 @@ namespace Aegis.Network
         /// <returns>생성된 NetworkChannel 객체</returns>
         public static NetworkChannel CreateChannel(String name)
         {
-            lock (_channels)
+            lock (Channels)
             {
-                NetworkChannel channel = _channels.Find(v => v.Name == name);
+                NetworkChannel channel = Channels.Find(v => v.Name == name);
                 if (channel != null)
                     throw new AegisException(ResultCode.AlreadyExistName, "Already exists same name.");
 
 
                 channel = new NetworkChannel(name);
-                _channels.Add(channel);
+                Channels.Add(channel);
 
                 return channel;
             }
@@ -55,12 +57,12 @@ namespace Aegis.Network
         /// </summary>
         public static void Release()
         {
-            lock (_channels)
+            lock (Channels)
             {
-                foreach (NetworkChannel networkChannel in _channels)
+                foreach (NetworkChannel networkChannel in Channels)
                     networkChannel.StopNetwork();
 
-                _channels.Clear();
+                Channels.Clear();
             }
         }
 
@@ -72,9 +74,9 @@ namespace Aegis.Network
         /// <returns>검색된 NetworkChannel 객체</returns>
         public static NetworkChannel FindChannel(String name)
         {
-            lock (_channels)
+            lock (Channels)
             {
-                NetworkChannel channel = _channels.Find(v => v.Name == name);
+                NetworkChannel channel = Channels.Find(v => v.Name == name);
                 if (channel != null)
                     return channel;
 

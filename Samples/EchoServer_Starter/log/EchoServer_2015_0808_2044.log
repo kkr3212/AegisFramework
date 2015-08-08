@@ -1,0 +1,5 @@
+[8/8 20:44:21 Info] EchoServer (Build 12)
+[8/8 20:44:30 Err] Aegis.AegisException: Already exists same name.
+   위치: Aegis.Network.NetworkChannel.CreateChannel(String name)
+   위치: Aegis.Configuration.Starter.Start()
+   위치: EchoServer.Logic.ServerMain.StartServer(TextBox ctrl) 파일 d:\Project\SyncZone\AegisNetworkSamples\EchoServer_Starter\Logic\ServerMain.cs:줄 46

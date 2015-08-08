@@ -98,9 +98,6 @@ namespace Aegis.Network
             {
                 lock (_receivedBuffer)
                 {
-                    if (Socket == null)
-                        return;
-
                     //  transBytes가 0이면 원격지 혹은 네트워크에 의해 연결이 끊긴 상태
                     Int32 transBytes = saea.BytesTransferred;
                     if (transBytes == 0)
@@ -123,11 +120,6 @@ namespace Aegis.Network
 
                         try
                         {
-                            //  수신 이벤트 처리 중 종료 이벤트가 발생한 경우
-                            if (Socket == null)
-                                return;
-
-
                             //  수신처리(Dispatch)
                             _dispatchBuffer.ResetReadIndex();
                             OnReceive(_dispatchBuffer);
@@ -161,26 +153,6 @@ namespace Aegis.Network
 
 
         /// <summary>
-        /// 클라이언트의 연결요청에 의해 SessionAsync이 활성화된 경우 이 함수가 호출됩니다.
-        /// </summary>
-        protected override void OnAccept()
-        {
-            WaitForReceive();
-        }
-
-
-        /// <summary>
-        /// 이 SessionAsync 객체가 Connect를 사용하여 서버에 연결요청하면 결과가 이 함수로 전달됩니다.
-        /// </summary>
-        /// <param name="connected">true인 경우 연결에 성공한 상태입니다.</param>
-        protected override void OnConnect(bool connected)
-        {
-            if (connected)
-                WaitForReceive();
-        }
-
-
-        /// <summary>
         /// 패킷을 전송합니다. 패킷이 전송되면 OnSend함수가 호출됩니다.
         /// </summary>
         /// <param name="source">보낼 데이터가 담긴 버퍼</param>
@@ -192,10 +164,6 @@ namespace Aegis.Network
             {
                 lock (_queueSaeaSend)
                 {
-                    if (Socket == null)
-                        return;
-
-
                     SocketAsyncEventArgs saea;
                     if (_queueSaeaSend.Count() == 0)
                     {
@@ -228,13 +196,11 @@ namespace Aegis.Network
         {
             try
             {
+                SocketAsyncEventArgs saea;
+
+
                 lock (_queueSaeaSend)
                 {
-                    if (Socket == null)
-                        return;
-
-
-                    SocketAsyncEventArgs saea;
                     if (_queueSaeaSend.Count() == 0)
                     {
                         saea = new SocketAsyncEventArgs();
@@ -242,11 +208,11 @@ namespace Aegis.Network
                     }
                     else
                         saea = _queueSaeaSend.Dequeue();
-
-                    saea.SetBuffer(source.Buffer, 0, source.WrittenBytes);
-                    if (Socket.SendAsync(saea) == false)
-                        OnSend(saea.BytesTransferred);
                 }
+
+                saea.SetBuffer(source.Buffer, 0, source.WrittenBytes);
+                if (Socket.SendAsync(saea) == false)
+                    OnSend(saea.BytesTransferred);
             }
             catch (SocketException)
             {
@@ -262,9 +228,6 @@ namespace Aegis.Network
         {
             try
             {
-                if (Socket == null)
-                    return;
-
                 Int32 transBytes = saea.BytesTransferred;
                 OnSend(transBytes);
             }
@@ -284,6 +247,26 @@ namespace Aegis.Network
                     _queueSaeaSend.Enqueue(saea);
                 }
             });
+        }
+
+
+        /// <summary>
+        /// 클라이언트의 연결요청에 의해 SessionAsync이 활성화된 경우 이 함수가 호출됩니다.
+        /// </summary>
+        protected override void OnAccept()
+        {
+            WaitForReceive();
+        }
+
+
+        /// <summary>
+        /// 이 SessionAsync 객체가 Connect를 사용하여 서버에 연결요청하면 결과가 이 함수로 전달됩니다.
+        /// </summary>
+        /// <param name="connected">true인 경우 연결에 성공한 상태입니다.</param>
+        protected override void OnConnect(bool connected)
+        {
+            if (connected)
+                WaitForReceive();
         }
 
 

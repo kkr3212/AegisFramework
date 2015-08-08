@@ -45,6 +45,24 @@ namespace Aegis.Network
         }
 
 
+        /// <summary>
+        /// 수신버퍼의 크기를 변경합니다.
+        /// 새로운 버퍼의 크기는 기존 버퍼의 크기보다 커야합니다.
+        /// 버퍼 크기가 변경되더라도 기존의 데이터는 유지됩니다.
+        /// </summary>
+        /// <param name="recvBufferSize">변경할 수신버퍼의 크기(Byte)</param>
+        public void SetReceiveBufferSize(Int32 recvBufferSize)
+        {
+            if (recvBufferSize <= _receivedBuffer.BufferSize)
+                return;
+
+            StreamBuffer oldBuffer = new StreamBuffer(_receivedBuffer, 0, _receivedBuffer.WrittenBytes);
+
+            _receivedBuffer = new StreamBuffer(recvBufferSize);
+            _receivedBuffer.Write(oldBuffer.Buffer, 0, oldBuffer.WrittenBytes);
+        }
+
+
         public override void Close()
         {
             base.Close();
@@ -143,26 +161,6 @@ namespace Aegis.Network
 
 
         /// <summary>
-        /// 클라이언트의 연결요청에 의해 Session이 활성화된 경우 이 함수가 호출됩니다.
-        /// </summary>
-        protected override void OnAccept()
-        {
-            WaitForReceive();
-        }
-
-
-        /// <summary>
-        /// 이 Session 객체가 Connect를 사용하여 서버에 연결요청하면 결과가 이 함수로 전달됩니다.
-        /// </summary>
-        /// <param name="connected">true인 경우 연결에 성공한 상태입니다.</param>
-        protected override void OnConnect(bool connected)
-        {
-            if (connected)
-                WaitForReceive();
-        }
-
-
-        /// <summary>
         /// 패킷을 전송합니다. 패킷이 전송되면 OnSend함수가 호출됩니다.
         /// </summary>
         /// <param name="source">보낼 데이터가 담긴 버퍼</param>
@@ -232,6 +230,26 @@ namespace Aegis.Network
             {
                 Logger.Write(LogType.Err, 1, e.ToString());
             }
+        }
+
+
+        /// <summary>
+        /// 클라이언트의 연결요청에 의해 Session이 활성화된 경우 이 함수가 호출됩니다.
+        /// </summary>
+        protected override void OnAccept()
+        {
+            WaitForReceive();
+        }
+
+
+        /// <summary>
+        /// 이 Session 객체가 Connect를 사용하여 서버에 연결요청하면 결과가 이 함수로 전달됩니다.
+        /// </summary>
+        /// <param name="connected">true인 경우 연결에 성공한 상태입니다.</param>
+        protected override void OnConnect(bool connected)
+        {
+            if (connected)
+                WaitForReceive();
         }
 
 
