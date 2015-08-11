@@ -11,7 +11,7 @@ using Aegis.Network;
 
 namespace EchoClient.Logic
 {
-    public class ServerSession : Session
+    public class ServerSession : AsyncResultSession
     {
         private byte[] _tempBuffer = new byte[1024 * 1024];
 

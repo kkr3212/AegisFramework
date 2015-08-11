@@ -14,9 +14,9 @@ using Aegis.Threading;
 namespace Aegis.Network
 {
     /// <summary>
-    /// 원격지의 호스트와 네트워킹을 할 수 있는 기능을 제공합니다.
+    /// Async 계열의 Socket API를 사용하여 원격지의 호스트와 네트워킹을 할 수 있는 기능을 제공합니다.
     /// </summary>
-    public class SessionAsync : SessionBase
+    public class AsyncEventSession : SessionBase
     {
         private StreamBuffer _receivedBuffer, _dispatchBuffer;
         private SocketAsyncEventArgs _saeaRecv;
@@ -29,7 +29,7 @@ namespace Aegis.Network
         /// <summary>
         /// 수신버퍼의 크기는 StreamBuffer의 기본할당크기로 초기화됩니다.
         /// </summary>
-        protected SessionAsync()
+        protected AsyncEventSession()
         {
             _receivedBuffer = new StreamBuffer();
             _dispatchBuffer = new StreamBuffer();
@@ -43,7 +43,7 @@ namespace Aegis.Network
         /// 수신버퍼의 크기를 지정하여 SessionAsync 객체를 생성합니다. 수신버퍼의 크기는 패킷 하나의 크기 이상으로 설정하는 것이 좋습니다.
         /// </summary>
         /// <param name="recvBufferSize">수신버퍼의 크기(Byte)</param>
-        protected SessionAsync(Int32 recvBufferSize)
+        protected AsyncEventSession(Int32 recvBufferSize)
         {
             _receivedBuffer = new StreamBuffer(recvBufferSize);
             _dispatchBuffer = new StreamBuffer();
@@ -73,7 +73,7 @@ namespace Aegis.Network
                     lock (this)
                     {
                         if (_receivedBuffer.WritableSize == 0)
-                            throw new AegisException(ResultCode.NotEnoughBuffer, "There is no remaining capacity of the receive buffer.");
+                            Logger.Write(LogType.Err, 1, "There is no remaining capacity of the receive buffer.");
 
                         if (Socket != null && Socket.Connected)
                         {
@@ -81,13 +81,13 @@ namespace Aegis.Network
                             ret = Socket.ReceiveAsync(_saeaRecv);
                         }
                     }
+
+                    if (ret == false)
+                        OnComplete_Receive(null, _saeaRecv);
                 }
                 catch (Exception)
                 {
                 }
-
-                if (ret == false)
-                    OnComplete_Receive(null, _saeaRecv);
             });
         }
 
@@ -108,11 +108,12 @@ namespace Aegis.Network
 
 
                     _receivedBuffer.Write(transBytes);
-
-                    _dispatchBuffer.Clear();
-                    _dispatchBuffer.Write(_receivedBuffer.Buffer, 0, _receivedBuffer.WrittenBytes);
-                    while (_dispatchBuffer.ReadableSize > 0)
+                    while (_receivedBuffer.ReadableSize > 0)
                     {
+                        _dispatchBuffer.Clear();
+                        _dispatchBuffer.Write(_receivedBuffer.Buffer, _receivedBuffer.ReadBytes, _receivedBuffer.ReadableSize);
+
+
                         //  패킷 하나가 정상적으로 수신되었는지 확인
                         Int32 packetSize;
                         if (IsValidPacket(_dispatchBuffer, out packetSize) == false)
@@ -121,11 +122,10 @@ namespace Aegis.Network
                         try
                         {
                             //  수신처리(Dispatch)
-                            _dispatchBuffer.ResetReadIndex();
-                            OnReceive(_dispatchBuffer);
-
-                            _dispatchBuffer.Read(packetSize);
                             _receivedBuffer.Read(packetSize);
+                            _dispatchBuffer.ResetReadIndex();
+
+                            OnReceive(_dispatchBuffer);
                         }
                         catch (Exception e)
                         {
@@ -267,27 +267,6 @@ namespace Aegis.Network
         {
             if (connected)
                 WaitForReceive();
-        }
-
-
-        /// <summary>
-        /// 수신된 데이터가 유효한 패킷인지 여부를 확인합니다.
-        /// 유효한 패킷으로 판단되면 packetSize에 이 패킷의 정확한 크기를 입력하고 true를 반환해야 합니다.
-        /// </summary>
-        /// <param name="buffer">수신된 데이터가 담긴 버퍼</param>
-        /// <param name="packetSize">유효한 패킷의 크기</param>
-        /// <returns>true를 반환하면 OnReceive함수를 통해 수신된 데이터가 전달됩니다.</returns>
-        protected virtual Boolean IsValidPacket(StreamBuffer buffer, out Int32 packetSize)
-        {
-            if (buffer.WrittenBytes < 4)
-            {
-                packetSize = 0;
-                return false;
-            }
-
-            //  최초 2바이트를 수신할 패킷의 크기로 처리
-            packetSize = buffer.GetUInt16();
-            return (packetSize > 0 && buffer.WrittenBytes >= packetSize);
         }
     }
 }

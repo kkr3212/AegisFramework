@@ -78,7 +78,7 @@ namespace Aegis.Network
             lock (this)
             {
                 if (Socket != null)
-                    throw new AegisException(ResultCode.ActivatedSession, "Sessions is already active.");
+                    throw new AegisException(ResultCode.ActivatedSession, "This session has already been activated.");
 
 
                 //  연결 시도
@@ -207,6 +207,27 @@ namespace Aegis.Network
         /// <param name="buffer">수신된 패킷이 담긴 StreamBuffer</param>
         protected virtual void OnReceive(StreamBuffer buffer)
         {
+        }
+
+
+        /// <summary>
+        /// 수신된 데이터가 유효한 패킷인지 여부를 확인합니다.
+        /// 유효한 패킷으로 판단되면 packetSize에 이 패킷의 정확한 크기를 입력하고 true를 반환해야 합니다.
+        /// </summary>
+        /// <param name="buffer">수신된 데이터가 담긴 버퍼</param>
+        /// <param name="packetSize">유효한 패킷의 크기</param>
+        /// <returns>true를 반환하면 OnReceive함수를 통해 수신된 데이터가 전달됩니다.</returns>
+        protected virtual Boolean IsValidPacket(StreamBuffer buffer, out Int32 packetSize)
+        {
+            if (buffer.WrittenBytes < 4)
+            {
+                packetSize = 0;
+                return false;
+            }
+
+            //  최초 2바이트를 수신할 패킷의 크기로 처리
+            packetSize = buffer.GetUInt16();
+            return (packetSize > 0 && buffer.WrittenBytes >= packetSize);
         }
     }
 }

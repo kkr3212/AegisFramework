@@ -27,16 +27,7 @@ namespace EchoServer.Logic
         public void StartServer(System.Windows.Forms.TextBox ctrl)
         {
             //  Logger 설정
-            if (Environment.UserInteractive)
-            {
-                Logger.AddLogger(new LogTextFile("EchoServer"));
-                Logger.AddLogger(new LogTextBox(ctrl));
-            }
-            else
-            {
-                System.IO.Directory.SetCurrentDirectory(AppDomain.CurrentDomain.BaseDirectory);
-                Logger.AddLogger(new LogTextFile("EchoServer"));
-            }
+            Logger.AddLogger(new LogTextBox(ctrl));
 
 
             try

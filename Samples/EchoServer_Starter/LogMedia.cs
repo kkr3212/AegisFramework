@@ -90,30 +90,25 @@ namespace EchoServer
     public class LogListBox : ILogMedia
     {
         private ListBox _control;
-        private delegate void Invoke_Log(LogType type, Int32 lv, String log);
-        private Invoke_Log _ivkLog;
 
 
 
         public LogListBox(ListBox ctrl)
         {
             _control = ctrl;
-            _ivkLog = new Invoke_Log(Write);
         }
 
 
         public void Write(LogType type, Int32 lv, String log)
         {
             if (_control.InvokeRequired)
-            {
-                _control.BeginInvoke(_ivkLog, new object[] { type, lv, log });
-            }
+                _control.BeginInvoke((MethodInvoker)delegate { Write(type, lv, log); });
+
             else
             {
-                String message;
+                String message = String.Format("[{0}, {1}] {2}", type, lv, log);
 
 
-                message = String.Format("[{0}, {1}] {2}", type, lv, log);
                 _control.Items.Insert(_control.Items.Count, message);
                 _control.SelectedIndex = _control.Items.Count - 1;
                 _control.SelectedIndex = -1;
@@ -133,30 +128,25 @@ namespace EchoServer
     public class LogTextBox : ILogMedia
     {
         private TextBox _control;
-        private delegate void Invoke_Log(LogType type, Int32 lv, String log);
-        private Invoke_Log _ivkLog;
 
 
 
         public LogTextBox(TextBox ctrl)
         {
             _control = ctrl;
-            _ivkLog = new Invoke_Log(Write);
         }
 
 
         public void Write(LogType type, Int32 lv, String log)
         {
             if (_control.InvokeRequired)
-            {
-                _control.BeginInvoke(_ivkLog, new object[] { type, lv, log });
-            }
+                _control.BeginInvoke((MethodInvoker)delegate { Write(type, lv, log); });
+
             else
             {
-                String message;
+                String message = String.Format("[{0}, {1}] {2}\r\n", type, lv, log);
 
 
-                message = String.Format("[{0}, {1}] {2}\r\n", type, lv, log);
                 _control.Text += message;
                 _control.SelectionStart = _control.TextLength;
                 _control.ScrollToCaret();

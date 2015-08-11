@@ -9,10 +9,13 @@ Aegis/obj/
 
 Samples/EchoServer/bin/
 Samples/EchoServer/obj/
-Samples/EchoClient/bin/
-Samples/EchoClient/obj/
 Samples/EchoServer_Starter/bin/
 Samples/EchoServer_Starter/obj/
+Samples/EchoClient/bin/
+Samples/EchoClient/obj/
+Samples/EchoClient_Connector/bin/
+Samples/EchoClient_Connector/obj/
 
 
-AegisClient/
+AegisClient/bin/
+AegisClient/obj/

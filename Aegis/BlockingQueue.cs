@@ -9,10 +9,10 @@ using System.Threading;
 namespace Aegis
 {
     /// <summary>
-    /// Thread에 안정적인 Queue를 지원합니다.
+    /// 이 Queue는 Thread에 안정적입니다.
     /// </summary>
     /// <typeparam name="T">Queue의 요소 형식을 지정합니다.</typeparam>
-    public class SafeQueue<T>
+    public class BlockingQueue<T>
     {
         private Queue<T> _queue = new Queue<T>();
         private Int32 _queuedCount = 0;
@@ -28,7 +28,7 @@ namespace Aegis
         /// Queue에 객체 하나를 추가하고 대기중인(Pop을 호출한) 쓰레드 하나가 깨어납니다.
         /// </summary>
         /// <param name="item">추가할 객체</param>
-        public void Post(T item)
+        public void Enqueue(T item)
         {
             lock (_queue)
             {
@@ -37,7 +37,6 @@ namespace Aegis
                 //Monitor.PulseAll(_queue);
                 Monitor.Pulse(_queue);
             }
-
         }
 
 
@@ -46,7 +45,7 @@ namespace Aegis
         /// 반환되는 객체는 Queue에서 제거됩니다.
         /// </summary>
         /// <returns>Queue의 첫 번째에 위치한 객체</returns>
-        public T Pop()
+        public T Dequeue()
         {
             lock (_queue)
             {
@@ -54,7 +53,7 @@ namespace Aegis
                     Monitor.Wait(_queue);
 
                 if (_canceled == true)
-                    throw new JobCanceledException("Pop call stopped by requested cancellation in SafeQueue<{0}>.", typeof(T).ToString());
+                    throw new JobCanceledException("Pop call stopped by requested cancellation in BlockingQueue<{0}>.", typeof(T).ToString());
 
 
                 T item = _queue.Dequeue();

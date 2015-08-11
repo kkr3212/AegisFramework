@@ -146,11 +146,12 @@ namespace Aegis.Data.MySql
 
                         _cmd.Connection = dbc.Connection;
                         _cmd.CommandText = CommandText.ToString();
-                        _cmd.Connection = null;
 
                         Prepare();
 
                         _reader = new DataReader(_cmd.ExecuteReader());
+                        _cmd.Connection = null;
+
                         dbc.IncreaseQueryCount();
                     }
                 }

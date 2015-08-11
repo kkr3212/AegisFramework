@@ -11,7 +11,7 @@ namespace Aegis.Threading
 {
     public class WorkerThread
     {
-        private SafeQueue<Action> _works = new SafeQueue<Action>();
+        private BlockingQueue<Action> _works = new BlockingQueue<Action>();
         private Boolean _running;
         private Thread[] _threads;
 
@@ -67,7 +67,7 @@ namespace Aegis.Threading
 
         public void Post(Action item)
         {
-            _works.Post(item);
+            _works.Enqueue(item);
         }
 
 
@@ -77,7 +77,7 @@ namespace Aegis.Threading
             {
                 try
                 {
-                    Action item = _works.Pop();
+                    Action item = _works.Dequeue();
                     if (item == null)
                         break;
 

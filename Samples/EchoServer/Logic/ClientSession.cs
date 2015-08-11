@@ -11,7 +11,7 @@ using Aegis.Network;
 
 namespace EchoServer.Logic
 {
-    public class ClientSession : Session
+    public class ClientSession : AsyncEventSession
     {
         public static IntervalCounter Counter_ReceiveCount = new IntervalCounter(1000);
         public static IntervalCounter Counter_ReceiveBytes = new IntervalCounter(1000);

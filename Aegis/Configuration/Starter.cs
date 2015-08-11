@@ -118,7 +118,7 @@ namespace Aegis.Configuration
         }
 
 
-        private static Session GenerateSession(String sessionClassName, Int32 receiveBufferSize)
+        private static AsyncResultSession GenerateSession(String sessionClassName, Int32 receiveBufferSize)
         {
             Type type = _assembly.GetType(sessionClassName);
             if (type == null)
@@ -129,7 +129,7 @@ namespace Aegis.Configuration
                 throw new AegisException(ResultCode.InvalidArgument, "'No matches constructor on '{0}'.", sessionClassName);
 
 
-            Session session = constructorInfo.Invoke(null) as Session;
+            AsyncResultSession session = constructorInfo.Invoke(null) as AsyncResultSession;
             session.SetReceiveBufferSize(receiveBufferSize);
 
             return session;
