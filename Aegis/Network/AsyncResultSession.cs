@@ -51,7 +51,7 @@ namespace Aegis.Network
         /// 버퍼 크기가 변경되더라도 기존의 데이터는 유지됩니다.
         /// </summary>
         /// <param name="recvBufferSize">변경할 수신버퍼의 크기(Byte)</param>
-        public void SetReceiveBufferSize(Int32 recvBufferSize)
+        public override void SetReceiveBufferSize(Int32 recvBufferSize)
         {
             if (recvBufferSize <= _receivedBuffer.BufferSize)
                 return;
@@ -71,7 +71,7 @@ namespace Aegis.Network
         }
 
 
-        private void WaitForReceive()
+        internal override void WaitForReceive()
         {
             AegisTask.Run(() =>
             {
@@ -79,15 +79,21 @@ namespace Aegis.Network
                 {
                     lock (this)
                     {
+                        if (Socket == null)
+                            return;
+
                         if (_receivedBuffer.WritableSize == 0)
                             Logger.Write(LogType.Err, 1, "There is no remaining capacity of the receive buffer.");
 
-                        if (Socket != null && Socket.Connected)
+                        if (Socket.Connected)
                             Socket.BeginReceive(_receivedBuffer.Buffer, _receivedBuffer.WrittenBytes, _receivedBuffer.WritableSize, 0, OnSocket_Read, null);
+                        else
+                            Close();
                     }
                 }
                 catch (Exception)
                 {
+                    Close();
                 }
             });
         }
@@ -164,17 +170,17 @@ namespace Aegis.Network
         /// <summary>
         /// 패킷을 전송합니다. 패킷이 전송되면 OnSend함수가 호출됩니다.
         /// </summary>
-        /// <param name="source">보낼 데이터가 담긴 버퍼</param>
+        /// <param name="buffer">보낼 데이터가 담긴 버퍼</param>
         /// <param name="offset">source에서 전송할 시작 위치</param>
         /// <param name="size">source에서 전송할 크기(Byte)</param>
-        public virtual void SendPacket(byte[] source, Int32 offset, Int32 size)
+        public virtual void SendPacket(byte[] buffer, Int32 offset, Int32 size)
         {
             try
             {
                 lock (this)
                 {
                     if (Socket != null)
-                        Socket.BeginSend(source, offset, size, SocketFlags.None, OnSocket_Send, null);
+                        Socket.BeginSend(buffer, offset, size, SocketFlags.None, OnSocket_Send, null);
                 }
             }
             catch (SocketException)
@@ -190,15 +196,15 @@ namespace Aegis.Network
         /// <summary>
         /// 패킷을 전송합니다. 패킷이 전송되면 OnSend함수가 호출됩니다.
         /// </summary>
-        /// <param name="source">전송할 데이터가 담긴 StreamBuffer</param>
-        public virtual void SendPacket(StreamBuffer source)
+        /// <param name="buffer">전송할 데이터가 담긴 StreamBuffer</param>
+        public virtual void SendPacket(StreamBuffer buffer)
         {
             try
             {
                 lock (this)
                 {
                     if (Socket != null)
-                        Socket.BeginSend(source.Buffer, 0, source.WrittenBytes, SocketFlags.None, OnSocket_Send, null);
+                        Socket.BeginSend(buffer.Buffer, 0, buffer.WrittenBytes, SocketFlags.None, OnSocket_Send, null);
                 }
             }
             catch (SocketException)
@@ -231,26 +237,6 @@ namespace Aegis.Network
             {
                 Logger.Write(LogType.Err, 1, e.ToString());
             }
-        }
-
-
-        /// <summary>
-        /// 클라이언트의 연결요청에 의해 Session이 활성화된 경우 이 함수가 호출됩니다.
-        /// </summary>
-        protected override void OnAccept()
-        {
-            WaitForReceive();
-        }
-
-
-        /// <summary>
-        /// 이 Session 객체가 Connect를 사용하여 서버에 연결요청하면 결과가 이 함수로 전달됩니다.
-        /// </summary>
-        /// <param name="connected">true인 경우 연결에 성공한 상태입니다.</param>
-        protected override void OnConnect(bool connected)
-        {
-            if (connected)
-                WaitForReceive();
         }
     }
 }

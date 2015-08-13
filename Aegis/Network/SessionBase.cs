@@ -42,6 +42,10 @@ namespace Aegis.Network
         }
 
 
+        public abstract void SetReceiveBufferSize(Int32 recvBufferSize);
+        internal abstract void WaitForReceive();
+
+
         internal void AttachSocket(Socket socket)
         {
             Socket = socket;
@@ -58,6 +62,7 @@ namespace Aegis.Network
                 lock (this)
                 {
                     OnAccept();
+                    WaitForReceive();
                 }
             }
             catch (Exception e)
@@ -115,6 +120,7 @@ namespace Aegis.Network
                             SessionManager.ActivateSession(this);
 
                         OnConnect(true);
+                        WaitForReceive();
                     }
                     else
                     {
@@ -202,7 +208,7 @@ namespace Aegis.Network
 
         /// <summary>
         /// 패킷 하나가 완전히 수신되면 이 함수가 호출됩니다.
-        /// 전달된 buffer 객체는 현재 Thread에서만 유효합니다.
+        /// 전달된 buffer 객체는 현재 Thread에서만 유효하므로, 비동기 작업시에는 새로운 StreamBuffer로 복사해야 합니다.
         /// </summary>
         /// <param name="buffer">수신된 패킷이 담긴 StreamBuffer</param>
         protected virtual void OnReceive(StreamBuffer buffer)
