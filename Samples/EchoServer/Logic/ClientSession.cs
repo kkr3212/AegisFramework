@@ -23,12 +23,29 @@ namespace EchoServer.Logic
         public ClientSession()
             : base(1024 * 1024)
         {
+            base.OnAccept += OnEvent_Accept;
+            base.OnClose += OnEvent_Close;
+            base.OnReceive += OnEvent_Receive;
+            base.PacketValidator += IsValidPacket;
         }
 
 
-        protected override void OnAccept()
+        private Boolean IsValidPacket(SessionBase session, StreamBuffer buffer, out int packetSize)
         {
-            base.OnAccept();
+            if (buffer.WrittenBytes < 4)
+            {
+                packetSize = 0;
+                return false;
+            }
+
+            //  최초 2바이트를 수신할 패킷의 크기로 처리
+            packetSize = buffer.GetUInt16();
+            return (packetSize > 0 && buffer.WrittenBytes >= packetSize);
+        }
+
+
+        private void OnEvent_Accept(SessionBase session)
+        {
             Logger.Write(LogType.Info, 2, "[{0}] Accepted", SessionId);
 
 
@@ -38,13 +55,13 @@ namespace EchoServer.Logic
         }
 
 
-        protected override void OnClose()
+        private void OnEvent_Close(SessionBase session)
         {
             Logger.Write(LogType.Info, 2, "[{0}] Closed", SessionId);
         }
 
 
-        protected override void OnReceive(StreamBuffer buffer)
+        private void OnEvent_Receive(SessionBase session, StreamBuffer buffer)
         {
             Counter_ReceiveCount.Add(1);
             Counter_ReceiveBytes.Add(buffer.WrittenBytes);

@@ -35,7 +35,7 @@ namespace EchoClient.Logic
 
 
                 _networkServer.StartNetwork(delegate { return new TestSession(); }, clientCount, clientCount);
-                _networkServer.StartNetwork(delegate { return new AwaitSession(); }, clientCount, clientCount);
+                //_networkServer.StartNetwork(delegate { return new AwaitSession(); }, clientCount, clientCount);
             }
             catch (Exception e)
             {

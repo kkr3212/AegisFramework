@@ -75,7 +75,7 @@
       <DependentUpon>FormMain.cs</DependentUpon>
     </Compile>
     <Compile Include="Logic\ClientMain.cs" />
-    <Compile Include="Logic\ServerSession.cs" />
+    <Compile Include="Logic\TestSession.cs" />
     <Compile Include="Logic\AwaitSession.cs" />
     <Compile Include="LogMedia.cs" />
     <Compile Include="Program.cs" />
