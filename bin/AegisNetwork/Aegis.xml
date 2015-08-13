@@ -60,9 +60,53 @@
             </summary>
             <returns>UnixTimeStamp를 변환한 DateTime값</returns>
         </member>
+        <member name="T:Aegis.Network.EventHandler_Accept">
+            <summary>
+            클라이언트의 연결요청에 의해 Session이 활성화된 경우 호출됩니다.
+            </summary>
+            <param name="session">이벤트가 발생된 SessionBase 객체</param>
+        </member>
+        <member name="T:Aegis.Network.EventHandler_Connect">
+            <summary>
+            이 Session 객체가 Connect를 사용하여 서버에 연결요청하면 결과가 전달됩니다.
+            </summary>
+            <param name="session">이벤트가 발생된 SessionBase 객체</param>
+            <param name="connected">tru인 경우 연결에 성공</param>
+        </member>
+        <member name="T:Aegis.Network.EventHandler_Close">
+            <summary>
+            원격지와의 연결이 종료되면 Session 객체를 초기화하기 전에 호출됩니다.
+            </summary>
+            <param name="session">이벤트가 발생된 SessionBase 객체</param>
+        </member>
+        <member name="T:Aegis.Network.EventHandler_Send">
+            <summary>
+            패킷 전송에 성공하면 전송된 크기를 전달합니다.
+            </summary>
+            <param name="session">이벤트가 발생된 SessionBase 객체</param>
+            <param name="transBytes">전송된 Bytes</param>
+        </member>
+        <member name="T:Aegis.Network.EventHandler_Receive">
+            <summary>
+            패킷 하나가 완전히 수신되면 이 함수가 호출됩니다.
+            전달된 buffer 객체는 현재 Thread에서만 유효하므로, 비동기 작업시에는 새로운 StreamBuffer로 복사해야 합니다.
+            </summary>
+            <param name="session">이벤트가 발생된 SessionBase 객체</param>
+            <param name="buffer">수신된 패킷이 담긴 StreamBuffer</param>
+        </member>
+        <member name="T:Aegis.Network.EventHandler_IsValidPacket">
+            <summary>
+            수신된 데이터가 유효한 패킷인지 여부를 확인합니다.
+            유효한 패킷으로 판단되면 packetSize에 이 패킷의 정확한 크기를 입력하고 true를 반환해야 합니다.
+            </summary>
+            <param name="session">이벤트가 발생된 SessionBase 객체</param>
+            <param name="buffer">수신된 데이터가 담긴 버퍼</param>
+            <param name="packetSize">유효한 패킷의 크기</param>
+            <returns></returns>
+        </member>
         <member name="M:Aegis.Network.SessionBase.Connect(System.String,System.Int32)">
             <summary>
-            서버에 연결을 요청합니다. 연결요청의 결과는 OnConnect 함수를 통해 전달됩니다.
+            서버에 연결을 요청합니다. 연결요청의 결과는 OnConnect를 통해 전달됩니다.
             현재 이 Session이 비활성 상태인 경우에만 수행됩니다.
             </summary>
             <param name="ipAddress">접속할 서버의 Ip Address</param>
@@ -73,44 +117,6 @@
             사용중인 리소스를 반환하고 소켓을 종료하여 네트워크 작업을 종료합니다.
             종료 처리가 진행되기 이전에 OnClose 함수가 호출됩니다.
             </summary>
-        </member>
-        <member name="M:Aegis.Network.SessionBase.OnAccept">
-            <summary>
-            클라이언트의 연결요청에 의해 Session이 활성화된 경우 이 함수가 호출됩니다.
-            </summary>
-        </member>
-        <member name="M:Aegis.Network.SessionBase.OnConnect(System.Boolean)">
-            <summary>
-            이 Session 객체가 Connect를 사용하여 서버에 연결요청하면 결과가 이 함수로 전달됩니다.
-            </summary>
-            <param name="connected">true인 경우 연결에 성공한 상태입니다.</param>
-        </member>
-        <member name="M:Aegis.Network.SessionBase.OnClose">
-            <summary>
-            원격지와의 연결이 종료되면 Session 객체를 초기화하기 전에 이 함수가 호출됩니다.
-            </summary>
-        </member>
-        <member name="M:Aegis.Network.SessionBase.OnSend(System.Int32)">
-            <summary>
-            패킷 전송에 성공하면 전송된 크기를 전달합니다.
-            </summary>
-            <param name="transBytes">전송된 Bytes</param>
-        </member>
-        <member name="M:Aegis.Network.SessionBase.OnReceive(Aegis.StreamBuffer)">
-            <summary>
-            패킷 하나가 완전히 수신되면 이 함수가 호출됩니다.
-            전달된 buffer 객체는 현재 Thread에서만 유효하므로, 비동기 작업시에는 새로운 StreamBuffer로 복사해야 합니다.
-            </summary>
-            <param name="buffer">수신된 패킷이 담긴 StreamBuffer</param>
-        </member>
-        <member name="M:Aegis.Network.SessionBase.IsValidPacket(Aegis.StreamBuffer,System.Int32@)">
-            <summary>
-            수신된 데이터가 유효한 패킷인지 여부를 확인합니다.
-            유효한 패킷으로 판단되면 packetSize에 이 패킷의 정확한 크기를 입력하고 true를 반환해야 합니다.
-            </summary>
-            <param name="buffer">수신된 데이터가 담긴 버퍼</param>
-            <param name="packetSize">유효한 패킷의 크기</param>
-            <returns>true를 반환하면 OnReceive함수를 통해 수신된 데이터가 전달됩니다.</returns>
         </member>
         <member name="P:Aegis.Network.SessionBase.SessionId">
             <summary>
@@ -153,7 +159,7 @@
         </member>
         <member name="M:Aegis.Network.AsyncEventSession.SendPacket(System.Byte[],System.Int32,System.Int32)">
             <summary>
-            패킷을 전송합니다. 패킷이 전송되면 OnSend함수가 호출됩니다.
+            패킷을 전송합니다.
             </summary>
             <param name="buffer">보낼 데이터가 담긴 버퍼</param>
             <param name="offset">source에서 전송할 시작 위치</param>
@@ -161,7 +167,7 @@
         </member>
         <member name="M:Aegis.Network.AsyncEventSession.SendPacket(Aegis.StreamBuffer)">
             <summary>
-            패킷을 전송합니다. 패킷이 전송되면 OnSend함수가 호출됩니다.
+            패킷을 전송합니다.
             </summary>
             <param name="buffer">전송할 데이터가 담긴 StreamBuffer</param>
         </member>
@@ -470,7 +476,7 @@
         </member>
         <member name="M:Aegis.Network.AsyncResultSession.SendPacket(System.Byte[],System.Int32,System.Int32)">
             <summary>
-            패킷을 전송합니다. 패킷이 전송되면 OnSend함수가 호출됩니다.
+            패킷을 전송합니다.
             </summary>
             <param name="buffer">보낼 데이터가 담긴 버퍼</param>
             <param name="offset">source에서 전송할 시작 위치</param>
@@ -478,7 +484,7 @@
         </member>
         <member name="M:Aegis.Network.AsyncResultSession.SendPacket(Aegis.StreamBuffer)">
             <summary>
-            패킷을 전송합니다. 패킷이 전송되면 OnSend함수가 호출됩니다.
+            패킷을 전송합니다.
             </summary>
             <param name="buffer">전송할 데이터가 담긴 StreamBuffer</param>
         </member>

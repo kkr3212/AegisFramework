@@ -127,10 +127,9 @@ namespace Aegis
                 {
                     if (generator == null)
                     {
-                        ConstructorInfo constructor;
-
-
-                        constructor = typeof(T).GetConstructor(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic, null, new Type[0], null);
+                        ConstructorInfo constructor = typeof(T).GetConstructor(
+                                                                    BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic
+                                                                    , null, new Type[0], null);
                         if (constructor != null)
                             obj = (T)constructor.Invoke(null);
                         else

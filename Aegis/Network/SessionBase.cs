@@ -12,10 +12,54 @@ using Aegis;
 
 namespace Aegis.Network
 {
+    /// <summary>
+    /// 클라이언트의 연결요청에 의해 Session이 활성화된 경우 호출됩니다.
+    /// </summary>
+    /// <param name="session">이벤트가 발생된 SessionBase 객체</param>
+    public delegate void EventHandler_Accept(SessionBase session);
+    /// <summary>
+    /// 이 Session 객체가 Connect를 사용하여 서버에 연결요청하면 결과가 전달됩니다.
+    /// </summary>
+    /// <param name="session">이벤트가 발생된 SessionBase 객체</param>
+    /// <param name="connected">tru인 경우 연결에 성공</param>
+    public delegate void EventHandler_Connect(SessionBase session, Boolean connected);
+    /// <summary>
+    /// 원격지와의 연결이 종료되면 Session 객체를 초기화하기 전에 호출됩니다.
+    /// </summary>
+    /// <param name="session">이벤트가 발생된 SessionBase 객체</param>
+    public delegate void EventHandler_Close(SessionBase session);
+    /// <summary>
+    /// 패킷 전송에 성공하면 전송된 크기를 전달합니다.
+    /// </summary>
+    /// <param name="session">이벤트가 발생된 SessionBase 객체</param>
+    /// <param name="transBytes">전송된 Bytes</param>
+    public delegate void EventHandler_Send(SessionBase session, Int32 transBytes);
+    /// <summary>
+    /// 패킷 하나가 완전히 수신되면 이 함수가 호출됩니다.
+    /// 전달된 buffer 객체는 현재 Thread에서만 유효하므로, 비동기 작업시에는 새로운 StreamBuffer로 복사해야 합니다.
+    /// </summary>
+    /// <param name="session">이벤트가 발생된 SessionBase 객체</param>
+    /// <param name="buffer">수신된 패킷이 담긴 StreamBuffer</param>
+    public delegate void EventHandler_Receive(SessionBase session, StreamBuffer buffer);
+    /// <summary>
+    /// 수신된 데이터가 유효한 패킷인지 여부를 확인합니다.
+    /// 유효한 패킷으로 판단되면 packetSize에 이 패킷의 정확한 크기를 입력하고 true를 반환해야 합니다.
+    /// </summary>
+    /// <param name="session">이벤트가 발생된 SessionBase 객체</param>
+    /// <param name="buffer">수신된 데이터가 담긴 버퍼</param>
+    /// <param name="packetSize">유효한 패킷의 크기</param>
+    /// <returns></returns>
+    public delegate Boolean EventHandler_IsValidPacket(SessionBase session, StreamBuffer buffer, out Int32 packetSize);
+
+
+
+
+
     public abstract class SessionBase
     {
         private static Int32 NextSessionId = 0;
 
+        internal SessionManager SessionManager { get; set; }
         /// <summary>
         /// 이 Session 객체의 고유번호입니다.
         /// </summary>
@@ -29,7 +73,10 @@ namespace Aegis.Network
         /// </summary>
         public Boolean IsConnected { get { return (Socket == null ? false : Socket.Connected); } }
 
-        internal SessionManager SessionManager { get; set; }
+
+        public event EventHandler_Accept OnAccept;
+        public event EventHandler_Connect OnConnect;
+        public event EventHandler_Close OnClose;
 
 
 
@@ -44,6 +91,8 @@ namespace Aegis.Network
 
         public abstract void SetReceiveBufferSize(Int32 recvBufferSize);
         internal abstract void WaitForReceive();
+        public abstract void SendPacket(byte[] buffer, Int32 offset, Int32 size);
+        public abstract void SendPacket(StreamBuffer buffer);
 
 
         internal void AttachSocket(Socket socket)
@@ -61,7 +110,9 @@ namespace Aegis.Network
 
                 lock (this)
                 {
-                    OnAccept();
+                    if (OnAccept != null)
+                        OnAccept(this);
+
                     WaitForReceive();
                 }
             }
@@ -73,7 +124,7 @@ namespace Aegis.Network
 
 
         /// <summary>
-        /// 서버에 연결을 요청합니다. 연결요청의 결과는 OnConnect 함수를 통해 전달됩니다.
+        /// 서버에 연결을 요청합니다. 연결요청의 결과는 OnConnect를 통해 전달됩니다.
         /// 현재 이 Session이 비활성 상태인 경우에만 수행됩니다.
         /// </summary>
         /// <param name="ipAddress">접속할 서버의 Ip Address</param>
@@ -119,15 +170,18 @@ namespace Aegis.Network
                         if (SessionManager != null)
                             SessionManager.ActivateSession(this);
 
-                        OnConnect(true);
+                        if (OnConnect != null)
+                            OnConnect(this, true);
+
                         WaitForReceive();
                     }
                     else
                     {
-                        if (SessionManager != null)
-                            SessionManager.InactivateSession(this);
+                        Socket.Close();
+                        Socket = null;
 
-                        OnConnect(false);
+                        if (OnConnect != null)
+                            OnConnect(this, false);
                     }
                 }
             }
@@ -152,7 +206,8 @@ namespace Aegis.Network
                     if (Socket == null)
                         return;
 
-                    OnClose();
+                    if (OnClose != null)
+                        OnClose(this);
 
                     //if (Socket.Connected == true)
                         //Socket.Shutdown(SocketShutdown.Both);
@@ -172,57 +227,14 @@ namespace Aegis.Network
         }
 
 
-        /// <summary>
-        /// 클라이언트의 연결요청에 의해 Session이 활성화된 경우 이 함수가 호출됩니다.
-        /// </summary>
-        protected virtual void OnAccept()
-        {
-        }
-
-
-        /// <summary>
-        /// 이 Session 객체가 Connect를 사용하여 서버에 연결요청하면 결과가 이 함수로 전달됩니다.
-        /// </summary>
-        /// <param name="connected">true인 경우 연결에 성공한 상태입니다.</param>
-        protected virtual void OnConnect(Boolean connected)
-        {
-        }
-
-
-        /// <summary>
-        /// 원격지와의 연결이 종료되면 Session 객체를 초기화하기 전에 이 함수가 호출됩니다.
-        /// </summary>
-        protected virtual void OnClose()
-        {
-        }
-
-
-        /// <summary>
-        /// 패킷 전송에 성공하면 전송된 크기를 전달합니다.
-        /// </summary>
-        /// <param name="transBytes">전송된 Bytes</param>
-        protected virtual void OnSend(Int32 transBytes)
-        {
-        }
-
-
-        /// <summary>
-        /// 패킷 하나가 완전히 수신되면 이 함수가 호출됩니다.
-        /// 전달된 buffer 객체는 현재 Thread에서만 유효하므로, 비동기 작업시에는 새로운 StreamBuffer로 복사해야 합니다.
-        /// </summary>
-        /// <param name="buffer">수신된 패킷이 담긴 StreamBuffer</param>
-        protected virtual void OnReceive(StreamBuffer buffer)
-        {
-        }
-
-
+        /*
         /// <summary>
         /// 수신된 데이터가 유효한 패킷인지 여부를 확인합니다.
         /// 유효한 패킷으로 판단되면 packetSize에 이 패킷의 정확한 크기를 입력하고 true를 반환해야 합니다.
         /// </summary>
         /// <param name="buffer">수신된 데이터가 담긴 버퍼</param>
         /// <param name="packetSize">유효한 패킷의 크기</param>
-        /// <returns>true를 반환하면 OnReceive함수를 통해 수신된 데이터가 전달됩니다.</returns>
+        /// <returns>true를 반환하면 OnReceive를 통해 수신된 데이터가 전달됩니다.</returns>
         protected virtual Boolean IsValidPacket(StreamBuffer buffer, out Int32 packetSize)
         {
             if (buffer.WrittenBytes < 4)
@@ -235,5 +247,6 @@ namespace Aegis.Network
             packetSize = buffer.GetUInt16();
             return (packetSize > 0 && buffer.WrittenBytes >= packetSize);
         }
+        */
     }
 }

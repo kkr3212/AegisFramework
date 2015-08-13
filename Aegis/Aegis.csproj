@@ -20,7 +20,7 @@
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
-    <NoWarn>1591</NoWarn>
+    <NoWarn>1591,4014</NoWarn>
     <DocumentationFile>bin\Debug\Aegis.XML</DocumentationFile>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
@@ -31,7 +31,7 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <DocumentationFile>bin\Release\Aegis.XML</DocumentationFile>
-    <NoWarn>1591</NoWarn>
+    <NoWarn>1591,4014</NoWarn>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x64'">
     <DebugSymbols>true</DebugSymbols>
@@ -77,6 +77,7 @@
     <Compile Include="Data\MySql\DBConnector.cs" />
     <Compile Include="Data\MySql\MySqlDatabase.cs" />
     <Compile Include="IntervalCounter.cs" />
+    <Compile Include="Network\AwaitableSessionMethod.cs" />
     <Compile Include="Network\SessionBase.cs" />
     <Compile Include="Network\AsyncEventSession.cs" />
     <Compile Include="RandomizerT.cs" />

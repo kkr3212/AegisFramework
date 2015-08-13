@@ -20,6 +20,13 @@ namespace Aegis.Network
     {
         private StreamBuffer _receivedBuffer, _dispatchBuffer;
 
+        public AwaitableSessionMethod AwaitableMethod { get; private set; }
+
+
+        public event EventHandler_Send OnSend;
+        public event EventHandler_Receive OnReceive;
+        public event EventHandler_IsValidPacket PacketValidator;
+
 
 
 
@@ -31,6 +38,8 @@ namespace Aegis.Network
         {
             _receivedBuffer = new StreamBuffer();
             _dispatchBuffer = new StreamBuffer();
+
+            AwaitableMethod = new AwaitableSessionMethod(this);
         }
 
 
@@ -42,6 +51,8 @@ namespace Aegis.Network
         {
             _receivedBuffer = new StreamBuffer(recvBufferSize);
             _dispatchBuffer = new StreamBuffer();
+
+            AwaitableMethod = new AwaitableSessionMethod(this);
         }
 
 
@@ -126,7 +137,8 @@ namespace Aegis.Network
 
                         //  패킷 하나가 정상적으로 수신되었는지 확인
                         Int32 packetSize;
-                        if (IsValidPacket(_dispatchBuffer, out packetSize) == false)
+                        if (PacketValidator == null ||
+                            PacketValidator(this, _dispatchBuffer, out packetSize) == false)
                             break;
 
                         try
@@ -140,7 +152,8 @@ namespace Aegis.Network
                             _receivedBuffer.Read(packetSize);
                             _dispatchBuffer.ResetReadIndex();
 
-                            OnReceive(_dispatchBuffer);
+                            if (OnReceive != null)
+                                OnReceive(this, _dispatchBuffer);
                         }
                         catch (Exception e)
                         {
@@ -152,7 +165,7 @@ namespace Aegis.Network
                     //  처리된 패킷을 버퍼에서 제거
                     _receivedBuffer.PopReadBuffer();
 
-                    //  ReceiveBuffer의 안정적인 처리를 위해 OnReceive 작업이 끝난 후에 다시 수신대기
+                    //  ReceiveBuffer의 안정적인 처리를 위해 작업이 끝난 후에 다시 수신대기
                     WaitForReceive();
                 }
             }
@@ -168,12 +181,12 @@ namespace Aegis.Network
 
 
         /// <summary>
-        /// 패킷을 전송합니다. 패킷이 전송되면 OnSend함수가 호출됩니다.
+        /// 패킷을 전송합니다.
         /// </summary>
         /// <param name="buffer">보낼 데이터가 담긴 버퍼</param>
         /// <param name="offset">source에서 전송할 시작 위치</param>
         /// <param name="size">source에서 전송할 크기(Byte)</param>
-        public virtual void SendPacket(byte[] buffer, Int32 offset, Int32 size)
+        public override void SendPacket(byte[] buffer, Int32 offset, Int32 size)
         {
             try
             {
@@ -194,10 +207,10 @@ namespace Aegis.Network
 
 
         /// <summary>
-        /// 패킷을 전송합니다. 패킷이 전송되면 OnSend함수가 호출됩니다.
+        /// 패킷을 전송합니다.
         /// </summary>
         /// <param name="buffer">전송할 데이터가 담긴 StreamBuffer</param>
-        public virtual void SendPacket(StreamBuffer buffer)
+        public override void SendPacket(StreamBuffer buffer)
         {
             try
             {
@@ -227,7 +240,8 @@ namespace Aegis.Network
                         return;
 
                     Int32 transBytes = Socket.EndSend(ar);
-                    OnSend(transBytes);
+                    if (OnSend != null)
+                        OnSend(this, transBytes);
                 }
             }
             catch (SocketException)

@@ -9,24 +9,24 @@ using Aegis.Network;
 
 
 
-namespace EchoServer.Logic
+namespace EchoClient.Logic
 {
-    public class ClientSession : AsyncResultSession
+    public class AwaitSession : AsyncResultSession
     {
-        public static IntervalCounter Counter_ReceiveCount = new IntervalCounter(1000);
-        public static IntervalCounter Counter_ReceiveBytes = new IntervalCounter(1000);
+        private byte[] _tempBuffer = new byte[1024 * 1024];
 
 
 
 
 
-        public ClientSession()
-            : base(1024 * 1024)
+        public AwaitSession()
         {
-            base.OnAccept += OnEvent_Accept;
+            base.OnConnect += OnEvent_Connect;
             base.OnClose += OnEvent_Close;
             base.OnReceive += OnEvent_Receive;
             base.PacketValidator += IsValidPacket;
+
+            Connect("192.168.0.100", 10100);
         }
 
 
@@ -44,14 +44,12 @@ namespace EchoServer.Logic
         }
 
 
-        private void OnEvent_Accept(SessionBase session)
+        private void OnEvent_Connect(SessionBase session, Boolean connected)
         {
-            Logger.Write(LogType.Info, 2, "[{0}] Accepted", SessionId);
-
-
-            //  Hello packet을 클라이언트에 전달
-            Packet packet = new Packet(0x01);
-            SendPacket(packet);
+            if (connected == true)
+                Logger.Write(LogType.Info, 2, "[{0}] Connected", SessionId);
+            else
+                Connect("192.168.0.100", 10100);
         }
 
 
@@ -63,26 +61,15 @@ namespace EchoServer.Logic
 
         private void OnEvent_Receive(SessionBase session, StreamBuffer buffer)
         {
-            Counter_ReceiveCount.Add(1);
-            Counter_ReceiveBytes.Add(buffer.WrittenBytes);
-
-
             Packet packet = new Packet(buffer);
-            AegisTask.Run(() =>
+            AwaitableMethod.ProcessResponseWaitPacket(packet);
+
+            AegisTask.Run(async () =>
             {
-                packet.SkipHeader();
-                switch (packet.PID)
-                {
-                    case 0x02: OnEcho_Req(packet); break;
-                }
+                Packet reqPacket = new Packet(0x02);
+                reqPacket.Write(_tempBuffer, 0, FormMain.BufferSize);
+                await AwaitableMethod.SendAndWaitResponse(reqPacket, 0x03);
             });
-        }
-
-
-        private void OnEcho_Req(Packet packet)
-        {
-            Packet resPacket = new Packet(0x03);
-            SendPacket(resPacket);
         }
     }
 }

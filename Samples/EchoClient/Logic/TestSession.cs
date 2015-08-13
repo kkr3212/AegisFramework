@@ -11,7 +11,7 @@ using Aegis.Network;
 
 namespace EchoClient.Logic
 {
-    public class ServerSession : AsyncResultSession
+    public class TestSession : AsyncEventSession
     {
         private byte[] _tempBuffer = new byte[1024 * 1024];
 
@@ -19,17 +19,35 @@ namespace EchoClient.Logic
 
 
 
-        public ServerSession()
+        public TestSession()
             : base(4096)
         {
+            base.OnConnect += OnEvent_Connect;
+            base.OnClose += OnEvent_Close;
+            base.OnReceive += OnEvent_Receive;
+            base.PacketValidator += IsValidPacket;
+
+
             Connect("192.168.0.100", 10100);
         }
 
 
-        protected override void OnConnect(bool connected)
+        private Boolean IsValidPacket(SessionBase session, StreamBuffer buffer, out int packetSize)
         {
-            base.OnConnect(connected);
+            if (buffer.WrittenBytes < 4)
+            {
+                packetSize = 0;
+                return false;
+            }
 
+            //  최초 2바이트를 수신할 패킷의 크기로 처리
+            packetSize = buffer.GetUInt16();
+            return (packetSize > 0 && buffer.WrittenBytes >= packetSize);
+        }
+
+
+        private void OnEvent_Connect(SessionBase session, Boolean connected)
+        {
             if (connected == true)
                 Logger.Write(LogType.Info, 2, "[{0}] Connected", SessionId);
             else
@@ -37,13 +55,13 @@ namespace EchoClient.Logic
         }
 
 
-        protected override void OnClose()
+        private void OnEvent_Close(SessionBase session)
         {
             Logger.Write(LogType.Info, 2, "[{0}] Closed", SessionId);
         }
 
 
-        protected override void OnReceive(StreamBuffer buffer)
+        private void OnEvent_Receive(SessionBase session, StreamBuffer buffer)
         {
             Packet packet = new Packet(buffer);
             AegisTask.Run(() =>
