@@ -36,6 +36,7 @@
             지정된 NetworkChannel만을 생성하고 네트워킹을 시작합니다.
             </summary>
             <param name="networkChannelName">시작할 NetworkChannel 이름</param>
+            <returns>해당 NetworkChannel 객체</returns>
         </member>
         <member name="M:Aegis.Configuration.Starter.StopNetwork">
             <summary>
@@ -47,6 +48,7 @@
             지정된 NetworkChannel만 중지합니다.
             </summary>
             <param name="networkChannelName">중지할 NetworkChannel 이름</param>
+            <returns>해당 NetworkChannel 객체</returns>
         </member>
         <member name="M:Aegis.Converter.DateTimeConverter.UnixTimeStamp(System.DateTime)">
             <summary>
@@ -285,6 +287,18 @@
             <summary>
             네트워크 작업을 종료하고 사용중인 리소스를 반환합니다.
             Acceptor와 활성화된 Session의 네트워크 작업이 중단됩니다.
+            </summary>
+        </member>
+        <member name="M:Aegis.Network.NetworkChannel.OpenListener(System.String,System.Int32)">
+            <summary>
+            클라이언트의 연결요청을 받을 수 있도록 Listener를 오픈합니다.
+            </summary>
+            <param name="ipAddress">접속요청 받을 Ip Address</param>
+            <param name="portNo">접속요청 받을 PortNo</param>
+        </member>
+        <member name="M:Aegis.Network.NetworkChannel.CloseListener">
+            <summary>
+            Listener를 종료합니다.
             </summary>
         </member>
         <member name="P:Aegis.Network.NetworkChannel.Name">

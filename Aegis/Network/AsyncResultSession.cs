@@ -23,9 +23,9 @@ namespace Aegis.Network
         public AwaitableSessionMethod AwaitableMethod { get; private set; }
 
 
-        public event EventHandler_Send OnSend;
-        public event EventHandler_Receive OnReceive;
-        public event EventHandler_IsValidPacket PacketValidator;
+        public event EventHandler_Send NetworkEvent_Sent;
+        public event EventHandler_Receive NetworkEvent_Received;
+        public EventHandler_IsValidPacket PacketValidator;
 
 
 
@@ -152,8 +152,8 @@ namespace Aegis.Network
                             _receivedBuffer.Read(packetSize);
                             _dispatchBuffer.ResetReadIndex();
 
-                            if (OnReceive != null)
-                                OnReceive(this, _dispatchBuffer);
+                            if (NetworkEvent_Received != null)
+                                NetworkEvent_Received(this, _dispatchBuffer);
                         }
                         catch (Exception e)
                         {
@@ -240,8 +240,8 @@ namespace Aegis.Network
                         return;
 
                     Int32 transBytes = Socket.EndSend(ar);
-                    if (OnSend != null)
-                        OnSend(this, transBytes);
+                    if (NetworkEvent_Sent != null)
+                        NetworkEvent_Sent(this, transBytes);
                 }
             }
             catch (SocketException)

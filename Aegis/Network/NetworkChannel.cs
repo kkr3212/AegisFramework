@@ -141,5 +141,25 @@ namespace Aegis.Network
             Acceptor.Close();
             SessionManager.Release();
         }
+
+
+        /// <summary>
+        /// 클라이언트의 연결요청을 받을 수 있도록 Listener를 오픈합니다.
+        /// </summary>
+        /// <param name="ipAddress">접속요청 받을 Ip Address</param>
+        /// <param name="portNo">접속요청 받을 PortNo</param>
+        public void OpenListener(String ipAddress, Int32 portNo)
+        {
+            Acceptor.Listen(ipAddress, portNo);
+        }
+
+
+        /// <summary>
+        /// Listener를 종료합니다.
+        /// </summary>
+        public void CloseListener()
+        {
+            Acceptor.Close();
+        }
     }
 }

@@ -25,9 +25,9 @@ namespace Aegis.Network
         public AwaitableSessionMethod AwaitableMethod { get; private set; }
 
 
-        public event EventHandler_Send OnSend;
-        public event EventHandler_Receive OnReceive;
-        public event EventHandler_IsValidPacket PacketValidator;
+        public event EventHandler_Send NetworkEvent_Sent;
+        public event EventHandler_Receive NetworkEvent_Received;
+        public EventHandler_IsValidPacket PacketValidator;
 
 
 
@@ -162,8 +162,8 @@ namespace Aegis.Network
                             _receivedBuffer.Read(packetSize);
                             _dispatchBuffer.ResetReadIndex();
 
-                            if (OnReceive != null)
-                                OnReceive(this, _dispatchBuffer);
+                            if (NetworkEvent_Received != null)
+                                NetworkEvent_Received(this, _dispatchBuffer);
                         }
                         catch (Exception e)
                         {
@@ -216,8 +216,8 @@ namespace Aegis.Network
                         saea = _queueSaeaSend.Dequeue();
 
                     saea.SetBuffer(buffer, offset, size);
-                    if (Socket.SendAsync(saea) == false && OnSend != null)
-                        OnSend(this, saea.BytesTransferred);
+                    if (Socket.SendAsync(saea) == false && NetworkEvent_Sent != null)
+                        NetworkEvent_Sent(this, saea.BytesTransferred);
                 }
             }
             catch (SocketException)
@@ -255,8 +255,8 @@ namespace Aegis.Network
                         saea = _queueSaeaSend.Dequeue();
 
                     saea.SetBuffer(buffer.Buffer, 0, buffer.WrittenBytes);
-                    if (Socket.SendAsync(saea) == false && OnSend != null)
-                        OnSend(this, saea.BytesTransferred);
+                    if (Socket.SendAsync(saea) == false && NetworkEvent_Sent != null)
+                        NetworkEvent_Sent(this, saea.BytesTransferred);
                 }
             }
             catch (SocketException)
@@ -273,10 +273,10 @@ namespace Aegis.Network
         {
             try
             {
-                if (OnSend != null)
+                if (NetworkEvent_Sent != null)
                 {
                     Int32 transBytes = saea.BytesTransferred;
-                    OnSend(this, transBytes);
+                    NetworkEvent_Sent(this, transBytes);
                 }
             }
             catch (SocketException)

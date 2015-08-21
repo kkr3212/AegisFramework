@@ -33,11 +33,12 @@ namespace Aegis.Network
 
         internal void Listen(String ipAddress, Int32 portNo)
         {
-            if (_listenSocket != null)
-                throw new AegisException(ResultCode.AcceptorIsRunning, "Acceptor is already running.");
-
             try
             {
+                if (_listenSocket != null)
+                    throw new AegisException(ResultCode.AcceptorIsRunning, "Acceptor is already running.");
+
+
                 if (ipAddress.Length == 0)
                     _listenEndPoint = new IPEndPoint(IPAddress.Any, portNo);
                 else
@@ -50,6 +51,10 @@ namespace Aegis.Network
 
                 Logger.Write(LogType.Info, 1, "Listening on {0}, {1}", _listenEndPoint.Address, _listenEndPoint.Port);
                 _listenSocket.AcceptAsync(_eventAccept);
+            }
+            catch (AegisException)
+            {
+                throw;
             }
             catch (Exception e)
             {

@@ -74,9 +74,9 @@ namespace Aegis.Network
         public Boolean IsConnected { get { return (Socket == null ? false : Socket.Connected); } }
 
 
-        public event EventHandler_Accept OnAccept;
-        public event EventHandler_Connect OnConnect;
-        public event EventHandler_Close OnClose;
+        public event EventHandler_Accept NetworkEvent_Accepted;
+        public event EventHandler_Connect NetworkEvent_Connected;
+        public event EventHandler_Close NetworkEvent_Closed;
 
 
 
@@ -110,8 +110,8 @@ namespace Aegis.Network
 
                 lock (this)
                 {
-                    if (OnAccept != null)
-                        OnAccept(this);
+                    if (NetworkEvent_Accepted != null)
+                        NetworkEvent_Accepted(this);
 
                     WaitForReceive();
                 }
@@ -170,8 +170,8 @@ namespace Aegis.Network
                         if (SessionManager != null)
                             SessionManager.ActivateSession(this);
 
-                        if (OnConnect != null)
-                            OnConnect(this, true);
+                        if (NetworkEvent_Connected != null)
+                            NetworkEvent_Connected(this, true);
 
                         WaitForReceive();
                     }
@@ -180,8 +180,8 @@ namespace Aegis.Network
                         Socket.Close();
                         Socket = null;
 
-                        if (OnConnect != null)
-                            OnConnect(this, false);
+                        if (NetworkEvent_Connected != null)
+                            NetworkEvent_Connected(this, false);
                     }
                 }
             }
@@ -206,14 +206,11 @@ namespace Aegis.Network
                     if (Socket == null)
                         return;
 
-                    if (OnClose != null)
-                        OnClose(this);
-
-                    //if (Socket.Connected == true)
-                        //Socket.Shutdown(SocketShutdown.Both);
-
                     Socket.Close();
                     Socket = null;
+
+                    if (NetworkEvent_Closed != null)
+                        NetworkEvent_Closed(this);
                 }
             }
             catch (Exception e)

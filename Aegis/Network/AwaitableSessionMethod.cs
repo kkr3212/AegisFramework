@@ -29,8 +29,8 @@ namespace Aegis.Network
         internal AwaitableSessionMethod(SessionBase session)
         {
             _session = session;
-            _session.OnConnect += OnEvent_Connect;
-            _session.OnClose += OnEvent_Close;
+            _session.NetworkEvent_Connected += OnEvent_Connect;
+            _session.NetworkEvent_Closed += OnEvent_Close;
         }
 
 

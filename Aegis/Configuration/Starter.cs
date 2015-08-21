@@ -67,10 +67,19 @@ namespace Aegis.Configuration
             foreach (ConfigNetworkChannel config in _listNetworkConfig)
             {
                 NetworkChannel channel = NetworkChannel.CreateChannel(config.NetworkChannelName);
-                channel.StartNetwork(
-                    delegate { return GenerateSession(config.SessionClassName, config.ReceiveBufferSize); }
-                    , config.InitSessionPoolCount, config.MaxSessionPoolCount
-                    , config.ListenIpAddress, config.ListenPortNo);
+                if (config.ListenIpAddress.Length == 0 || config.ListenPortNo == 0)
+                {
+                    channel.StartNetwork(
+                        delegate { return GenerateSession(config.SessionClassName, config.ReceiveBufferSize); }
+                        , config.InitSessionPoolCount, config.MaxSessionPoolCount);
+                }
+                else
+                {
+                    channel.StartNetwork(
+                        delegate { return GenerateSession(config.SessionClassName, config.ReceiveBufferSize); }
+                        , config.InitSessionPoolCount, config.MaxSessionPoolCount
+                        , config.ListenIpAddress, config.ListenPortNo);
+                }
             }
         }
 
@@ -79,7 +88,8 @@ namespace Aegis.Configuration
         /// 지정된 NetworkChannel만을 생성하고 네트워킹을 시작합니다.
         /// </summary>
         /// <param name="networkChannelName">시작할 NetworkChannel 이름</param>
-        public static void StartNetwork(String networkChannelName)
+        /// <returns>해당 NetworkChannel 객체</returns>
+        public static NetworkChannel StartNetwork(String networkChannelName)
         {
             ConfigNetworkChannel config = _listNetworkConfig.Find(v => v.NetworkChannelName == networkChannelName);
             if (config == null)
@@ -87,10 +97,21 @@ namespace Aegis.Configuration
 
 
             NetworkChannel channel = NetworkChannel.CreateChannel(config.NetworkChannelName);
-            channel.StartNetwork(
-                delegate { return GenerateSession(config.SessionClassName, config.ReceiveBufferSize); }
-                , config.InitSessionPoolCount, config.MaxSessionPoolCount
-                , config.ListenIpAddress, config.ListenPortNo);
+            if (config.ListenIpAddress.Length == 0 || config.ListenPortNo == 0)
+            {
+                channel.StartNetwork(
+                    delegate { return GenerateSession(config.SessionClassName, config.ReceiveBufferSize); }
+                    , config.InitSessionPoolCount, config.MaxSessionPoolCount);
+            }
+            else
+            {
+                channel.StartNetwork(
+                    delegate { return GenerateSession(config.SessionClassName, config.ReceiveBufferSize); }
+                    , config.InitSessionPoolCount, config.MaxSessionPoolCount
+                    , config.ListenIpAddress, config.ListenPortNo);
+            }
+
+            return channel;
         }
 
 
@@ -110,11 +131,14 @@ namespace Aegis.Configuration
         /// 지정된 NetworkChannel만 중지합니다.
         /// </summary>
         /// <param name="networkChannelName">중지할 NetworkChannel 이름</param>
-        public static void StopNetwork(String networkChannelName)
+        /// <returns>해당 NetworkChannel 객체</returns>
+        public static NetworkChannel StopNetwork(String networkChannelName)
         {
             NetworkChannel channel = NetworkChannel.Channels.Find(v => v.Name == networkChannelName);
             if (channel != null)
                 channel.StopNetwork();
+
+            return channel;
         }
 
 

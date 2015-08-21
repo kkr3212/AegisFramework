@@ -23,9 +23,9 @@ namespace EchoServer.Logic
         public ClientSession()
             : base(1024 * 1024)
         {
-            base.OnAccept += OnEvent_Accept;
-            base.OnClose += OnEvent_Close;
-            base.OnReceive += OnEvent_Receive;
+            base.NetworkEvent_Accepted += OnAcceptd;
+            base.NetworkEvent_Closed += OnClosed;
+            base.NetworkEvent_Received += OnReceived;
             base.PacketValidator += IsValidPacket;
         }
 
@@ -44,7 +44,7 @@ namespace EchoServer.Logic
         }
 
 
-        private void OnEvent_Accept(SessionBase session)
+        private void OnAcceptd(SessionBase session)
         {
             Logger.Write(LogType.Info, 2, "[{0}] Accepted", SessionId);
 
@@ -55,13 +55,13 @@ namespace EchoServer.Logic
         }
 
 
-        private void OnEvent_Close(SessionBase session)
+        private void OnClosed(SessionBase session)
         {
             Logger.Write(LogType.Info, 2, "[{0}] Closed", SessionId);
         }
 
 
-        private void OnEvent_Receive(SessionBase session, StreamBuffer buffer)
+        private void OnReceived(SessionBase session, StreamBuffer buffer)
         {
             Counter_ReceiveCount.Add(1);
             Counter_ReceiveBytes.Add(buffer.WrittenBytes);

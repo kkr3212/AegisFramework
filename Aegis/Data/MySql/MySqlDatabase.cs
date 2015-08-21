@@ -13,7 +13,7 @@ using Aegis.Network;
 namespace Aegis.Data.MySql
 {
     [DebuggerDisplay("Name={DBName}, Host={IpAddress},{PortNo}")]
-    public sealed class MySqlDatabase
+    public sealed class MySqlDatabase : IDisposable
     {
         private Queue<DBConnector> _poolDBC = new Queue<DBConnector>();
         private RWLock _lock = new RWLock();
@@ -27,8 +27,6 @@ namespace Aegis.Data.MySql
         public String CharSet { get; private set; }
         public String IpAddress { get; private set; }
         public Int32 PortNo { get; private set; }
-        public Int32 ShardKeyStart { get; private set; }
-        public Int32 ShardKeyEnd { get; private set; }
         public Boolean UseConnectionPool { get; set; }
         internal WorkerThread WorkerQueue { get; set; }
 
@@ -36,20 +34,33 @@ namespace Aegis.Data.MySql
 
 
 
-        public void Initialize(String ipAddress, Int32 portNo, String charSet, String dbName, String userId, String userPwd
-            , Int32 shardKeyStart, Int32 shardKeyEnd)
+        public MySqlDatabase()
+        {
+        }
+
+
+
+
+
+        public MySqlDatabase(String ipAddress, Int32 portNo, String charSet, String dbName, String userId, String userPwd)
+        {
+            Initialize(ipAddress, portNo, charSet, dbName, userId, userPwd);
+        }
+
+
+
+
+
+        public void Initialize(String ipAddress, Int32 portNo, String charSet, String dbName, String userId, String userPwd)
         {
             using (_lock.WriterLock)
             {
-                //  초기화
                 IpAddress = ipAddress;
                 PortNo = portNo;
                 CharSet = charSet;
                 DBName = dbName;
                 UserId = userId;
                 UserPwd = userPwd;
-                ShardKeyStart = shardKeyStart;
-                ShardKeyEnd = shardKeyEnd;
 
                 _dbcCount = 0;
                 UseConnectionPool = true;
@@ -78,6 +89,12 @@ namespace Aegis.Data.MySql
 
                 WorkerQueue.Stop();
             }
+        }
+
+
+        public void Dispose()
+        {
+            Release();
         }
 
 
@@ -143,15 +160,6 @@ namespace Aegis.Data.MySql
                     _poolDBC.Enqueue(dbc);
                 }
             }
-        }
-
-
-        public Boolean IsInShardKey(Int32 shardKey)
-        {
-            if (shardKey >= ShardKeyStart && shardKey <= ShardKeyEnd)
-                return true;
-
-            return false;
         }
 
 

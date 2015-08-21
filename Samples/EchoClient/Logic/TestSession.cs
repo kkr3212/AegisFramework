@@ -22,9 +22,9 @@ namespace EchoClient.Logic
         public TestSession()
             : base(4096)
         {
-            base.OnConnect += OnEvent_Connect;
-            base.OnClose += OnEvent_Close;
-            base.OnReceive += OnEvent_Receive;
+            base.NetworkEvent_Connected += OnConnected;
+            base.NetworkEvent_Closed += OnClosed;
+            base.NetworkEvent_Received += OnReceived;
             base.PacketValidator += IsValidPacket;
 
 
@@ -46,7 +46,7 @@ namespace EchoClient.Logic
         }
 
 
-        private void OnEvent_Connect(SessionBase session, Boolean connected)
+        private void OnConnected(SessionBase session, Boolean connected)
         {
             if (connected == true)
                 Logger.Write(LogType.Info, 2, "[{0}] Connected", SessionId);
@@ -55,13 +55,13 @@ namespace EchoClient.Logic
         }
 
 
-        private void OnEvent_Close(SessionBase session)
+        private void OnClosed(SessionBase session)
         {
             Logger.Write(LogType.Info, 2, "[{0}] Closed", SessionId);
         }
 
 
-        private void OnEvent_Receive(SessionBase session, StreamBuffer buffer)
+        private void OnReceived(SessionBase session, StreamBuffer buffer)
         {
             Packet packet = new Packet(buffer);
             AegisTask.Run(() =>
