@@ -48,9 +48,15 @@ namespace Aegis.Network
     /// <param name="session">이벤트가 발생된 SessionBase 객체</param>
     /// <param name="buffer">수신된 데이터가 담긴 버퍼</param>
     /// <param name="packetSize">유효한 패킷의 크기</param>
-    /// <returns></returns>
+    /// <returns>true를 반환할 경우 유효한 패킷으로 처리합니다.</returns>
     public delegate Boolean EventHandler_IsValidPacket(SessionBase session, StreamBuffer buffer, out Int32 packetSize);
-
+    /// <summary>
+    /// 수신된 패킷이 지정된 Dispatch를 수행하기에 적합한지 여부를 확인합니다.
+    /// 적합할 경우 true를 반환해야 하며, 이 때에는 NetworkEvent_Received에 지정된 핸들러가 호출되지 않습니다.
+    /// </summary>
+    /// <param name="buffer">수신된 데이터가 담긴 버퍼</param>
+    /// <returns>true를 반환할 경우 지정된 핸들러가 호출됩니다.</returns>
+    public delegate Boolean PacketDeterminator(StreamBuffer buffer);
 
 
 

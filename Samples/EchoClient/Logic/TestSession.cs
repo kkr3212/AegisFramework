@@ -11,7 +11,7 @@ using Aegis.Network;
 
 namespace EchoClient.Logic
 {
-    public class TestSession : AsyncEventSession
+    public class TestSession : AsyncResultSession
     {
         private byte[] _tempBuffer = new byte[1024 * 1024];
 
@@ -88,7 +88,16 @@ namespace EchoClient.Logic
         {
             Packet reqPacket = new Packet(0x02);
             reqPacket.Write(_tempBuffer, 0, FormMain.BufferSize);
-            SendPacket(reqPacket);
+
+
+            SendPacket(reqPacket,
+                        (buffer) => { return Packet.GetPID(buffer.Buffer) == 0x03; },
+                        (session, buffer) =>
+                        {
+                            packet.SkipHeader();
+                            OnEcho_Res(new Packet(buffer));
+                        }
+                );
         }
     }
 }

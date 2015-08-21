@@ -29,12 +29,12 @@ namespace Aegis.Network
         internal AwaitableSessionMethod(SessionBase session)
         {
             _session = session;
-            _session.NetworkEvent_Connected += OnEvent_Connect;
-            _session.NetworkEvent_Closed += OnEvent_Close;
+            _session.NetworkEvent_Connected += OnConnected;
+            _session.NetworkEvent_Closed += OnClosed;
         }
 
 
-        private void OnEvent_Connect(SessionBase session, bool connected)
+        private void OnConnected(SessionBase session, bool connected)
         {
             if (_tcsConnect != null)
             {
@@ -44,7 +44,7 @@ namespace Aegis.Network
         }
 
 
-        private void OnEvent_Close(SessionBase session)
+        private void OnClosed(SessionBase session)
         {
             lock (_listTCS)
             {
@@ -63,7 +63,7 @@ namespace Aegis.Network
         }
 
 
-        public async Task<Boolean> ConnectAndWait(String ipAddress, Int32 portNo)
+        public async Task<Boolean> Connect(String ipAddress, Int32 portNo)
         {
             Boolean ret = false;
 

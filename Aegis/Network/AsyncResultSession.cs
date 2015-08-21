@@ -21,6 +21,7 @@ namespace Aegis.Network
         private StreamBuffer _receivedBuffer, _dispatchBuffer;
 
         public AwaitableSessionMethod AwaitableMethod { get; private set; }
+        private ResponseAlternator _alternator;
 
 
         public event EventHandler_Send NetworkEvent_Sent;
@@ -40,6 +41,7 @@ namespace Aegis.Network
             _dispatchBuffer = new StreamBuffer();
 
             AwaitableMethod = new AwaitableSessionMethod(this);
+            _alternator = new ResponseAlternator(this);
         }
 
 
@@ -53,6 +55,7 @@ namespace Aegis.Network
             _dispatchBuffer = new StreamBuffer();
 
             AwaitableMethod = new AwaitableSessionMethod(this);
+            _alternator = new ResponseAlternator(this);
         }
 
 
@@ -152,8 +155,12 @@ namespace Aegis.Network
                             _receivedBuffer.Read(packetSize);
                             _dispatchBuffer.ResetReadIndex();
 
-                            if (NetworkEvent_Received != null)
+
+                            if (_alternator.Dispatch(_dispatchBuffer) == false &&
+                                NetworkEvent_Received != null)
+                            {
                                 NetworkEvent_Received(this, _dispatchBuffer);
+                            }
                         }
                         catch (Exception e)
                         {
@@ -216,6 +223,37 @@ namespace Aegis.Network
             {
                 lock (this)
                 {
+                    if (Socket != null)
+                        Socket.BeginSend(buffer.Buffer, 0, buffer.WrittenBytes, SocketFlags.None, OnSocket_Send, null);
+                }
+            }
+            catch (SocketException)
+            {
+            }
+            catch (Exception e)
+            {
+                Logger.Write(LogType.Err, 1, e.ToString());
+            }
+        }
+
+
+        /// <summary>
+        /// 패킷을 전송하고, 특정 패킷이 수신될 경우 dispatcher에 지정된 핸들러를 실행합니다.
+        /// 이 기능은 AwaitableMethod보다는 빠르지만, 동시에 많이 호출될 경우 성능이 저하될 수 있습니다.
+        /// </summary>
+        /// <param name="buffer">전송할 데이터가 담긴 StreamBuffer</param>
+        /// <param name="determinator">dispatcher에 지정된 핸들러를 호출할 것인지 여부를 판단하는 함수를 지정합니다.</param>
+        /// <param name="dispatcher">실행될 함수를 지정합니다.</param>
+        public void SendPacket(StreamBuffer buffer, PacketDeterminator determinator, EventHandler_Receive dispatcher)
+        {
+            if (determinator == null || dispatcher == null)
+                throw new AegisException(ResultCode.InvalidArgument, "The argument determinator and dispatcher cannot be null.");
+
+            try
+            {
+                lock (this)
+                {
+                    _alternator.Add(determinator, dispatcher);
                     if (Socket != null)
                         Socket.BeginSend(buffer.Buffer, 0, buffer.WrittenBytes, SocketFlags.None, OnSocket_Send, null);
                 }

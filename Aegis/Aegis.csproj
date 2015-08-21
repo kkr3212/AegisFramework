@@ -78,6 +78,7 @@
     <Compile Include="Data\MySql\MySqlDatabase.cs" />
     <Compile Include="IntervalCounter.cs" />
     <Compile Include="Network\AwaitableSessionMethod.cs" />
+    <Compile Include="Network\ResponseReactor.cs" />
     <Compile Include="Network\SessionBase.cs" />
     <Compile Include="Network\AsyncEventSession.cs" />
     <Compile Include="RandomizerT.cs" />

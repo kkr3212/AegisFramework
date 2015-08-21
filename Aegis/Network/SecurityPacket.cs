@@ -156,6 +156,21 @@ namespace Aegis.Network
 
 
         /// <summary>
+        /// 지정된 버퍼에서 PID 값을 가져옵니다.
+        /// buffer는 패킷 헤더가 온전히 포함된 데이터로 지정되어야 합니다.
+        /// </summary>
+        /// <param name="buffer">패킷 데이터가 담긴 버퍼</param>
+        /// <returns>패킷의 PID를 반환합니다.</returns>
+        public static UInt16 GetPID(byte[] buffer)
+        {
+            if (buffer.Length < 4)
+                return 0;
+
+            return BitConverter.ToUInt16(buffer, 2);
+        }
+
+
+        /// <summary>
         /// 패킷 버퍼를 초기화합니다. 기존의 PID 값은 유지됩니다.
         /// </summary>
         public override void Clear()

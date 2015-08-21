@@ -177,6 +177,19 @@ namespace Aegis
         }
 
 
+        public void Write(StreamBuffer source)
+        {
+            Int32 srcSize = source.WrittenBytes;
+            if (WrittenBytes + srcSize > BufferSize)
+                Resize(BufferSize + srcSize);
+
+            Array.Copy(source.Buffer, 0, Buffer, WrittenBytes, srcSize);
+            WrittenBytes += srcSize;
+
+            OnWritten();
+        }
+
+
         public void Write(Byte[] source, Int32 index)
         {
             if (index >= source.Length)
@@ -203,6 +216,38 @@ namespace Aegis
                 Resize(BufferSize + copyBytes);
 
             Array.Copy(source, index, Buffer, WrittenBytes, copyBytes);
+            WrittenBytes += copyBytes;
+
+            OnWritten();
+        }
+
+
+        public void Write(StreamBuffer source, Int32 index)
+        {
+            if (index >= source.WrittenBytes)
+                throw new AegisException(ResultCode.InvalidArgument, "The argument index(={0}) is larger then source size(={1}).", index, source.WrittenBytes);
+
+            Int32 copyBytes = source.WrittenBytes - index;
+            if (WrittenBytes + copyBytes > BufferSize)
+                Resize(BufferSize + copyBytes);
+
+            Array.Copy(source.Buffer, index, Buffer, WrittenBytes, copyBytes);
+            WrittenBytes += copyBytes;
+
+            OnWritten();
+        }
+
+
+        public void Write(StreamBuffer source, Int32 index, Int32 size)
+        {
+            if (index + size > source.WrittenBytes)
+                throw new AegisException(ResultCode.InvalidArgument, "The source buffer is small then requested.");
+
+            Int32 copyBytes = size;
+            if (WrittenBytes + copyBytes > BufferSize)
+                Resize(BufferSize + copyBytes);
+
+            Array.Copy(source.Buffer, index, Buffer, WrittenBytes, copyBytes);
             WrittenBytes += copyBytes;
 
             OnWritten();
