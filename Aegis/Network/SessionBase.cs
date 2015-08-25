@@ -77,7 +77,7 @@ namespace Aegis.Network
         /// <summary>
         /// 원격지의 호스트와 통신이 가능한 상태인지 여부를 확인합니다.
         /// </summary>
-        public Boolean IsConnected { get { return (Socket == null ? false : Socket.Connected); } }
+        public Boolean Connected { get { return (Socket == null ? false : Socket.Connected); } }
 
 
         public event EventHandler_Accept NetworkEvent_Accepted;

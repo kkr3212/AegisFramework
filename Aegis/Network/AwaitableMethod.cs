@@ -10,7 +10,7 @@ using System.Reflection;
 
 namespace Aegis.Network
 {
-    public class AwaitableSessionMethod
+    public class AwaitableMethod
     {
         private struct TCSData
         {
@@ -26,7 +26,7 @@ namespace Aegis.Network
 
 
 
-        internal AwaitableSessionMethod(SessionBase session)
+        internal AwaitableMethod(SessionBase session)
         {
             _session = session;
             _session.NetworkEvent_Connected += OnConnected;

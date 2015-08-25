@@ -20,7 +20,7 @@ namespace Aegis.Network
     {
         private StreamBuffer _receivedBuffer, _dispatchBuffer;
 
-        public AwaitableSessionMethod AwaitableMethod { get; private set; }
+        public AwaitableMethod AwaitableMethod { get; private set; }
         private ResponseAlternator _alternator;
 
 
@@ -40,7 +40,7 @@ namespace Aegis.Network
             _receivedBuffer = new StreamBuffer();
             _dispatchBuffer = new StreamBuffer();
 
-            AwaitableMethod = new AwaitableSessionMethod(this);
+            AwaitableMethod = new AwaitableMethod(this);
             _alternator = new ResponseAlternator(this);
         }
 
@@ -54,7 +54,7 @@ namespace Aegis.Network
             _receivedBuffer = new StreamBuffer(recvBufferSize);
             _dispatchBuffer = new StreamBuffer();
 
-            AwaitableMethod = new AwaitableSessionMethod(this);
+            AwaitableMethod = new AwaitableMethod(this);
             _alternator = new ResponseAlternator(this);
         }
 

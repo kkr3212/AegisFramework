@@ -22,7 +22,7 @@ namespace Aegis.Network
         private SocketAsyncEventArgs _saeaRecv;
         private Queue<SocketAsyncEventArgs> _queueSaeaSend = new Queue<SocketAsyncEventArgs>();
 
-        public AwaitableSessionMethod AwaitableMethod { get; private set; }
+        public AwaitableMethod AwaitableMethod { get; private set; }
         private ResponseAlternator _alternator;
 
 
@@ -45,7 +45,7 @@ namespace Aegis.Network
             _saeaRecv = new SocketAsyncEventArgs();
             _saeaRecv.Completed += OnComplete_Receive;
 
-            AwaitableMethod = new AwaitableSessionMethod(this);
+            AwaitableMethod = new AwaitableMethod(this);
             _alternator = new ResponseAlternator(this);
         }
 
@@ -62,7 +62,7 @@ namespace Aegis.Network
             _saeaRecv = new SocketAsyncEventArgs();
             _saeaRecv.Completed += OnComplete_Receive;
 
-            AwaitableMethod = new AwaitableSessionMethod(this);
+            AwaitableMethod = new AwaitableMethod(this);
             _alternator = new ResponseAlternator(this);
         }
 

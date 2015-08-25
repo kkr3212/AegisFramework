@@ -121,8 +121,8 @@ namespace Aegis.Data.MySql
                     Int32 cnt = _poolDBC.Count();
                     while (cnt-- > 0)
                     {
-                        DBConnector dbc = GetDBC();
-                        dbc.Ping();
+                        using (DBConnector dbc = GetDBC())
+                            dbc.Ping();
                     }
                 }
                 catch (TaskCanceledException)
@@ -168,24 +168,16 @@ namespace Aegis.Data.MySql
             DBConnector dbc;
 
 
-            try
+            using (_lock.WriterLock)
             {
-                using (_lock.WriterLock)
+                if (_poolDBC.Count() == 0)
                 {
-                    if (_poolDBC.Count() == 0)
-                    {
-                        dbc = new DBConnector(this);
-                        dbc.Connect(IpAddress, PortNo, CharSet, DBName, UserId, UserPwd);
-                        ++_dbcCount;
-                    }
-                    else
-                        dbc = _poolDBC.Dequeue();
+                    dbc = new DBConnector(this);
+                    dbc.Connect(IpAddress, PortNo, CharSet, DBName, UserId, UserPwd);
+                    ++_dbcCount;
                 }
-            }
-            catch (Exception e)
-            {
-                Logger.Write(LogType.Err, 1, e.Message);
-                throw e;
+                else
+                    dbc = _poolDBC.Dequeue();
             }
 
             return dbc;

@@ -32,7 +32,7 @@ namespace EchoServer.Logic
 
             try
             {
-                Logger.Write(LogType.Info, 2, "EchoServer (Build {0})", Aegis.Definitions.BuildNo);
+                Logger.Write(LogType.Info, 2, "EchoServer (Aegis {0})", Aegis.Version.ToString());
 
                 _networkClient.StartNetwork(delegate { return new ClientSession(); }, 1, 100, "192.168.0.100", 10100);
             }

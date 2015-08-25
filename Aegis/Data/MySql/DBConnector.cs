@@ -50,11 +50,11 @@ namespace Aegis.Data.MySql
             _qps.Reset();
 
 
-            using (DBCommand cmd = DBCommand.NewCommand(this))
+            /*using (DBCommand cmd = DBCommand.NewCommand(MySql))
             {
-                cmd.Query("set transaction isolation level read uncommitted;");
-                cmd.Query("set session wait_timeout=604800;set session interactive_timeout=604800;");
-            }
+                cmd.QueryNoReader("set transaction isolation level read uncommitted;");
+                cmd.QueryNoReader("set session wait_timeout=604800;set session interactive_timeout=604800;");
+            }*/
         }
 
 

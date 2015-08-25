@@ -138,7 +138,7 @@
             이 Session에서 현재 사용중인 Socket 객체입니다. null일 경우, 네트워킹이 활성화되지 않은 상태입니다.
             </summary>
         </member>
-        <member name="P:Aegis.Network.SessionBase.IsConnected">
+        <member name="P:Aegis.Network.SessionBase.Connected">
             <summary>
             원격지의 호스트와 통신이 가능한 상태인지 여부를 확인합니다.
             </summary>
@@ -190,7 +190,28 @@
             <param name="determinator">dispatcher에 지정된 핸들러를 호출할 것인지 여부를 판단하는 함수를 지정합니다.</param>
             <param name="dispatcher">실행될 함수를 지정합니다.</param>
         </member>
-        <member name="M:Aegis.Randomizer`1.NextItem(System.Int16,System.Boolean)">
+        <member name="M:Aegis.Randomizer`1.Next">
+            <summary>
+            지정되지 않은 범위 내에서 임의 값을 반환합니다.
+            </summary>
+            <returns>임의 값</returns>
+        </member>
+        <member name="M:Aegis.Randomizer`1.Next(System.Int32,System.Int32)">
+            <summary>
+            min 값 이상 부터 max 값 미만 사이의 임의 값을 반환합니다.
+            </summary>
+            <param name="min">최소값</param>
+            <param name="max">최대값</param>
+            <returns>임의 값</returns>
+        </member>
+        <member name="M:Aegis.Randomizer`1.AddItem(System.Int32,`0)">
+            <summary>
+            NextItem 함수에서 확률적으로 가져올 수 있는 객체를 추가합니다.
+            </summary>
+            <param name="prob">확률값</param>
+            <param name="item">추가할 객체</param>
+        </member>
+        <member name="M:Aegis.Randomizer`1.NextItem(System.Int32,System.Boolean)">
             <summary>
             저장된 Object 중 임의의 하나를 선택하여 반환합니다.
             fraction 값이 저장된 Object의 prob 합 보다 작거나 같으면 저장된 Object 중 하나를 반환합니다.
@@ -198,7 +219,7 @@
             </summary>
             <param name="fraction">확률값</param>
             <param name="eraseItem">true인 경우, 저장된 Object 중 하나를 반환할 때 해당 Object가 다음에 선택되지 않도록 목록에서 삭제합니다.</param>
-            <returns>임의로 선택된 Object, 선택되지 않았을 경우 null을 반환합니다.</returns>
+            <returns>임의로 선택된 객체 혹은 선택되지 않았을 경우 null을 반환합니다.</returns>
         </member>
         <member name="M:Aegis.Randomizer`1.NextNumber">
             <summary>
@@ -259,7 +280,7 @@
             <summary>
             값의 변경내역 가운데서 최대/최소값을 확인할 수 있습니다.
             </summary>
-            <typeparam name="T"></typeparam>
+            <typeparam name="T">값의 형식</typeparam>
         </member>
         <member name="M:Aegis.Network.NetworkChannel.CreateChannel(System.String)">
             <summary>
@@ -559,6 +580,20 @@
             <summary>
             현재 활성화 상태인 Session 목록을 가져옵니다.
             </summary>
+        </member>
+        <member name="M:Aegis.Randomizer.Next">
+            <summary>
+            지정되지 않은 범위 내에서 임의 값을 반환합니다.
+            </summary>
+            <returns>임의 값</returns>
+        </member>
+        <member name="M:Aegis.Randomizer.Next(System.Int32,System.Int32)">
+            <summary>
+            min 값 이상 부터 max 값 미만 사이의 임의 값을 반환합니다.
+            </summary>
+            <param name="min">최소값</param>
+            <param name="max">최대값</param>
+            <returns>임의 값</returns>
         </member>
         <member name="M:Aegis.Randomizer.NextNumber">
             <summary>

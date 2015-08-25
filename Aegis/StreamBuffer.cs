@@ -254,6 +254,29 @@ namespace Aegis
         }
 
 
+        public void WriteWithParams(params Object[] args)
+        {
+            foreach (var v in args)
+            {
+                switch (v.GetType().Name)
+                {
+                    case "Bool": PutBoolean((bool)v); break;
+                    case "Byte": PutByte((Byte)v); break;
+                    case "SByte": PutSByte((SByte)v); break;
+                    case "Char": PutChar((Char)v); break;
+                    case "Int16": PutInt16((Int16)v); break;
+                    case "UInt16": PutUInt16((UInt16)v); break;
+                    case "Int32": PutInt32((Int32)v); break;
+                    case "UInt32": PutUInt32((UInt32)v); break;
+                    case "Int64": PutInt64((Int64)v); break;
+                    case "UInt64": PutUInt64((UInt64)v); break;
+                    case "String": PutStringAsUtf16((String)v); break;
+                    case "Double": PutDouble((Double)v); break;
+                }
+            }
+        }
+
+
         public void Overwrite(Byte source, Int32 writeIndex)
         {
             Int32 copyBytes = sizeof(Byte);
@@ -551,7 +574,7 @@ namespace Aegis
 
         public UInt16 GetUInt16(Int32 readIndex)
         {
-            if (readIndex > WrittenBytes)
+            if (readIndex + sizeof(UInt16) > WrittenBytes)
                 throw new AegisException(ResultCode.NotEnoughBuffer, "No more readable buffer.");
 
             return BitConverter.ToUInt16(Buffer, readIndex);
@@ -560,7 +583,7 @@ namespace Aegis
 
         public Int32 GetInt32(Int32 readIndex)
         {
-            if (readIndex > WrittenBytes)
+            if (readIndex + sizeof(Int32) > WrittenBytes)
                 throw new AegisException(ResultCode.NotEnoughBuffer, "No more readable buffer.");
 
             return BitConverter.ToInt32(Buffer, readIndex);
@@ -569,7 +592,7 @@ namespace Aegis
 
         public UInt32 GetUInt32(Int32 readIndex)
         {
-            if (readIndex > WrittenBytes)
+            if (readIndex + sizeof(UInt32) > WrittenBytes)
                 throw new AegisException(ResultCode.NotEnoughBuffer, "No more readable buffer.");
 
             return BitConverter.ToUInt32(Buffer, readIndex);
@@ -578,7 +601,7 @@ namespace Aegis
 
         public Int64 GetInt64(Int32 readIndex)
         {
-            if (readIndex > WrittenBytes)
+            if (readIndex + sizeof(Int64) > WrittenBytes)
                 throw new AegisException(ResultCode.NotEnoughBuffer, "No more readable buffer.");
 
             return BitConverter.ToInt64(Buffer, readIndex);
@@ -587,7 +610,7 @@ namespace Aegis
 
         public UInt64 GetUInt64(Int32 readIndex)
         {
-            if (readIndex > WrittenBytes)
+            if (readIndex + sizeof(UInt64) > WrittenBytes)
                 throw new AegisException(ResultCode.NotEnoughBuffer, "No more readable buffer.");
 
             return BitConverter.ToUInt64(Buffer, readIndex);
@@ -596,7 +619,7 @@ namespace Aegis
 
         public Double GetDouble(Int32 readIndex)
         {
-            if (readIndex > WrittenBytes)
+            if (readIndex + sizeof(Double) > WrittenBytes)
                 throw new AegisException(ResultCode.NotEnoughBuffer, "No more readable buffer.");
 
             return BitConverter.ToDouble(Buffer, readIndex);
@@ -640,6 +663,126 @@ namespace Aegis
 
             //  String으로 변환할 때 Null terminate를 포함시켜서는 안된다.
             return Encoding.Unicode.GetString(Buffer, readIndex, stringBytes);
+        }
+
+
+        public static Boolean GetBoolean(StreamBuffer source, Int32 readIndex)
+        {
+            if (readIndex + sizeof(byte) > source.WrittenBytes)
+                throw new AegisException(ResultCode.NotEnoughBuffer, "No more readable buffer.");
+
+            return (source.Buffer[readIndex] == 1);
+        }
+
+
+        public static SByte GetSByte(StreamBuffer source, Int32 readIndex)
+        {
+            if (readIndex + sizeof(SByte) > source.WrittenBytes)
+                throw new AegisException(ResultCode.NotEnoughBuffer, "No more readable buffer.");
+
+            return (SByte)source.Buffer[readIndex];
+        }
+
+
+        public static Byte GetByte(StreamBuffer source, Int32 readIndex)
+        {
+            if (readIndex + sizeof(Byte) > source.WrittenBytes)
+                throw new AegisException(ResultCode.NotEnoughBuffer, "No more readable buffer.");
+
+            return source.Buffer[readIndex];
+        }
+
+
+        public static Char GetChar(StreamBuffer source, Int32 readIndex)
+        {
+            if (readIndex + sizeof(Char) > source.WrittenBytes)
+                throw new AegisException(ResultCode.NotEnoughBuffer, "No more readable buffer.");
+
+            return BitConverter.ToChar(source.Buffer, readIndex);
+        }
+
+
+        public static Int16 GetInt16(StreamBuffer source, Int32 readIndex)
+        {
+            if (readIndex + sizeof(Int16) > source.WrittenBytes)
+                throw new AegisException(ResultCode.NotEnoughBuffer, "No more readable buffer.");
+
+            return BitConverter.ToInt16(source.Buffer, readIndex);
+        }
+
+
+        public static UInt16 GetUInt16(StreamBuffer source, Int32 readIndex)
+        {
+            if (readIndex + sizeof(UInt16) > source.WrittenBytes)
+                throw new AegisException(ResultCode.NotEnoughBuffer, "No more readable buffer.");
+
+            return BitConverter.ToUInt16(source.Buffer, readIndex);
+        }
+
+
+        public static Int32 GetInt32(StreamBuffer source, Int32 readIndex)
+        {
+            if (readIndex + sizeof(Int32) > source.WrittenBytes)
+                throw new AegisException(ResultCode.NotEnoughBuffer, "No more readable buffer.");
+
+            return BitConverter.ToInt32(source.Buffer, readIndex);
+        }
+
+
+        public static UInt32 GetUInt32(StreamBuffer source, Int32 readIndex)
+        {
+            if (readIndex + sizeof(UInt32) > source.WrittenBytes)
+                throw new AegisException(ResultCode.NotEnoughBuffer, "No more readable buffer.");
+
+            return BitConverter.ToUInt32(source.Buffer, readIndex);
+        }
+
+
+        public static Int64 GetInt64(StreamBuffer source, Int32 readIndex)
+        {
+            if (readIndex + sizeof(Int64) > source.WrittenBytes)
+                throw new AegisException(ResultCode.NotEnoughBuffer, "No more readable buffer.");
+
+            return BitConverter.ToInt64(source.Buffer, readIndex);
+        }
+
+
+        public static UInt64 GetUInt64(StreamBuffer source, Int32 readIndex)
+        {
+            if (readIndex + sizeof(UInt64) > source.WrittenBytes)
+                throw new AegisException(ResultCode.NotEnoughBuffer, "No more readable buffer.");
+
+            return BitConverter.ToUInt64(source.Buffer, readIndex);
+        }
+
+
+        public static Double GetDouble(StreamBuffer source, Int32 readIndex)
+        {
+            if (readIndex + sizeof(Double) > source.WrittenBytes)
+                throw new AegisException(ResultCode.NotEnoughBuffer, "No more readable buffer.");
+
+            return BitConverter.ToDouble(source.Buffer, readIndex);
+        }
+
+
+        public static String GetStringFromUtf16(StreamBuffer source, Int32 readIndex)
+        {
+            Int32 i, stringBytes = 0;
+            for (i = readIndex; i < source.WrittenBytes; i += 2)
+            {
+                if (source.Buffer[i + 0] == 0
+                    && source.Buffer[i + 1] == 0)
+                    break;
+
+                stringBytes += 2;
+
+                if (readIndex + stringBytes + 2 > source.WrittenBytes)
+                    throw new AegisException(ResultCode.NotEnoughBuffer, "No more readable buffer.");
+            }
+
+
+            //  String으로 변환할 때 Null terminate를 포함시켜서는 안된다.
+            return Encoding.Unicode.GetString(source.Buffer, readIndex, stringBytes);
         }
 
 

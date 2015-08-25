@@ -15,6 +15,8 @@ namespace Aegis
 
 
 
+
+
         public Randomizer()
         {
             _rand = new Random();
@@ -30,6 +32,28 @@ namespace Aegis
         public void Seed(Int32 seed)
         {
             _rand = new Random(seed);
+        }
+
+
+        /// <summary>
+        /// 지정되지 않은 범위 내에서 임의 값을 반환합니다.
+        /// </summary>
+        /// <returns>임의 값</returns>
+        public Int32 Next()
+        {
+            return _rand.Next();
+        }
+
+
+        /// <summary>
+        /// min 값 이상 부터 max 값 미만 사이의 임의 값을 반환합니다.
+        /// </summary>
+        /// <param name="min">최소값</param>
+        /// <param name="max">최대값</param>
+        /// <returns>임의 값</returns>
+        public Int32 Next(Int32 min, Int32 max)
+        {
+            return _rand.Next(min, max);
         }
 
 

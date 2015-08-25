@@ -31,7 +31,7 @@ namespace EchoClient.Logic
 
             try
             {
-                Logger.Write(LogType.Info, 2, "EchoClient (Build {0})", Aegis.Definitions.BuildNo);
+                Logger.Write(LogType.Info, 2, "EchoClient (Aegis {0})", Aegis.Version.ToString());
 
 
                 _networkServer.StartNetwork(delegate { return new TestSession(); }, clientCount, clientCount);

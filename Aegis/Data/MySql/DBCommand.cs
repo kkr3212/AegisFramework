@@ -12,9 +12,9 @@ namespace Aegis.Data.MySql
     public sealed class DBCommand : IDisposable
     {
         private MySqlDatabase _mysql;
-        private DBConnector _connector;
         private MySqlCommand _cmd;
         private DataReader _reader;
+        private DBConnector _dbConnector;
         private Boolean _isAsync;
         private List<Tuple<String, Object>> _prepareBindings;
 
@@ -47,19 +47,6 @@ namespace Aegis.Data.MySql
         {
             DBCommand obj = ObjectPool<DBCommand>.Pop();
             obj._mysql = mysql;
-            obj._connector = null;
-            obj._isAsync = false;
-            obj.CommandTimeout = timeoutSec;
-
-            return obj;
-        }
-
-
-        internal static DBCommand NewCommand(DBConnector conn, Int32 timeoutSec = 60)
-        {
-            DBCommand obj = ObjectPool<DBCommand>.Pop();
-            obj._mysql = null;
-            obj._connector = conn;
             obj._isAsync = false;
             obj.CommandTimeout = timeoutSec;
 
@@ -77,7 +64,6 @@ namespace Aegis.Data.MySql
             EndQuery();
 
             _mysql = null;
-            _connector = null;
             _cmd.Connection = null;
             ObjectPool<DBCommand>.Push(this);
         }
@@ -87,29 +73,16 @@ namespace Aegis.Data.MySql
         {
             try
             {
-                if (_connector != null)
+                using (DBConnector dbc = _mysql.GetDBC())
                 {
-                    _cmd.Connection = _connector.Connection;
+                    _cmd.Connection = dbc.Connection;
                     _cmd.CommandText = CommandText.ToString();
 
                     Prepare();
                     _cmd.ExecuteNonQuery();
+                    _cmd.Connection = null;
 
-                    _connector.IncreaseQueryCount();
-                }
-                else
-                {
-                    using (DBConnector dbc = _mysql.GetDBC())
-                    {
-                        _cmd.Connection = dbc.Connection;
-                        _cmd.CommandText = CommandText.ToString();
-
-                        Prepare();
-                        _cmd.ExecuteNonQuery();
-                        _cmd.Connection = null;
-
-                        dbc.IncreaseQueryCount();
-                    }
+                    dbc.IncreaseQueryCount();
                 }
             }
             catch (Exception e)
@@ -124,37 +97,19 @@ namespace Aegis.Data.MySql
         {
             try
             {
-                if (_connector != null)
-                {
-                    if (_reader != null)
-                        _reader.Close();
+                _dbConnector = _mysql.GetDBC();
+                if (_reader != null)
+                    _reader.Close();
 
-                    _cmd.Connection = _connector.Connection;
-                    _cmd.CommandText = CommandText.ToString();
+                _cmd.Connection = _dbConnector.Connection;
+                _cmd.CommandText = CommandText.ToString();
 
-                    Prepare();
+                Prepare();
 
-                    _reader = new DataReader(_cmd.ExecuteReader());
-                    _connector.IncreaseQueryCount();
-                }
-                else
-                {
-                    using (DBConnector dbc = _mysql.GetDBC())
-                    {
-                        if (_reader != null)
-                            _reader.Close();
+                _reader = new DataReader(_cmd.ExecuteReader());
+                _cmd.Connection = null;
 
-                        _cmd.Connection = dbc.Connection;
-                        _cmd.CommandText = CommandText.ToString();
-
-                        Prepare();
-
-                        _reader = new DataReader(_cmd.ExecuteReader());
-                        _cmd.Connection = null;
-
-                        dbc.IncreaseQueryCount();
-                    }
-                }
+                _dbConnector.IncreaseQueryCount();
             }
             catch (Exception e)
             {
@@ -171,7 +126,7 @@ namespace Aegis.Data.MySql
             CommandText.Clear();
             CommandText.AppendFormat(query, args);
 
-            Query();
+            QueryNoReader();
         }
 
 
@@ -220,9 +175,15 @@ namespace Aegis.Data.MySql
             _cmd.Parameters.Clear();
             _cmd.Connection = null;
 
+            if (_dbConnector != null)
+            {
+                _dbConnector.Dispose();
+                _dbConnector = null;
+            }
+
             if (_reader != null)
             {
-                _reader.Close();
+                _reader.Dispose();
                 _reader = null;
             }
         }

@@ -91,7 +91,7 @@ namespace Aegis.Network
         public Int32 SeqNo
         {
             get { return base.GetInt32(4); }
-            private set { base.OverwriteInt32(4, value); }
+            set { base.OverwriteInt32(4, value); }
         }
 
 
