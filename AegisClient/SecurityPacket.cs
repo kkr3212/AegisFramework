@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 using System.IO;
 using System.Security.Cryptography;
 using System.Runtime.InteropServices;
@@ -89,7 +88,7 @@ namespace Aegis.Client
         /// <summary>
         /// 패킷의 Sequence number를 가져옵니다.
         /// </summary>
-        public Int32 SeqNo
+        public int SeqNo
         {
             get { return base.GetInt32(4); }
             private set { base.OverwriteInt32(4, value); }
@@ -150,7 +149,7 @@ namespace Aegis.Client
         /// <param name="source">복사할 데이터가 담긴 byte 배열</param>
         /// <param name="startIndex">source에서 복사할 시작 위치</param>
         /// <param name="size">복사할 크기(Byte)</param>
-        public SecurityPacket(byte[] source, Int32 startIndex, Int32 size)
+        public SecurityPacket(byte[] source, int startIndex, int size)
         {
             Write(source, startIndex, size);
         }
@@ -193,7 +192,7 @@ namespace Aegis.Client
         /// <param name="source">저장할 데이터</param>
         /// <param name="index">저장할 데이터의 시작위치</param>
         /// <param name="size">저장할 데이터 크기(Byte)</param>
-        public void Clear(byte[] source, Int32 index, Int32 size)
+        public void Clear(byte[] source, int index, int size)
         {
             if (size < 4)
                 throw new AegisException("The source size must be at lest 4 bytes.");
@@ -228,10 +227,10 @@ namespace Aegis.Client
         }
 
 
-        private static UInt32 GetCRC32(byte[] data, Int32 startOffset, Int32 length)
+        private static UInt32 GetCRC32(byte[] data, int startOffset, int length)
         {
             UInt32 crc = 0xffffffff;
-            for (Int32 i = 0; i < length; i++)
+            for (int i = 0; i < length; i++)
                 crc = _crcTable[(crc ^ data[startOffset + i]) & 0xff] ^ (crc >> 8);
 
             return crc ^ 0xffffffff;
@@ -242,7 +241,7 @@ namespace Aegis.Client
         {
             //  Padding
             {
-                Int32 paddingByte, blockSizeInByte = 16;
+                int paddingByte, blockSizeInByte = 16;
 
 
                 //  (Size - 2) = Encrypt data size
@@ -292,7 +291,7 @@ namespace Aegis.Client
 
 
 
-        public Boolean Decrypt(String iv, String key)
+        public bool Decrypt(String iv, String key)
         {
             UInt16 packetSize = Size;
 
@@ -300,7 +299,7 @@ namespace Aegis.Client
             //  Block Size가 일치하지 않으면 복호화를 할 수 없다.
             if ((packetSize - 2) % 16 != 0)
             {
-                Debug.WriteLine("BlockSize is not match(packetsize={0}).", packetSize);
+                Debug.WriteLine(String.Format("BlockSize is not match(packetsize={0}).", packetSize));
                 return false;
             }
 

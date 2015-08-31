@@ -16,7 +16,7 @@ namespace Aegis.Network
     /// <summary>
     /// Begin 계열의 Socket API를 사용하여 원격지의 호스트와 네트워킹을 할 수 있는 기능을 제공합니다.
     /// </summary>
-    public class AsyncResultSession : SessionBase
+    public class AsyncResultSession : NetworkSession
     {
         private StreamBuffer _receivedBuffer, _dispatchBuffer;
 
@@ -247,7 +247,7 @@ namespace Aegis.Network
         public void SendPacket(StreamBuffer buffer, PacketDeterminator determinator, EventHandler_Receive dispatcher)
         {
             if (determinator == null || dispatcher == null)
-                throw new AegisException(ResultCode.InvalidArgument, "The argument determinator and dispatcher cannot be null.");
+                throw new AegisException(AegisResult.InvalidArgument, "The argument determinator and dispatcher cannot be null.");
 
             try
             {

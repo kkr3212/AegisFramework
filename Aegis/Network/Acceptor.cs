@@ -36,7 +36,7 @@ namespace Aegis.Network
             try
             {
                 if (_listenSocket != null)
-                    throw new AegisException(ResultCode.AcceptorIsRunning, "Acceptor is already running.");
+                    throw new AegisException(AegisResult.AcceptorIsRunning, "Acceptor is already running.");
 
 
                 if (ipAddress.Length == 0)
@@ -58,7 +58,7 @@ namespace Aegis.Network
             }
             catch (Exception e)
             {
-                throw new AegisException(ResultCode.NetworkError, e, e.Message);
+                throw new AegisException(AegisResult.NetworkError, e, e.Message);
             }
         }
 
@@ -86,7 +86,7 @@ namespace Aegis.Network
                     return;
 
 
-                SessionBase acceptedSession = _networkChannel.SessionManager.AttackSocket(acceptedSocket);
+                NetworkSession acceptedSession = _networkChannel.SessionManager.AttackSocket(acceptedSocket);
                 if (acceptedSession == null)
                 {
                     acceptedSocket.Close();

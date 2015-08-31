@@ -193,7 +193,7 @@ namespace Aegis
         public void Write(Byte[] source, Int32 index)
         {
             if (index >= source.Length)
-                throw new AegisException(ResultCode.InvalidArgument, "The argument index(={0}) is larger then source size(={1}).", index, source.Length);
+                throw new AegisException(AegisResult.InvalidArgument, "The argument index(={0}) is larger then source size(={1}).", index, source.Length);
 
             Int32 copyBytes = source.Length - index;
             if (WrittenBytes + copyBytes > BufferSize)
@@ -209,7 +209,7 @@ namespace Aegis
         public void Write(Byte[] source, Int32 index, Int32 size)
         {
             if (index + size > source.Length)
-                throw new AegisException(ResultCode.InvalidArgument, "The source buffer is small then requested.");
+                throw new AegisException(AegisResult.InvalidArgument, "The source buffer is small then requested.");
 
             Int32 copyBytes = size;
             if (WrittenBytes + copyBytes > BufferSize)
@@ -225,7 +225,7 @@ namespace Aegis
         public void Write(StreamBuffer source, Int32 index)
         {
             if (index >= source.WrittenBytes)
-                throw new AegisException(ResultCode.InvalidArgument, "The argument index(={0}) is larger then source size(={1}).", index, source.WrittenBytes);
+                throw new AegisException(AegisResult.InvalidArgument, "The argument index(={0}) is larger then source size(={1}).", index, source.WrittenBytes);
 
             Int32 copyBytes = source.WrittenBytes - index;
             if (WrittenBytes + copyBytes > BufferSize)
@@ -241,7 +241,7 @@ namespace Aegis
         public void Write(StreamBuffer source, Int32 index, Int32 size)
         {
             if (index + size > source.WrittenBytes)
-                throw new AegisException(ResultCode.InvalidArgument, "The source buffer is small then requested.");
+                throw new AegisException(AegisResult.InvalidArgument, "The source buffer is small then requested.");
 
             Int32 copyBytes = size;
             if (WrittenBytes + copyBytes > BufferSize)
@@ -296,7 +296,7 @@ namespace Aegis
         public void Overwrite(Byte[] source, Int32 index, Int32 size, Int32 writeIndex)
         {
             if (index + size > source.Length)
-                throw new AegisException(ResultCode.InvalidArgument, "The source buffer is small then requested.");
+                throw new AegisException(AegisResult.InvalidArgument, "The source buffer is small then requested.");
 
             Int32 copyBytes = size;
             if (writeIndex + copyBytes >= BufferSize)
@@ -315,7 +315,7 @@ namespace Aegis
         public void Read(Int32 size)
         {
             if (ReadBytes + size > WrittenBytes)
-                throw new AegisException(ResultCode.NotEnoughBuffer, "No more readable buffer.");
+                throw new AegisException(AegisResult.NotEnoughBuffer, "No more readable buffer.");
 
             ReadBytes += size;
         }
@@ -324,7 +324,7 @@ namespace Aegis
         public Byte Read()
         {
             if (ReadBytes + sizeof(Byte) > WrittenBytes)
-                throw new AegisException(ResultCode.NotEnoughBuffer, "No more readable buffer.");
+                throw new AegisException(AegisResult.NotEnoughBuffer, "No more readable buffer.");
 
             var value = Buffer[ReadBytes];
             ReadBytes += sizeof(Byte);
@@ -336,7 +336,7 @@ namespace Aegis
         public void Read(Byte[] destination)
         {
             if (destination.Length < BufferSize)
-                throw new AegisException(ResultCode.NotEnoughBuffer, "Destination buffer size too small.");
+                throw new AegisException(AegisResult.NotEnoughBuffer, "Destination buffer size too small.");
 
             Array.Copy(Buffer, destination, BufferSize);
             ReadBytes = BufferSize;
@@ -346,7 +346,7 @@ namespace Aegis
         public void Read(Byte[] destination, Int32 index)
         {
             if (destination.Length - index < BufferSize)
-                throw new AegisException(ResultCode.NotEnoughBuffer, "Destination buffer size too small.");
+                throw new AegisException(AegisResult.NotEnoughBuffer, "Destination buffer size too small.");
 
             Array.Copy(Buffer, 0, destination, index, BufferSize);
             ReadBytes += BufferSize;
@@ -356,7 +356,7 @@ namespace Aegis
         public void Read(Byte[] destination, Int32 index, Int32 readIndex, Int32 size)
         {
             if (destination.Length - index < size)
-                throw new AegisException(ResultCode.NotEnoughBuffer, "Destination buffer size too small.");
+                throw new AegisException(AegisResult.NotEnoughBuffer, "Destination buffer size too small.");
 
             Array.Copy(Buffer, readIndex, destination, index, size);
         }
@@ -365,7 +365,7 @@ namespace Aegis
         public Boolean GetBoolean()
         {
             if (ReadBytes + sizeof(Boolean) > WrittenBytes)
-                throw new AegisException(ResultCode.NotEnoughBuffer, "No more readable buffer.");
+                throw new AegisException(AegisResult.NotEnoughBuffer, "No more readable buffer.");
 
             var val = Buffer[ReadBytes];
             ReadBytes += sizeof(Boolean);
@@ -376,7 +376,7 @@ namespace Aegis
         public SByte GetSByte()
         {
             if (ReadBytes + sizeof(SByte) > WrittenBytes)
-                throw new AegisException(ResultCode.NotEnoughBuffer, "No more readable buffer.");
+                throw new AegisException(AegisResult.NotEnoughBuffer, "No more readable buffer.");
 
             var val = (SByte)Buffer[ReadBytes];
             ReadBytes += sizeof(SByte);
@@ -387,7 +387,7 @@ namespace Aegis
         public Byte GetByte()
         {
             if (ReadBytes + sizeof(Byte) > WrittenBytes)
-                throw new AegisException(ResultCode.NotEnoughBuffer, "No more readable buffer.");
+                throw new AegisException(AegisResult.NotEnoughBuffer, "No more readable buffer.");
 
             var val = (Byte)Buffer[ReadBytes];
             ReadBytes += sizeof(Byte);
@@ -398,7 +398,7 @@ namespace Aegis
         public char GetChar()
         {
             if (ReadBytes + sizeof(char) > WrittenBytes)
-                throw new AegisException(ResultCode.NotEnoughBuffer, "No more readable buffer.");
+                throw new AegisException(AegisResult.NotEnoughBuffer, "No more readable buffer.");
 
             var val = BitConverter.ToChar(Buffer, ReadBytes);
             ReadBytes += sizeof(char);
@@ -409,7 +409,7 @@ namespace Aegis
         public Int16 GetInt16()
         {
             if (ReadBytes + sizeof(Int16) > WrittenBytes)
-                throw new AegisException(ResultCode.NotEnoughBuffer, "No more readable buffer.");
+                throw new AegisException(AegisResult.NotEnoughBuffer, "No more readable buffer.");
 
             var val = BitConverter.ToInt16(Buffer, ReadBytes);
             ReadBytes += sizeof(Int16);
@@ -420,7 +420,7 @@ namespace Aegis
         public UInt16 GetUInt16()
         {
             if (ReadBytes + sizeof(UInt16) > WrittenBytes)
-                throw new AegisException(ResultCode.NotEnoughBuffer, "No more readable buffer.");
+                throw new AegisException(AegisResult.NotEnoughBuffer, "No more readable buffer.");
 
             var val = BitConverter.ToUInt16(Buffer, ReadBytes);
             ReadBytes += sizeof(UInt16);
@@ -431,7 +431,7 @@ namespace Aegis
         public Int32 GetInt32()
         {
             if (ReadBytes + sizeof(Int32) > WrittenBytes)
-                throw new AegisException(ResultCode.NotEnoughBuffer, "No more readable buffer.");
+                throw new AegisException(AegisResult.NotEnoughBuffer, "No more readable buffer.");
 
             var val = BitConverter.ToInt32(Buffer, ReadBytes);
             ReadBytes += sizeof(Int32);
@@ -442,7 +442,7 @@ namespace Aegis
         public UInt32 GetUInt32()
         {
             if (ReadBytes + sizeof(UInt32) > WrittenBytes)
-                throw new AegisException(ResultCode.NotEnoughBuffer, "No more readable buffer.");
+                throw new AegisException(AegisResult.NotEnoughBuffer, "No more readable buffer.");
 
             var val = BitConverter.ToUInt32(Buffer, ReadBytes);
             ReadBytes += sizeof(UInt32);
@@ -453,7 +453,7 @@ namespace Aegis
         public Int64 GetInt64()
         {
             if (ReadBytes + sizeof(Int64) > WrittenBytes)
-                throw new AegisException(ResultCode.NotEnoughBuffer, "No more readable buffer.");
+                throw new AegisException(AegisResult.NotEnoughBuffer, "No more readable buffer.");
 
             var val = BitConverter.ToInt64(Buffer, ReadBytes);
             ReadBytes += sizeof(Int64);
@@ -464,7 +464,7 @@ namespace Aegis
         public UInt64 GetUInt64()
         {
             if (ReadBytes + sizeof(UInt64) > WrittenBytes)
-                throw new AegisException(ResultCode.NotEnoughBuffer, "No more readable buffer.");
+                throw new AegisException(AegisResult.NotEnoughBuffer, "No more readable buffer.");
 
             var val = BitConverter.ToUInt64(Buffer, ReadBytes);
             ReadBytes += sizeof(UInt64);
@@ -475,7 +475,7 @@ namespace Aegis
         public Double GetDouble()
         {
             if (ReadBytes + sizeof(UInt64) > WrittenBytes)
-                throw new AegisException(ResultCode.NotEnoughBuffer, "No more readable buffer.");
+                throw new AegisException(AegisResult.NotEnoughBuffer, "No more readable buffer.");
 
             var val = BitConverter.ToDouble(Buffer, ReadBytes);
             ReadBytes += sizeof(Double);
@@ -493,7 +493,7 @@ namespace Aegis
 
                 ++stringBytes;
                 if (i > WrittenBytes)
-                    throw new AegisException(ResultCode.NotEnoughBuffer, "No more readable buffer.");
+                    throw new AegisException(AegisResult.NotEnoughBuffer, "No more readable buffer.");
             }
 
 
@@ -516,7 +516,7 @@ namespace Aegis
                 stringBytes += 2;
 
                 if (ReadBytes + stringBytes + 2 > WrittenBytes)
-                    throw new AegisException(ResultCode.NotEnoughBuffer, "No more readable buffer.");
+                    throw new AegisException(AegisResult.NotEnoughBuffer, "No more readable buffer.");
             }
 
 
@@ -530,7 +530,7 @@ namespace Aegis
         public Boolean GetBoolean(Int32 readIndex)
         {
             if (readIndex + sizeof(byte) > WrittenBytes)
-                throw new AegisException(ResultCode.NotEnoughBuffer, "No more readable buffer.");
+                throw new AegisException(AegisResult.NotEnoughBuffer, "No more readable buffer.");
 
             return (Buffer[readIndex] == 1);
         }
@@ -539,7 +539,7 @@ namespace Aegis
         public SByte GetSByte(Int32 readIndex)
         {
             if (readIndex + sizeof(SByte) > WrittenBytes)
-                throw new AegisException(ResultCode.NotEnoughBuffer, "No more readable buffer.");
+                throw new AegisException(AegisResult.NotEnoughBuffer, "No more readable buffer.");
 
             return (SByte)Buffer[readIndex];
         }
@@ -548,7 +548,7 @@ namespace Aegis
         public Byte GetByte(Int32 readIndex)
         {
             if (readIndex + sizeof(Byte) > WrittenBytes)
-                throw new AegisException(ResultCode.NotEnoughBuffer, "No more readable buffer.");
+                throw new AegisException(AegisResult.NotEnoughBuffer, "No more readable buffer.");
 
             return Buffer[readIndex];
         }
@@ -557,7 +557,7 @@ namespace Aegis
         public Char GetChar(Int32 readIndex)
         {
             if (readIndex + sizeof(Char) > WrittenBytes)
-                throw new AegisException(ResultCode.NotEnoughBuffer, "No more readable buffer.");
+                throw new AegisException(AegisResult.NotEnoughBuffer, "No more readable buffer.");
 
             return BitConverter.ToChar(Buffer, readIndex);
         }
@@ -566,7 +566,7 @@ namespace Aegis
         public Int16 GetInt16(Int32 readIndex)
         {
             if (readIndex + sizeof(Int16) > WrittenBytes)
-                throw new AegisException(ResultCode.NotEnoughBuffer, "No more readable buffer.");
+                throw new AegisException(AegisResult.NotEnoughBuffer, "No more readable buffer.");
 
             return BitConverter.ToInt16(Buffer, readIndex);
         }
@@ -575,7 +575,7 @@ namespace Aegis
         public UInt16 GetUInt16(Int32 readIndex)
         {
             if (readIndex + sizeof(UInt16) > WrittenBytes)
-                throw new AegisException(ResultCode.NotEnoughBuffer, "No more readable buffer.");
+                throw new AegisException(AegisResult.NotEnoughBuffer, "No more readable buffer.");
 
             return BitConverter.ToUInt16(Buffer, readIndex);
         }
@@ -584,7 +584,7 @@ namespace Aegis
         public Int32 GetInt32(Int32 readIndex)
         {
             if (readIndex + sizeof(Int32) > WrittenBytes)
-                throw new AegisException(ResultCode.NotEnoughBuffer, "No more readable buffer.");
+                throw new AegisException(AegisResult.NotEnoughBuffer, "No more readable buffer.");
 
             return BitConverter.ToInt32(Buffer, readIndex);
         }
@@ -593,7 +593,7 @@ namespace Aegis
         public UInt32 GetUInt32(Int32 readIndex)
         {
             if (readIndex + sizeof(UInt32) > WrittenBytes)
-                throw new AegisException(ResultCode.NotEnoughBuffer, "No more readable buffer.");
+                throw new AegisException(AegisResult.NotEnoughBuffer, "No more readable buffer.");
 
             return BitConverter.ToUInt32(Buffer, readIndex);
         }
@@ -602,7 +602,7 @@ namespace Aegis
         public Int64 GetInt64(Int32 readIndex)
         {
             if (readIndex + sizeof(Int64) > WrittenBytes)
-                throw new AegisException(ResultCode.NotEnoughBuffer, "No more readable buffer.");
+                throw new AegisException(AegisResult.NotEnoughBuffer, "No more readable buffer.");
 
             return BitConverter.ToInt64(Buffer, readIndex);
         }
@@ -611,7 +611,7 @@ namespace Aegis
         public UInt64 GetUInt64(Int32 readIndex)
         {
             if (readIndex + sizeof(UInt64) > WrittenBytes)
-                throw new AegisException(ResultCode.NotEnoughBuffer, "No more readable buffer.");
+                throw new AegisException(AegisResult.NotEnoughBuffer, "No more readable buffer.");
 
             return BitConverter.ToUInt64(Buffer, readIndex);
         }
@@ -620,7 +620,7 @@ namespace Aegis
         public Double GetDouble(Int32 readIndex)
         {
             if (readIndex + sizeof(Double) > WrittenBytes)
-                throw new AegisException(ResultCode.NotEnoughBuffer, "No more readable buffer.");
+                throw new AegisException(AegisResult.NotEnoughBuffer, "No more readable buffer.");
 
             return BitConverter.ToDouble(Buffer, readIndex);
         }
@@ -636,7 +636,7 @@ namespace Aegis
 
                 ++stringBytes;
                 if (i > WrittenBytes)
-                    throw new AegisException(ResultCode.NotEnoughBuffer, "No more readable buffer.");
+                    throw new AegisException(AegisResult.NotEnoughBuffer, "No more readable buffer.");
             }
 
 
@@ -657,7 +657,7 @@ namespace Aegis
                 stringBytes += 2;
 
                 if (readIndex + stringBytes + 2 > WrittenBytes)
-                    throw new AegisException(ResultCode.NotEnoughBuffer, "No more readable buffer.");
+                    throw new AegisException(AegisResult.NotEnoughBuffer, "No more readable buffer.");
             }
 
 
@@ -669,7 +669,7 @@ namespace Aegis
         public static Boolean GetBoolean(StreamBuffer source, Int32 readIndex)
         {
             if (readIndex + sizeof(byte) > source.WrittenBytes)
-                throw new AegisException(ResultCode.NotEnoughBuffer, "No more readable buffer.");
+                throw new AegisException(AegisResult.NotEnoughBuffer, "No more readable buffer.");
 
             return (source.Buffer[readIndex] == 1);
         }
@@ -678,7 +678,7 @@ namespace Aegis
         public static SByte GetSByte(StreamBuffer source, Int32 readIndex)
         {
             if (readIndex + sizeof(SByte) > source.WrittenBytes)
-                throw new AegisException(ResultCode.NotEnoughBuffer, "No more readable buffer.");
+                throw new AegisException(AegisResult.NotEnoughBuffer, "No more readable buffer.");
 
             return (SByte)source.Buffer[readIndex];
         }
@@ -687,7 +687,7 @@ namespace Aegis
         public static Byte GetByte(StreamBuffer source, Int32 readIndex)
         {
             if (readIndex + sizeof(Byte) > source.WrittenBytes)
-                throw new AegisException(ResultCode.NotEnoughBuffer, "No more readable buffer.");
+                throw new AegisException(AegisResult.NotEnoughBuffer, "No more readable buffer.");
 
             return source.Buffer[readIndex];
         }
@@ -696,7 +696,7 @@ namespace Aegis
         public static Char GetChar(StreamBuffer source, Int32 readIndex)
         {
             if (readIndex + sizeof(Char) > source.WrittenBytes)
-                throw new AegisException(ResultCode.NotEnoughBuffer, "No more readable buffer.");
+                throw new AegisException(AegisResult.NotEnoughBuffer, "No more readable buffer.");
 
             return BitConverter.ToChar(source.Buffer, readIndex);
         }
@@ -705,7 +705,7 @@ namespace Aegis
         public static Int16 GetInt16(StreamBuffer source, Int32 readIndex)
         {
             if (readIndex + sizeof(Int16) > source.WrittenBytes)
-                throw new AegisException(ResultCode.NotEnoughBuffer, "No more readable buffer.");
+                throw new AegisException(AegisResult.NotEnoughBuffer, "No more readable buffer.");
 
             return BitConverter.ToInt16(source.Buffer, readIndex);
         }
@@ -714,7 +714,7 @@ namespace Aegis
         public static UInt16 GetUInt16(StreamBuffer source, Int32 readIndex)
         {
             if (readIndex + sizeof(UInt16) > source.WrittenBytes)
-                throw new AegisException(ResultCode.NotEnoughBuffer, "No more readable buffer.");
+                throw new AegisException(AegisResult.NotEnoughBuffer, "No more readable buffer.");
 
             return BitConverter.ToUInt16(source.Buffer, readIndex);
         }
@@ -723,7 +723,7 @@ namespace Aegis
         public static Int32 GetInt32(StreamBuffer source, Int32 readIndex)
         {
             if (readIndex + sizeof(Int32) > source.WrittenBytes)
-                throw new AegisException(ResultCode.NotEnoughBuffer, "No more readable buffer.");
+                throw new AegisException(AegisResult.NotEnoughBuffer, "No more readable buffer.");
 
             return BitConverter.ToInt32(source.Buffer, readIndex);
         }
@@ -732,7 +732,7 @@ namespace Aegis
         public static UInt32 GetUInt32(StreamBuffer source, Int32 readIndex)
         {
             if (readIndex + sizeof(UInt32) > source.WrittenBytes)
-                throw new AegisException(ResultCode.NotEnoughBuffer, "No more readable buffer.");
+                throw new AegisException(AegisResult.NotEnoughBuffer, "No more readable buffer.");
 
             return BitConverter.ToUInt32(source.Buffer, readIndex);
         }
@@ -741,7 +741,7 @@ namespace Aegis
         public static Int64 GetInt64(StreamBuffer source, Int32 readIndex)
         {
             if (readIndex + sizeof(Int64) > source.WrittenBytes)
-                throw new AegisException(ResultCode.NotEnoughBuffer, "No more readable buffer.");
+                throw new AegisException(AegisResult.NotEnoughBuffer, "No more readable buffer.");
 
             return BitConverter.ToInt64(source.Buffer, readIndex);
         }
@@ -750,7 +750,7 @@ namespace Aegis
         public static UInt64 GetUInt64(StreamBuffer source, Int32 readIndex)
         {
             if (readIndex + sizeof(UInt64) > source.WrittenBytes)
-                throw new AegisException(ResultCode.NotEnoughBuffer, "No more readable buffer.");
+                throw new AegisException(AegisResult.NotEnoughBuffer, "No more readable buffer.");
 
             return BitConverter.ToUInt64(source.Buffer, readIndex);
         }
@@ -759,7 +759,7 @@ namespace Aegis
         public static Double GetDouble(StreamBuffer source, Int32 readIndex)
         {
             if (readIndex + sizeof(Double) > source.WrittenBytes)
-                throw new AegisException(ResultCode.NotEnoughBuffer, "No more readable buffer.");
+                throw new AegisException(AegisResult.NotEnoughBuffer, "No more readable buffer.");
 
             return BitConverter.ToDouble(source.Buffer, readIndex);
         }
@@ -777,7 +777,7 @@ namespace Aegis
                 stringBytes += 2;
 
                 if (readIndex + stringBytes + 2 > source.WrittenBytes)
-                    throw new AegisException(ResultCode.NotEnoughBuffer, "No more readable buffer.");
+                    throw new AegisException(AegisResult.NotEnoughBuffer, "No more readable buffer.");
             }
 
 

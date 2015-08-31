@@ -36,20 +36,20 @@
             // _tbLog
             // 
             this._tbLog.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this._tbLog.Location = new System.Drawing.Point(12, 70);
+            this._tbLog.Location = new System.Drawing.Point(10, 76);
             this._tbLog.MaxLength = 1048576;
             this._tbLog.Multiline = true;
             this._tbLog.Name = "_tbLog";
             this._tbLog.ReadOnly = true;
-            this._tbLog.Size = new System.Drawing.Size(503, 188);
+            this._tbLog.Size = new System.Drawing.Size(431, 204);
             this._tbLog.TabIndex = 76;
             this._tbLog.TabStop = false;
             // 
             // _btnStart
             // 
-            this._btnStart.Location = new System.Drawing.Point(12, 12);
+            this._btnStart.Location = new System.Drawing.Point(10, 13);
             this._btnStart.Name = "_btnStart";
-            this._btnStart.Size = new System.Drawing.Size(115, 52);
+            this._btnStart.Size = new System.Drawing.Size(99, 56);
             this._btnStart.TabIndex = 74;
             this._btnStart.Text = "Start";
             this._btnStart.UseVisualStyleBackColor = true;
@@ -57,9 +57,9 @@
             // 
             // _btnStop
             // 
-            this._btnStop.Location = new System.Drawing.Point(133, 12);
+            this._btnStop.Location = new System.Drawing.Point(114, 13);
             this._btnStop.Name = "_btnStop";
-            this._btnStop.Size = new System.Drawing.Size(115, 52);
+            this._btnStop.Size = new System.Drawing.Size(99, 56);
             this._btnStop.TabIndex = 75;
             this._btnStop.Text = "Stop";
             this._btnStop.UseVisualStyleBackColor = true;
@@ -67,13 +67,15 @@
             // 
             // FormMain
             // 
-            this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 12F);
+            this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(536, 278);
+            this.ClientSize = new System.Drawing.Size(459, 301);
             this.Controls.Add(this._tbLog);
             this.Controls.Add(this._btnStart);
             this.Controls.Add(this._btnStop);
+            this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
             this.Name = "FormMain";
+            this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
             this.Text = "EchoClient (AegisClient)";
             this.FormClosed += new System.Windows.Forms.FormClosedEventHandler(this.OnFormClosed);
             this.ResumeLayout(false);

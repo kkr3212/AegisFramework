@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading;
-using System.Threading.Tasks;
 using System.Net;
 using System.Net.Sockets;
 using System.Diagnostics;
@@ -19,7 +18,7 @@ namespace Aegis.Client
         private Socket _socket;
         private StreamBuffer _receivedBuffer;
 
-        public Boolean IsConnected { get { return (_socket == null ? false : _socket.Connected); } }
+        public bool IsConnected { get { return (_socket == null ? false : _socket.Connected); } }
 
 
 
@@ -32,7 +31,7 @@ namespace Aegis.Client
         }
 
 
-        public Boolean Connect(String ipAddress, Int32 portNo)
+        public bool Connect(String ipAddress, int portNo)
         {
             if (_socket != null)
                 throw new AegisException("This session has already been activated.");
@@ -80,7 +79,7 @@ namespace Aegis.Client
                 throw new AegisException("There is no remaining capacity of the receive buffer.");
 
             if (_socket != null && _socket.Connected)
-                _socket.BeginReceive(_receivedBuffer.Buffer, _receivedBuffer.WrittenBytes, _receivedBuffer.WritableSize, 0, OnSocket_Read, null);
+                _socket.BeginReceive(_receivedBuffer.Buffer, _receivedBuffer.WrittenBytes, _receivedBuffer.WritableSize, 0, new AsyncCallback(OnSocket_Read), null);
         }
 
 
@@ -89,7 +88,7 @@ namespace Aegis.Client
             try
             {
                 //  transBytes가 0이면 원격지 혹은 네트워크에 의해 연결이 끊긴 상태
-                Int32 transBytes = _socket.EndReceive(ar);
+                int transBytes = _socket.EndReceive(ar);
                 if (transBytes == 0)
                 {
                     _aegisClient.MQ.Add(MessageType.Disconnect, null, 0);
@@ -101,7 +100,7 @@ namespace Aegis.Client
                 while (_receivedBuffer.ReadableSize > 0)
                 {
                     //  패킷 하나가 정상적으로 수신되었는지 확인
-                    Int32 packetSize = 0;
+                    int packetSize = 0;
                     if (_aegisClient.IsValidPacket(_receivedBuffer, out packetSize) == false)
                         break;
 
@@ -141,7 +140,7 @@ namespace Aegis.Client
         }
 
 
-        public Boolean SendPacket(StreamBuffer source)
+        public bool SendPacket(StreamBuffer source)
         {
             try
             {

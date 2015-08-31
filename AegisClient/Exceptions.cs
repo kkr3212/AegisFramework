@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 
 
 
@@ -10,7 +9,7 @@ namespace Aegis.Client
 {
     public class AegisException : Exception
     {
-        public Int32 ResultCodeNo { get; private set; }
+        public int ResultCodeNo { get; private set; }
 
 
 

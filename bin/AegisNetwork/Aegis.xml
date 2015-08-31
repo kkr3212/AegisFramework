@@ -114,7 +114,7 @@
             <param name="buffer">수신된 데이터가 담긴 버퍼</param>
             <returns>true를 반환할 경우 지정된 핸들러가 호출됩니다.</returns>
         </member>
-        <member name="M:Aegis.Network.SessionBase.Connect(System.String,System.Int32)">
+        <member name="M:Aegis.Network.NetworkSession.Connect(System.String,System.Int32)">
             <summary>
             서버에 연결을 요청합니다. 연결요청의 결과는 OnConnect를 통해 전달됩니다.
             현재 이 Session이 비활성 상태인 경우에만 수행됩니다.
@@ -122,23 +122,23 @@
             <param name="ipAddress">접속할 서버의 Ip Address</param>
             <param name="portNo">접속할 서버의 PortNo</param>
         </member>
-        <member name="M:Aegis.Network.SessionBase.Close">
+        <member name="M:Aegis.Network.NetworkSession.Close">
             <summary>
             사용중인 리소스를 반환하고 소켓을 종료하여 네트워크 작업을 종료합니다.
             종료 처리가 진행되기 이전에 OnClose 함수가 호출됩니다.
             </summary>
         </member>
-        <member name="P:Aegis.Network.SessionBase.SessionId">
+        <member name="P:Aegis.Network.NetworkSession.SessionId">
             <summary>
             이 Session 객체의 고유번호입니다.
             </summary>
         </member>
-        <member name="P:Aegis.Network.SessionBase.Socket">
+        <member name="P:Aegis.Network.NetworkSession.Socket">
             <summary>
             이 Session에서 현재 사용중인 Socket 객체입니다. null일 경우, 네트워킹이 활성화되지 않은 상태입니다.
             </summary>
         </member>
-        <member name="P:Aegis.Network.SessionBase.Connected">
+        <member name="P:Aegis.Network.NetworkSession.Connected">
             <summary>
             원격지의 호스트와 통신이 가능한 상태인지 여부를 확인합니다.
             </summary>
@@ -396,6 +396,15 @@
             <param name="buffer">패킷 데이터가 담긴 버퍼</param>
             <returns>패킷의 PID를 반환합니다.</returns>
         </member>
+        <member name="M:Aegis.Network.Packet.IsValidPacket(Aegis.StreamBuffer,System.Int32@)">
+            <summary>
+            수신된 데이터가 유효한 패킷인지 여부를 확인합니다.
+            유효한 패킷으로 판단되면 packetSize에 이 패킷의 정확한 크기를 입력하고 true를 반환해야 합니다.
+            </summary>
+            <param name="buffer">수신된 데이터가 담긴 버퍼</param>
+            <param name="packetSize">유효한 패킷의 크기</param>
+            <returns>true를 반환하면 OnReceive를 통해 수신된 데이터가 전달됩니다.</returns>
+        </member>
         <member name="M:Aegis.Network.Packet.Clear">
             <summary>
             패킷 버퍼를 초기화합니다. 기존의 PID 값은 유지됩니다.
@@ -471,6 +480,15 @@
             </summary>
             <param name="buffer">패킷 데이터가 담긴 버퍼</param>
             <returns>패킷의 PID를 반환합니다.</returns>
+        </member>
+        <member name="M:Aegis.Network.SecurityPacket.IsValidPacket(Aegis.StreamBuffer,System.Int32@)">
+            <summary>
+            수신된 데이터가 유효한 패킷인지 여부를 확인합니다.
+            유효한 패킷으로 판단되면 packetSize에 이 패킷의 정확한 크기를 입력하고 true를 반환해야 합니다.
+            </summary>
+            <param name="buffer">수신된 데이터가 담긴 버퍼</param>
+            <param name="packetSize">유효한 패킷의 크기</param>
+            <returns>true를 반환하면 OnReceive를 통해 수신된 데이터가 전달됩니다.</returns>
         </member>
         <member name="M:Aegis.Network.SecurityPacket.Clear">
             <summary>

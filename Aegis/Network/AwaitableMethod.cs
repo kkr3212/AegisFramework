@@ -20,13 +20,13 @@ namespace Aegis.Network
         }
         private List<TCSData> _listTCS = new List<TCSData>();
         private TaskCompletionSource<Boolean> _tcsConnect;
-        private SessionBase _session;
+        private NetworkSession _session;
 
 
 
 
 
-        internal AwaitableMethod(SessionBase session)
+        internal AwaitableMethod(NetworkSession session)
         {
             _session = session;
             _session.NetworkEvent_Connected += OnConnected;
@@ -34,7 +34,7 @@ namespace Aegis.Network
         }
 
 
-        private void OnConnected(SessionBase session, bool connected)
+        private void OnConnected(NetworkSession session, bool connected)
         {
             if (_tcsConnect != null)
             {
@@ -44,7 +44,7 @@ namespace Aegis.Network
         }
 
 
-        private void OnClosed(SessionBase session)
+        private void OnClosed(NetworkSession session)
         {
             lock (_listTCS)
             {

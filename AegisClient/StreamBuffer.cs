@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 
 
 
@@ -15,15 +14,15 @@ namespace Aegis.Client
     /// </summary>
     public class StreamBuffer
     {
-        public static Int32 AllocBlockSize = 128;
+        public static int AllocBlockSize = 128;
 
-        public Int32 ReadBytes { get; private set; }
-        public Int32 WrittenBytes { get; private set; }
+        public int ReadBytes { get; private set; }
+        public int WrittenBytes { get; private set; }
 
         public byte[] Buffer { get; private set; }
-        public Int32 BufferSize { get { return Buffer.Length; } }
-        public Int32 ReadableSize { get { return WrittenBytes - ReadBytes; } }
-        public Int32 WritableSize { get { return Buffer.Length - WrittenBytes; } }
+        public int BufferSize { get { return Buffer.Length; } }
+        public int ReadableSize { get { return WrittenBytes - ReadBytes; } }
+        public int WritableSize { get { return Buffer.Length - WrittenBytes; } }
 
 
 
@@ -38,7 +37,7 @@ namespace Aegis.Client
         }
 
 
-        public StreamBuffer(Int32 size)
+        public StreamBuffer(int size)
         {
             ReadBytes = 0;
             WrittenBytes = 0;
@@ -57,7 +56,7 @@ namespace Aegis.Client
         }
 
 
-        public StreamBuffer(byte[] source, Int32 index, Int32 size)
+        public StreamBuffer(byte[] source, int index, int size)
         {
             ReadBytes = 0;
             WrittenBytes = 0;
@@ -67,7 +66,7 @@ namespace Aegis.Client
         }
 
 
-        public StreamBuffer(StreamBuffer source, Int32 index, Int32 size)
+        public StreamBuffer(StreamBuffer source, int index, int size)
         {
             ReadBytes = 0;
             WrittenBytes = 0;
@@ -77,25 +76,25 @@ namespace Aegis.Client
         }
 
 
-        private Int32 AllocateBlockSize(Int32 size)
+        private int AllocateBlockSize(int size)
         {
             return (size / AllocBlockSize + (size % AllocBlockSize > 0 ? 1 : 0)) * AllocBlockSize;
         }
 
 
-        public void Capacity(Int32 size)
+        public void Capacity(int size)
         {
-            Int32 allocSize = AllocateBlockSize(size);
+            int allocSize = AllocateBlockSize(size);
             Buffer = new byte[allocSize];
         }
 
 
-        public void Resize(Int32 size)
+        public void Resize(int size)
         {
             if (size <= BufferSize)
                 return;
 
-            Int32 allocSize = AllocateBlockSize(size);
+            int allocSize = AllocateBlockSize(size);
             byte[] newBuffer = new byte[allocSize];
 
             Array.Copy(Buffer, newBuffer, Buffer.Length);
@@ -141,7 +140,7 @@ namespace Aegis.Client
         }
 
 
-        public void Write(Int32 size)
+        public void Write(int size)
         {
             if (WrittenBytes + size > BufferSize)
                 Resize(BufferSize + size);
@@ -153,7 +152,7 @@ namespace Aegis.Client
 
         public void Write(byte[] source)
         {
-            Int32 srcSize = source.Length;
+            int srcSize = source.Length;
             if (WrittenBytes + srcSize > BufferSize)
                 Resize(BufferSize + srcSize);
 
@@ -164,12 +163,12 @@ namespace Aegis.Client
         }
 
 
-        public void Write(byte[] source, Int32 index)
+        public void Write(byte[] source, int index)
         {
             if (index >= source.Length)
                 throw new AegisException("The argument index(={0}) is larger then source size(={1}).", index, source.Length);
 
-            Int32 copyBytes = source.Length - index;
+            int copyBytes = source.Length - index;
             if (WrittenBytes + copyBytes > BufferSize)
                 Resize(BufferSize + copyBytes);
 
@@ -180,12 +179,12 @@ namespace Aegis.Client
         }
 
 
-        public void Write(byte[] source, Int32 index, Int32 size)
+        public void Write(byte[] source, int index, int size)
         {
             if (index + size > source.Length)
                 throw new AegisException("The source buffer is small then requested.");
 
-            Int32 copyBytes = size;
+            int copyBytes = size;
             if (WrittenBytes + copyBytes > BufferSize)
                 Resize(BufferSize + copyBytes);
 
@@ -196,12 +195,12 @@ namespace Aegis.Client
         }
 
 
-        public void Overwrite(byte[] source, Int32 index, Int32 size, Int32 writeIndex)
+        public void Overwrite(byte[] source, int index, int size, int writeIndex)
         {
             if (index + size > source.Length)
                 throw new AegisException("The source buffer is small then requested.");
 
-            Int32 copyBytes = size;
+            int copyBytes = size;
             if (writeIndex + copyBytes >= BufferSize)
                 Resize(BufferSize + copyBytes);
 
@@ -215,7 +214,7 @@ namespace Aegis.Client
         }
 
 
-        public void Read(Int32 size)
+        public void Read(int size)
         {
             if (ReadBytes + size > WrittenBytes)
                 throw new AegisException("No more readable buffer.");
@@ -234,7 +233,7 @@ namespace Aegis.Client
         }
 
 
-        public void Read(byte[] destination, Int32 index)
+        public void Read(byte[] destination, int index)
         {
             if (destination.Length - index < BufferSize)
                 throw new AegisException("Destination buffer size too small.");
@@ -244,7 +243,7 @@ namespace Aegis.Client
         }
 
 
-        public void Read(byte[] destination, Int32 index, Int32 readIndex, Int32 size)
+        public void Read(byte[] destination, int index, int readIndex, int size)
         {
             if (destination.Length - index < size)
                 throw new AegisException("Destination buffer size too small.");
@@ -253,7 +252,7 @@ namespace Aegis.Client
         }
 
 
-        public Boolean GetBoolean()
+        public bool GetBoolean()
         {
             if (ReadBytes + sizeof(byte) > WrittenBytes)
                 throw new AegisException( "No more readable buffer.");
@@ -297,13 +296,13 @@ namespace Aegis.Client
         }
 
 
-        public Int32 GetInt32()
+        public int GetInt32()
         {
-            if (ReadBytes + sizeof(Int32) > WrittenBytes)
+            if (ReadBytes + sizeof(int) > WrittenBytes)
                 throw new AegisException("No more readable buffer.");
 
             var val = BitConverter.ToInt32(Buffer, ReadBytes);
-            ReadBytes += sizeof(Int32);
+            ReadBytes += sizeof(int);
             return val;
         }
 
@@ -354,7 +353,7 @@ namespace Aegis.Client
 
         public String GetStringFromUtf8()
         {
-            Int32 i, stringBytes = 0;
+            int i, stringBytes = 0;
             for (i = ReadBytes; i < BufferSize; ++i)
             {
                 if (Buffer[i] == 0)
@@ -375,7 +374,7 @@ namespace Aegis.Client
 
         public String GetStringFromUtf16()
         {
-            Int32 i, stringBytes = 0;
+            int i, stringBytes = 0;
             for (i = ReadBytes; i < BufferSize; i += 2)
             {
                 if (Buffer[i + 0] == 0
@@ -396,7 +395,7 @@ namespace Aegis.Client
         }
 
 
-        public Boolean GetBoolean(Int32 readIndex)
+        public bool GetBoolean(int readIndex)
         {
             if (readIndex + sizeof(byte) > WrittenBytes)
                 throw new AegisException("No more readable buffer.");
@@ -405,7 +404,7 @@ namespace Aegis.Client
         }
 
 
-        public byte GetByte(Int32 readIndex)
+        public byte GetByte(int readIndex)
         {
             if (readIndex + sizeof(byte) > WrittenBytes)
                 throw new AegisException("No more readable buffer.");
@@ -414,7 +413,7 @@ namespace Aegis.Client
         }
 
 
-        public Int16 GetInt16(Int32 readIndex)
+        public Int16 GetInt16(int readIndex)
         {
             if (readIndex + sizeof(Int16) > WrittenBytes)
                 throw new AegisException("No more readable buffer.");
@@ -423,7 +422,7 @@ namespace Aegis.Client
         }
 
 
-        public UInt16 GetUInt16(Int32 readIndex)
+        public UInt16 GetUInt16(int readIndex)
         {
             if (readIndex > WrittenBytes)
                 throw new AegisException("No more readable buffer.");
@@ -432,7 +431,7 @@ namespace Aegis.Client
         }
 
 
-        public Int32 GetInt32(Int32 readIndex)
+        public int GetInt32(int readIndex)
         {
             if (readIndex > WrittenBytes)
                 throw new AegisException("No more readable buffer.");
@@ -441,7 +440,7 @@ namespace Aegis.Client
         }
 
 
-        public UInt32 GetUInt32(Int32 readIndex)
+        public UInt32 GetUInt32(int readIndex)
         {
             if (readIndex > WrittenBytes)
                 throw new AegisException("No more readable buffer.");
@@ -450,7 +449,7 @@ namespace Aegis.Client
         }
 
 
-        public Int64 GetInt64(Int32 readIndex)
+        public Int64 GetInt64(int readIndex)
         {
             if (readIndex > WrittenBytes)
                 throw new AegisException("No more readable buffer.");
@@ -459,7 +458,7 @@ namespace Aegis.Client
         }
 
 
-        public UInt64 GetUInt64(Int32 readIndex)
+        public UInt64 GetUInt64(int readIndex)
         {
             if (readIndex > WrittenBytes)
                 throw new AegisException("No more readable buffer.");
@@ -468,7 +467,7 @@ namespace Aegis.Client
         }
 
 
-        public Double GetDouble(Int32 readIndex)
+        public Double GetDouble(int readIndex)
         {
             if (readIndex > WrittenBytes)
                 throw new AegisException("No more readable buffer.");
@@ -477,9 +476,9 @@ namespace Aegis.Client
         }
 
 
-        public String GetStringFromUtf8(Int32 readIndex)
+        public String GetStringFromUtf8(int readIndex)
         {
-            Int32 i, stringBytes = 0;
+            int i, stringBytes = 0;
             for (i = readIndex; i < BufferSize; ++i)
             {
                 if (Buffer[i] == 0)
@@ -496,9 +495,9 @@ namespace Aegis.Client
         }
 
 
-        public String GetStringFromUtf16(Int32 readIndex)
+        public String GetStringFromUtf16(int readIndex)
         {
-            Int32 i, stringBytes = 0;
+            int i, stringBytes = 0;
             for (i = readIndex; i < BufferSize; i += 2)
             {
                 if (Buffer[i + 0] == 0
@@ -517,90 +516,90 @@ namespace Aegis.Client
         }
 
 
-        public Int32 PutBoolean(Boolean var)
+        public int PutBoolean(bool var)
         {
-            Int32 prevIndex = WrittenBytes;
+            int prevIndex = WrittenBytes;
 
             Write(BitConverter.GetBytes(var), 0, 1);
             return prevIndex;
         }
 
 
-        public Int32 PutByte(Byte var)
+        public int PutByte(Byte var)
         {
-            Int32 prevIndex = WrittenBytes;
+            int prevIndex = WrittenBytes;
 
             Write(BitConverter.GetBytes(var), 0, 1);
             return prevIndex;
         }
 
 
-        public Int32 PutInt16(Int16 var)
+        public int PutInt16(Int16 var)
         {
-            Int32 prevIndex = WrittenBytes;
+            int prevIndex = WrittenBytes;
 
             Write(BitConverter.GetBytes(var));
             return prevIndex;
         }
 
 
-        public Int32 PutUInt16(UInt16 var)
+        public int PutUInt16(UInt16 var)
         {
-            Int32 prevIndex = WrittenBytes;
+            int prevIndex = WrittenBytes;
 
             Write(BitConverter.GetBytes(var));
             return prevIndex;
         }
 
 
-        public Int32 PutInt32(Int32 var)
+        public int PutInt32(int var)
         {
-            Int32 prevIndex = WrittenBytes;
+            int prevIndex = WrittenBytes;
 
             Write(BitConverter.GetBytes(var));
             return prevIndex;
         }
 
 
-        public Int32 PutUInt32(UInt32 var)
+        public int PutUInt32(UInt32 var)
         {
-            Int32 prevIndex = WrittenBytes;
+            int prevIndex = WrittenBytes;
 
             Write(BitConverter.GetBytes(var));
             return prevIndex;
         }
 
 
-        public Int32 PutInt64(Int64 var)
+        public int PutInt64(Int64 var)
         {
-            Int32 prevIndex = WrittenBytes;
+            int prevIndex = WrittenBytes;
 
             Write(BitConverter.GetBytes(var));
             return prevIndex;
         }
 
 
-        public Int32 PutUInt64(UInt64 var)
+        public int PutUInt64(UInt64 var)
         {
-            Int32 prevIndex = WrittenBytes;
+            int prevIndex = WrittenBytes;
 
             Write(BitConverter.GetBytes(var));
             return prevIndex;
         }
 
 
-        public Int32 PutDouble(Double var)
+        public int PutDouble(Double var)
         {
-            Int32 prevIndex = WrittenBytes;
+            int prevIndex = WrittenBytes;
 
             Write(BitConverter.GetBytes(var));
             return prevIndex;
         }
 
 
-        public Int32 PutStringAsUtf8(String var)
+        public int PutStringAsUtf8(String var)
         {
-            Int32 prevIndex = WrittenBytes;
+            int prevIndex = WrittenBytes;
             byte[] data = Encoding.UTF8.GetBytes(var);
 
             Write(data);
@@ -609,9 +608,9 @@ namespace Aegis.Client
         }
 
 
-        public Int32 PutStringAsUtf16(String var)
+        public int PutStringAsUtf16(String var)
         {
-            Int32 prevIndex = WrittenBytes;
+            int prevIndex = WrittenBytes;
             byte[] data = Encoding.Unicode.GetBytes(var);
 
             Write(data);
@@ -620,55 +619,55 @@ namespace Aegis.Client
         }
 
 
-        public void OverwriteBoolean(Int32 writeIndex, Boolean var)
+        public void OverwriteBoolean(int writeIndex, bool var)
         {
             Overwrite(BitConverter.GetBytes(var), 0, 1, writeIndex);
         }
 
 
-        public void OverwriteByte(Int32 writeIndex, Byte var)
+        public void OverwriteByte(int writeIndex, Byte var)
         {
             Overwrite(BitConverter.GetBytes(var), 0, 1, writeIndex);
         }
 
 
-        public void OverwriteInt16(Int32 writeIndex, Int16 var)
+        public void OverwriteInt16(int writeIndex, Int16 var)
         {
             Overwrite(BitConverter.GetBytes(var), 0, sizeof(Int16), writeIndex);
         }
 
 
-        public void OverwriteUInt16(Int32 writeIndex, UInt16 var)
+        public void OverwriteUInt16(int writeIndex, UInt16 var)
         {
             Overwrite(BitConverter.GetBytes(var), 0, sizeof(UInt16), writeIndex);
         }
 
 
-        public void OverwriteInt32(Int32 writeIndex, Int32 var)
+        public void OverwriteInt32(int writeIndex, int var)
         {
-            Overwrite(BitConverter.GetBytes(var), 0, sizeof(Int32), writeIndex);
+            Overwrite(BitConverter.GetBytes(var), 0, sizeof(int), writeIndex);
         }
 
 
-        public void OverwriteUInt32(Int32 writeIndex, UInt32 var)
+        public void OverwriteUInt32(int writeIndex, UInt32 var)
         {
             Overwrite(BitConverter.GetBytes(var), 0, sizeof(UInt32), writeIndex);
         }
 
 
-        public void OverwriteInt64(Int32 writeIndex, Int64 var)
+        public void OverwriteInt64(int writeIndex, Int64 var)
         {
             Overwrite(BitConverter.GetBytes(var), 0, sizeof(Int64), writeIndex);
         }
 
 
-        public void OverwriteUInt64(Int32 writeIndex, UInt64 var)
+        public void OverwriteUInt64(int writeIndex, UInt64 var)
         {
             Overwrite(BitConverter.GetBytes(var), 0, sizeof(UInt64), writeIndex);
         }
 
 
-        public void OverwriteDouble(Int32 writeIndex, Double var)
+        public void OverwriteDouble(int writeIndex, Double var)
         {
             Overwrite(BitConverter.GetBytes(var), 0, sizeof(Double), writeIndex);
         }

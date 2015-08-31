@@ -71,51 +71,40 @@ namespace Aegis.Data.MySql
 
         public void QueryNoReader()
         {
-            try
-            {
-                using (DBConnector dbc = _mysql.GetDBC())
-                {
-                    _cmd.Connection = dbc.Connection;
-                    _cmd.CommandText = CommandText.ToString();
+            if (_dbConnector != null || _reader != null)
+                throw new AegisException(AegisResult.DataReaderNotClosed, "There is already an open DataReader associated with this Connection which must be closed first.");
 
-                    Prepare();
-                    _cmd.ExecuteNonQuery();
-                    _cmd.Connection = null;
 
-                    dbc.IncreaseQueryCount();
-                }
-            }
-            catch (Exception e)
-            {
-                Logger.Write(LogType.Err, 1, _cmd.CommandText);
-                Logger.Write(LogType.Err, 1, e.ToString());
-            }
+            _dbConnector = _mysql.GetDBC();
+            _cmd.Connection = _dbConnector.Connection;
+            _cmd.CommandText = CommandText.ToString();
+
+            Prepare();
+            _cmd.ExecuteNonQuery();
+            _cmd.Connection = null;
+
+            _dbConnector.IncreaseQueryCount();
+            _dbConnector.Dispose();
+            _dbConnector = null;
         }
 
 
         public DataReader Query()
         {
-            try
-            {
-                _dbConnector = _mysql.GetDBC();
-                if (_reader != null)
-                    _reader.Close();
+            if (_dbConnector != null || _reader != null)
+                throw new AegisException(AegisResult.DataReaderNotClosed, "There is already an open DataReader associated with this Connection which must be closed first.");
 
-                _cmd.Connection = _dbConnector.Connection;
-                _cmd.CommandText = CommandText.ToString();
 
-                Prepare();
+            _dbConnector = _mysql.GetDBC();
+            _cmd.Connection = _dbConnector.Connection;
+            _cmd.CommandText = CommandText.ToString();
 
-                _reader = new DataReader(_cmd.ExecuteReader());
-                _cmd.Connection = null;
+            Prepare();
+            _reader = new DataReader(_cmd.ExecuteReader());
+            _cmd.Connection = null;
 
-                _dbConnector.IncreaseQueryCount();
-            }
-            catch (Exception e)
-            {
-                Logger.Write(LogType.Err, 1, _cmd.CommandText);
-                Logger.Write(LogType.Err, 1, e.ToString());
-            }
+            _dbConnector.IncreaseQueryCount();
+            //  DataReader가 사용중이므로 _dbConnector를 유지해야 한다.
 
             return _reader;
         }
@@ -139,12 +128,26 @@ namespace Aegis.Data.MySql
         }
 
 
-        public void QueryAsync()
+        public void PostQuery()
         {
             _isAsync = true;
             _mysql.WorkerQueue.Post(() =>
             {
                 QueryNoReader();
+                _isAsync = false;
+                Dispose();
+            });
+        }
+
+
+        public void PostQuery(Action<DataReader> postAction)
+        {
+            _isAsync = true;
+            _mysql.WorkerQueue.Post(() =>
+            {
+                DataReader reader = Query();
+                postAction(reader);
+
                 _isAsync = false;
                 Dispose();
             });

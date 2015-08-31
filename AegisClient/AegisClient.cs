@@ -13,16 +13,16 @@ namespace Aegis.Client
     public partial class AegisClient
     {
         private String _hostAddress;
-        private Boolean _isRunning;
+        private bool _isRunning;
         private Connector _connector;
         private Stopwatch _stampLastAction;
 
 
-        public event Event_Connect OnConnect;
-        public event Event_Disconnect OnDisconnect;
-        public event Event_Send OnSend;
-        public event Event_Receive OnReceive;
-        public ValidPacketHandler ValidPacketHandler;
+        public event EventHandler_Connected NetworkEvent_Connected;
+        public event EventHandler_Disconnected NetworkEvent_Disconnected;
+        public event EventHandler_Send NetworkEvent_Sent;
+        public event EventHandler_Received NetworkEvent_Received;
+        public EventHandler_IsValidPacket PacketValidator;
 
 
         public String HostAddress
@@ -35,11 +35,11 @@ namespace Aegis.Client
                     _hostAddress = ipAddrList[0].ToString();
             }
         }
-        public Int32 HostPortNo { get; set; }
+        public int HostPortNo { get; set; }
         public ConnectionStatus ConnectionStatus { get; private set; }
-        public Boolean EnableSend { get; set; }
-        public Boolean IsConnected { get { return _connector.IsConnected; } }
-        public Int32 ConnectionAliveTime { get; set; }
+        public bool EnableSend { get; set; }
+        public bool IsConnected { get { return _connector.IsConnected; } }
+        public int ConnectionAliveTime { get; set; }
         internal MessageQueue MQ;
 
 
@@ -100,13 +100,13 @@ namespace Aegis.Client
         }
 
 
-        internal Boolean IsValidPacket(StreamBuffer buffer, out Int32 packetSize)
+        internal bool IsValidPacket(StreamBuffer buffer, out int packetSize)
         {
             packetSize = 0;
-            if (ValidPacketHandler == null)
+            if (PacketValidator == null)
                 return false;
 
-            return ValidPacketHandler(buffer, out packetSize);
+            return PacketValidator(buffer, out packetSize);
         }
 
 
@@ -140,8 +140,8 @@ namespace Aegis.Client
                     else
                         ConnectionStatus = ConnectionStatus.Closed;
 
-                    if (OnConnect != null)
-                        OnConnect(_connector.IsConnected);
+                    if (NetworkEvent_Connected != null)
+                        NetworkEvent_Connected(_connector.IsConnected);
                     break;
 
 
@@ -150,8 +150,8 @@ namespace Aegis.Client
                     _connector.Close();
                     ConnectionStatus = ConnectionStatus.Closed;
 
-                    if (OnDisconnect != null)
-                        OnDisconnect();
+                    if (NetworkEvent_Disconnected != null)
+                        NetworkEvent_Disconnected();
                     break;
 
 
@@ -159,8 +159,8 @@ namespace Aegis.Client
                     _connector.Close();
                     ConnectionStatus = ConnectionStatus.Closed;
 
-                    if (OnDisconnect != null)
-                        OnDisconnect();
+                    if (NetworkEvent_Disconnected != null)
+                        NetworkEvent_Disconnected();
                     break;
 
 
@@ -180,7 +180,10 @@ namespace Aegis.Client
 
 
                         if (_connector.SendPacket(data.Buffer) == true)
-                            OnSend(data.Size);
+                        {
+                            if (NetworkEvent_Sent != null)
+                                NetworkEvent_Sent(data.Size);
+                        }
                         else
                             Close();
                     }
@@ -188,7 +191,7 @@ namespace Aegis.Client
 
 
                 case MessageType.Receive:
-                    OnReceive(data.Buffer);
+                    NetworkEvent_Received(data.Buffer);
                     break;
             }
 
@@ -196,7 +199,10 @@ namespace Aegis.Client
             if (_stampLastAction == null)
                 _stampLastAction = Stopwatch.StartNew();
             else
-                _stampLastAction.Restart();
+            {
+                _stampLastAction.Reset();
+                _stampLastAction.Start();
+            }
         }
     }
 }

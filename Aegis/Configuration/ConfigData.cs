@@ -70,7 +70,7 @@ namespace Aegis.Configuration
             {
                 data = data.GetChild(name);
                 if (data == null)
-                    throw new AegisException(ResultCode.InvalidArgument, "Invalid node name({0}).", name);
+                    throw new AegisException(AegisResult.InvalidArgument, "Invalid node name({0}).", name);
             }
 
             return data.Value;

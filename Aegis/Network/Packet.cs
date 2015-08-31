@@ -103,6 +103,27 @@ namespace Aegis.Network
 
 
         /// <summary>
+        /// 수신된 데이터가 유효한 패킷인지 여부를 확인합니다.
+        /// 유효한 패킷으로 판단되면 packetSize에 이 패킷의 정확한 크기를 입력하고 true를 반환해야 합니다.
+        /// </summary>
+        /// <param name="buffer">수신된 데이터가 담긴 버퍼</param>
+        /// <param name="packetSize">유효한 패킷의 크기</param>
+        /// <returns>true를 반환하면 OnReceive를 통해 수신된 데이터가 전달됩니다.</returns>
+        public static Boolean IsValidPacket(StreamBuffer buffer, out Int32 packetSize)
+        {
+            if (buffer.WrittenBytes < 4)
+            {
+                packetSize = 0;
+                return false;
+            }
+
+            //  최초 2바이트를 수신할 패킷의 크기로 처리
+            packetSize = buffer.GetUInt16(0);
+            return (packetSize > 0 && buffer.WrittenBytes >= packetSize);
+        }
+
+
+        /// <summary>
         /// 패킷 버퍼를 초기화합니다. 기존의 PID 값은 유지됩니다.
         /// </summary>
         public override void Clear()
@@ -124,7 +145,7 @@ namespace Aegis.Network
         public void Clear(StreamBuffer source)
         {
             if (source.BufferSize < 4)
-                throw new AegisException(ResultCode.InvalidArgument, "The source size must be at lest 4 bytes.");
+                throw new AegisException(AegisResult.InvalidArgument, "The source size must be at lest 4 bytes.");
 
             base.Clear();
             Write(source.Buffer, 0, source.WrittenBytes);
@@ -141,7 +162,7 @@ namespace Aegis.Network
         public void Clear(byte[] source, Int32 index, Int32 size)
         {
             if (size < 4)
-                throw new AegisException(ResultCode.InvalidArgument, "The source size must be at lest 4 bytes.");
+                throw new AegisException(AegisResult.InvalidArgument, "The source size must be at lest 4 bytes.");
 
             Clear();
             Write(source, index, size);

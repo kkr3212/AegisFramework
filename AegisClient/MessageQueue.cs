@@ -12,7 +12,7 @@ namespace Aegis.Client
     {
         public MessageType Type;
         public StreamBuffer Buffer;
-        public Int32 Size;
+        public int Size;
     }
 
 
@@ -22,7 +22,7 @@ namespace Aegis.Client
     internal class MessageQueue
     {
         private List<MessageData> _queue;
-        public Int32 Count { get { return _queue.Count(); } }
+        public int Count { get { return _queue.Count(); } }
 
 
 
@@ -44,7 +44,7 @@ namespace Aegis.Client
         }
 
 
-        public void AddFirst(MessageType type, StreamBuffer buffer, Int32 size)
+        public void AddFirst(MessageType type, StreamBuffer buffer, int size)
         {
             lock (_queue)
             {
@@ -60,7 +60,7 @@ namespace Aegis.Client
         }
 
 
-        public void Add(MessageType type, StreamBuffer buffer, Int32 size)
+        public void Add(MessageType type, StreamBuffer buffer, int size)
         {
             lock (_queue)
             {
@@ -76,7 +76,7 @@ namespace Aegis.Client
         }
 
 
-        public MessageData Pop(Int32 timeout)
+        public MessageData Pop(int timeout)
         {
             lock (_queue)
             {

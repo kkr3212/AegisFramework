@@ -30,7 +30,7 @@ namespace EchoServer.Logic
         }
 
 
-        private Boolean IsValidPacket(SessionBase session, StreamBuffer buffer, out int packetSize)
+        private Boolean IsValidPacket(NetworkSession session, StreamBuffer buffer, out int packetSize)
         {
             if (buffer.WrittenBytes < 4)
             {
@@ -44,7 +44,7 @@ namespace EchoServer.Logic
         }
 
 
-        private void OnAcceptd(SessionBase session)
+        private void OnAcceptd(NetworkSession session)
         {
             Logger.Write(LogType.Info, 2, "[{0}] Accepted", SessionId);
 
@@ -55,13 +55,13 @@ namespace EchoServer.Logic
         }
 
 
-        private void OnClosed(SessionBase session)
+        private void OnClosed(NetworkSession session)
         {
             Logger.Write(LogType.Info, 2, "[{0}] Closed", SessionId);
         }
 
 
-        private void OnReceived(SessionBase session, StreamBuffer buffer)
+        private void OnReceived(NetworkSession session, StreamBuffer buffer)
         {
             Counter_ReceiveCount.Add(1);
             Counter_ReceiveBytes.Add(buffer.WrittenBytes);

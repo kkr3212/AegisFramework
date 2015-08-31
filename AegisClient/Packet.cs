@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 
 
 
@@ -81,7 +80,7 @@ namespace Aegis.Client
         /// <param name="source">복사할 데이터가 담긴 byte 배열</param>
         /// <param name="startIndex">source에서 복사할 시작 위치</param>
         /// <param name="size">복사할 크기(Byte)</param>
-        public Packet(byte[] source, Int32 startIndex, Int32 size)
+        public Packet(byte[] source, int startIndex, int size)
         {
             Write(source, startIndex, size);
         }
@@ -123,7 +122,7 @@ namespace Aegis.Client
         /// <param name="source">저장할 데이터</param>
         /// <param name="index">저장할 데이터의 시작위치</param>
         /// <param name="size">저장할 데이터 크기(Byte)</param>
-        public void Clear(byte[] source, Int32 index, Int32 size)
+        public void Clear(byte[] source, int index, int size)
         {
             if (size < 4)
                 throw new AegisException("The source size must be at lest 4 bytes.");

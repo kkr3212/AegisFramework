@@ -93,7 +93,7 @@ namespace Aegis.Configuration
         {
             ConfigNetworkChannel config = _listNetworkConfig.Find(v => v.NetworkChannelName == networkChannelName);
             if (config == null)
-                throw new AegisException(ResultCode.InvalidArgument, "Invalid NetworkChannel name({0}).", networkChannelName);
+                throw new AegisException(AegisResult.InvalidArgument, "Invalid NetworkChannel name({0}).", networkChannelName);
 
 
             NetworkChannel channel = NetworkChannel.CreateChannel(config.NetworkChannelName);
@@ -142,18 +142,18 @@ namespace Aegis.Configuration
         }
 
 
-        private static SessionBase GenerateSession(String sessionClassName, Int32 receiveBufferSize)
+        private static NetworkSession GenerateSession(String sessionClassName, Int32 receiveBufferSize)
         {
             Type type = _assembly.GetType(sessionClassName);
             if (type == null)
-                throw new AegisException(ResultCode.InvalidArgument, "'{0}' session class is not exists.", sessionClassName);
+                throw new AegisException(AegisResult.InvalidArgument, "'{0}' session class is not exists.", sessionClassName);
 
             ConstructorInfo constructorInfo = type.GetConstructor(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic, null, new Type[0], null);
             if (constructorInfo == null)
-                throw new AegisException(ResultCode.InvalidArgument, "'No matches constructor on '{0}'.", sessionClassName);
+                throw new AegisException(AegisResult.InvalidArgument, "'No matches constructor on '{0}'.", sessionClassName);
 
 
-            SessionBase session = constructorInfo.Invoke(null) as SessionBase;
+            NetworkSession session = constructorInfo.Invoke(null) as NetworkSession;
             session.SetReceiveBufferSize(receiveBufferSize);
 
             return session;
@@ -181,7 +181,7 @@ namespace Aegis.Configuration
                     _mutex = new Mutex(true, mutexName, out isNew);
 
                     if (isNew == false)
-                        throw new AegisException(ResultCode.InvalidArgument, "The mutex name({0}) is already in use.", mutexName);
+                        throw new AegisException(AegisResult.InvalidArgument, "The mutex name({0}) is already in use.", mutexName);
                 }
             }
 
@@ -201,7 +201,7 @@ namespace Aegis.Configuration
 
 
                 if (_listNetworkConfig.Where(v => v.NetworkChannelName == channelConfig.NetworkChannelName).Count() > 0)
-                    throw new AegisException(ResultCode.InvalidArgument, "The NetworkChannel name({0}) is already in use.", channelConfig.NetworkChannelName);
+                    throw new AegisException(AegisResult.InvalidArgument, "The NetworkChannel name({0}) is already in use.", channelConfig.NetworkChannelName);
 
                 _listNetworkConfig.Add(channelConfig);
             }
@@ -219,7 +219,7 @@ namespace Aegis.Configuration
             foreach (XmlNode childNode in node.ChildNodes)
             {
                 if (customData.GetChild(childNode.Name) != null)
-                    throw new AegisException(ResultCode.InvalidArgument, "Duplicate key({0}) in CustomData.");
+                    throw new AegisException(AegisResult.InvalidArgument, "Duplicate key({0}) in CustomData.");
 
 
                 CustomData data = new CustomData(childNode.Name);

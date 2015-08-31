@@ -20,11 +20,11 @@ namespace EchoClient
 
         public Session()
         {
-            _aegisClient.OnConnect += OnConnect;
-            _aegisClient.OnDisconnect += OnDisconnect;
-            _aegisClient.OnSend += OnSend;
-            _aegisClient.OnReceive += OnReceive;
-            _aegisClient.ValidPacketHandler = IsValidPacket;
+            _aegisClient.NetworkEvent_Connected += OnConnect;
+            _aegisClient.NetworkEvent_Disconnected += OnDisconnect;
+            _aegisClient.NetworkEvent_Sent += OnSend;
+            _aegisClient.NetworkEvent_Received += OnReceive;
+            _aegisClient.PacketValidator = IsValidPacket;
             _aegisClient.Initialize();
         }
 
@@ -49,7 +49,7 @@ namespace EchoClient
         }
 
 
-        private Boolean IsValidPacket(StreamBuffer buffer, out Int32 packetSize)
+        private bool IsValidPacket(StreamBuffer buffer, out int packetSize)
         {
             if (buffer.WrittenBytes < 4)
             {
@@ -79,7 +79,7 @@ namespace EchoClient
         }
 
 
-        private void OnSend(Int32 transBytes)
+        private void OnSend(int transBytes)
         {
         }
 

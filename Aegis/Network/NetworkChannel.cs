@@ -40,7 +40,7 @@ namespace Aegis.Network
             {
                 NetworkChannel channel = Channels.Find(v => v.Name == name);
                 if (channel != null)
-                    throw new AegisException(ResultCode.AlreadyExistName, "Already exists same name.");
+                    throw new AegisException(AegisResult.AlreadyExistName, "Already exists same name.");
 
 
                 channel = new NetworkChannel(name);
@@ -80,7 +80,7 @@ namespace Aegis.Network
                 if (channel != null)
                     return channel;
 
-                throw new AegisException(ResultCode.NoNetworkChannelName, "Invalid NetworkChannel name({0}).", name);
+                throw new AegisException(AegisResult.NoNetworkChannelName, "Invalid NetworkChannel name({0}).", name);
             }
         }
 
@@ -103,7 +103,7 @@ namespace Aegis.Network
         public void StartNetwork(SessionGenerateDelegator generator, Int32 initPoolSize, Int32 maxPoolSize)
         {
             if (generator == null)
-                throw new AegisException(ResultCode.InvalidArgument, "Argument 'generator' cannot be null.");
+                throw new AegisException(AegisResult.InvalidArgument, "Argument 'generator' cannot be null.");
 
             SessionManager.SessionGenerator = generator;
             SessionManager.MaxSessionPoolSize = maxPoolSize;
@@ -122,7 +122,7 @@ namespace Aegis.Network
         public void StartNetwork(SessionGenerateDelegator generator, Int32 initPoolSize, Int32 maxPoolSize, String ipAddress, Int32 portNo)
         {
             if (generator == null)
-                throw new AegisException(ResultCode.InvalidArgument, "Argument 'generator' cannot be null.");
+                throw new AegisException(AegisResult.InvalidArgument, "Argument 'generator' cannot be null.");
 
             SessionManager.SessionGenerator = generator;
             SessionManager.MaxSessionPoolSize = maxPoolSize;

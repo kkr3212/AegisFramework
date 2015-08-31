@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace Aegis
 {
-    public static class ResultCode
+    public static class AegisResult
     {
         public const Int32 Ok = 0;
 
@@ -22,5 +22,6 @@ namespace Aegis
         public const Int32 NetworkError = 7;            //  네트워크 관련 에러가 발생했습니다. (InnerException 참고)
         public const Int32 AcceptorIsRunning = 8;       //  Acceptor가 이미 실행중입니다.
         public const Int32 JobCanceled = 9;             //  진행중인 작업이 취소되었습니다.
+        public const Int32 DataReaderNotClosed = 10;    //  DataReader가 사용중입니다. 먼저 진행중인 쿼리를 종료해야 합니다.
     }
 }

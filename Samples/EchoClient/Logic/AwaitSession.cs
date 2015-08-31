@@ -30,7 +30,7 @@ namespace EchoClient.Logic
         }
 
 
-        private Boolean IsValidPacket(SessionBase session, StreamBuffer buffer, out int packetSize)
+        private Boolean IsValidPacket(NetworkSession session, StreamBuffer buffer, out int packetSize)
         {
             if (buffer.WrittenBytes < 4)
             {
@@ -44,7 +44,7 @@ namespace EchoClient.Logic
         }
 
 
-        private void OnConnected(SessionBase session, Boolean connected)
+        private void OnConnected(NetworkSession session, Boolean connected)
         {
             if (connected == true)
                 Logger.Write(LogType.Info, 2, "[{0}] Connected", SessionId);
@@ -53,13 +53,13 @@ namespace EchoClient.Logic
         }
 
 
-        private void OnClosed(SessionBase session)
+        private void OnClosed(NetworkSession session)
         {
             Logger.Write(LogType.Info, 2, "[{0}] Closed", SessionId);
         }
 
 
-        private void OnReceived(SessionBase session, StreamBuffer buffer)
+        private void OnReceived(NetworkSession session, StreamBuffer buffer)
         {
             Packet packet = new Packet(buffer);
             AwaitableMethod.ProcessResponseWaitPacket(packet);
