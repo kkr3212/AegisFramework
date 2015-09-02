@@ -67,7 +67,7 @@ namespace Aegis.Configuration
             foreach (ConfigNetworkChannel config in _listNetworkConfig)
             {
                 NetworkChannel channel = NetworkChannel.CreateChannel(config.NetworkChannelName);
-                if (config.ListenIpAddress.Length == 0 || config.ListenPortNo == 0)
+                if (config.ListenPortNo == 0)
                 {
                     channel.StartNetwork(
                         delegate { return GenerateSession(config.SessionClassName, config.ReceiveBufferSize); }

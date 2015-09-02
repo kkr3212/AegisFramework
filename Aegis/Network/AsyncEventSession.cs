@@ -109,7 +109,7 @@ namespace Aegis.Network
 
 
                         if (_receivedBuffer.WritableSize == 0)
-                            Logger.Write(LogType.Err, 1, "There is no remaining capacity of the receive buffer.");
+                            _receivedBuffer.Resize(_receivedBuffer.BufferSize * 2);
 
                         if (Socket.Connected)
                         {
@@ -155,6 +155,8 @@ namespace Aegis.Network
 
                         //  패킷 하나가 정상적으로 수신되었는지 확인
                         Int32 packetSize;
+
+                        _dispatchBuffer.ResetReadIndex();
                         if (PacketValidator == null ||
                             PacketValidator(this, _dispatchBuffer, out packetSize) == false)
                             break;

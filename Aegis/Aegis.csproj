@@ -55,6 +55,28 @@
     <NoWarn>1591,4014</NoWarn>
     <DocumentationFile>bin\x64\Release\Aegis.XML</DocumentationFile>
   </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x86'">
+    <DebugSymbols>true</DebugSymbols>
+    <OutputPath>bin\x86\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <DocumentationFile>bin\Debug\Aegis.XML</DocumentationFile>
+    <NoWarn>1591,4014</NoWarn>
+    <DebugType>full</DebugType>
+    <PlatformTarget>x86</PlatformTarget>
+    <ErrorReport>prompt</ErrorReport>
+    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x86'">
+    <OutputPath>bin\x86\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <DocumentationFile>bin\Release\Aegis.XML</DocumentationFile>
+    <Optimize>true</Optimize>
+    <NoWarn>1591,4014</NoWarn>
+    <DebugType>pdbonly</DebugType>
+    <PlatformTarget>x86</PlatformTarget>
+    <ErrorReport>prompt</ErrorReport>
+    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+  </PropertyGroup>
   <ItemGroup>
     <Reference Include="MySql.Data">
       <HintPath>..\bin\AegisNetwork\MySql.Data.dll</HintPath>
@@ -108,8 +130,18 @@
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
-    <PostBuildEvent>copy $(TargetDir)$(TargetName).dll $(ProjectDir)..\bin\AegisNetwork\$(TargetName).dll
-copy $(TargetDir)$(TargetName).xml $(ProjectDir)..\bin\AegisNetwork\$(TargetName).xml</PostBuildEvent>
+    <PostBuildEvent>if $(PlatformName) == x86 (
+copy $(TargetDir)$(TargetName).dll $(ProjectDir)..\bin\AegisNetwork\x86\$(TargetName).dll
+copy $(TargetDir)$(TargetName).xml $(ProjectDir)..\bin\AegisNetwork\x86\$(TargetName).xml
+) 
+if $(PlatformName) == x64 (
+copy $(TargetDir)$(TargetName).dll $(ProjectDir)..\bin\AegisNetwork\x64\$(TargetName).dll
+copy $(TargetDir)$(TargetName).xml $(ProjectDir)..\bin\AegisNetwork\x64\$(TargetName).xml
+)
+if $(PlatformName) == Any CPU (
+copy $(TargetDir)$(TargetName).dll $(ProjectDir)..\bin\AegisNetwork\any\$(TargetName).dll
+copy $(TargetDir)$(TargetName).xml $(ProjectDir)..\bin\AegisNetwork\any\$(TargetName).xml
+)</PostBuildEvent>
   </PropertyGroup>
   <PropertyGroup>
     <PreBuildEvent>

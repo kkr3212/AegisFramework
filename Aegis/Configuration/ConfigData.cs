@@ -75,5 +75,29 @@ namespace Aegis.Configuration
 
             return data.Value;
         }
+
+
+        /// <summary>
+        /// 지정된 Path에서 값을 가져옵니다.
+        /// 지정한 Path가 XmlAttribute가 아닌 경우, null을 반환할 수 있습니다.
+        /// </summary>
+        /// <param name="path">구분자는 \ 혹은 / 를 사용할 수 있습니다.</param>
+        /// <param name="defaultValue">path에서 값을 가져올 수 없으면 default값을 반환합니다.</param>
+        /// <returns>path에 값이 정의되어있으면 해당 값을 반환하고 path가 잘못되어있으면 defaultValue를 반환합니다.</returns>
+        public String GetValue(String path, String defaultValue)
+        {
+            String[] names = path.Split(new char[] { '\\', '/' });
+            CustomData data = this;
+
+
+            foreach (String name in names)
+            {
+                data = data.GetChild(name);
+                if (data == null)
+                    return defaultValue;
+            }
+
+            return data.Value;
+        }
     }
 }

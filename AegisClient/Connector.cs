@@ -38,20 +38,29 @@ namespace Aegis.Client
 
 
             //  연결 시도
-            IPEndPoint ipEndPoint = new IPEndPoint(IPAddress.Parse(ipAddress), portNo);
-            _socket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
-            _socket.Connect(ipEndPoint);
-
-
-            if (_socket.Connected == false)
+            try
             {
-                _socket.Close();
-                _socket = null;
-                return false;
+                IPEndPoint ipEndPoint = new IPEndPoint(IPAddress.Parse(ipAddress), portNo);
+                _socket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
+                _socket.Connect(ipEndPoint);
+
+
+                if (_socket.Connected == false)
+                {
+                    _socket.Close();
+                    _socket = null;
+                    return false;
+                }
+
+                WaitForReceive();
+                return true;
+            }
+            catch (Exception)
+            {
+                Close();
             }
 
-            WaitForReceive();
-            return true;
+            return false;
         }
 
 
@@ -59,12 +68,17 @@ namespace Aegis.Client
         {
             try
             {
-                if (_socket == null)
+                //  Socket.Close를 호출하면 OnSocket_Read에 이벤트가 발생하는데
+                //  OnSocket_Read에서 _socket을 사용하지 않도록 하기위해 _socket을 먼저 null로 바꿔야한다.
+                Socket sock = _socket;
+                if (sock == null)
                     return;
 
                 _receivedBuffer.Clear();
-                _socket.Close();
                 _socket = null;
+
+                sock.Close();
+                sock = null;
             }
             catch (Exception)
             {
@@ -76,7 +90,7 @@ namespace Aegis.Client
         private void WaitForReceive()
         {
             if (_receivedBuffer.WritableSize == 0)
-                throw new AegisException("There is no remaining capacity of the receive buffer.");
+                _receivedBuffer.Resize(_receivedBuffer.BufferSize * 2);
 
             if (_socket != null && _socket.Connected)
                 _socket.BeginReceive(_receivedBuffer.Buffer, _receivedBuffer.WrittenBytes, _receivedBuffer.WritableSize, 0, new AsyncCallback(OnSocket_Read), null);
@@ -85,6 +99,9 @@ namespace Aegis.Client
 
         private void OnSocket_Read(IAsyncResult ar)
         {
+            if (_socket == null)
+                return;
+
             try
             {
                 //  transBytes가 0이면 원격지 혹은 네트워크에 의해 연결이 끊긴 상태
@@ -101,6 +118,8 @@ namespace Aegis.Client
                 {
                     //  패킷 하나가 정상적으로 수신되었는지 확인
                     int packetSize = 0;
+
+                    _receivedBuffer.ResetReadIndex();
                     if (_aegisClient.IsValidPacket(_receivedBuffer, out packetSize) == false)
                         break;
 
