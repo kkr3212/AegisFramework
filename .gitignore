@@ -17,5 +17,5 @@ Samples/EchoClient_Connector/bin/
 Samples/EchoClient_Connector/obj/
 
 
-AegisClient/bin/
-AegisClient/obj/
+Aegis.Client/bin/
+Aegis.Client/obj/

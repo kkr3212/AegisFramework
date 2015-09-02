@@ -8,8 +8,8 @@
     <ProjectGuid>{5B02DECC-5A3C-4ABB-90EC-CF20A1EE69F3}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>AegisClient</RootNamespace>
-    <AssemblyName>AegisClient</AssemblyName>
+    <RootNamespace>Aegis.Client</RootNamespace>
+    <AssemblyName>Aegis.Client</AssemblyName>
     <TargetFrameworkVersion>v3.5</TargetFrameworkVersion>
     <TargetFrameworkProfile>
     </TargetFrameworkProfile>
@@ -57,8 +57,7 @@
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
-    <PostBuildEvent>copy $(TargetDir)$(TargetName).dll $(ProjectDir)..\bin\AegisClient\$(TargetName).dll
-</PostBuildEvent>
+    <PostBuildEvent>copy $(TargetDir)$(TargetName).dll $(ProjectDir)..\bin\any\$(TargetName).dll</PostBuildEvent>
   </PropertyGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

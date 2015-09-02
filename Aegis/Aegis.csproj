@@ -131,16 +131,16 @@
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
     <PostBuildEvent>if $(PlatformName) == x86 (
-copy $(TargetDir)$(TargetName).dll $(ProjectDir)..\bin\AegisNetwork\x86\$(TargetName).dll
-copy $(TargetDir)$(TargetName).xml $(ProjectDir)..\bin\AegisNetwork\x86\$(TargetName).xml
+copy $(TargetDir)$(TargetName).dll $(ProjectDir)..\bin\x86\$(TargetName).dll
+copy $(TargetDir)$(TargetName).xml $(ProjectDir)..\bin\x86\$(TargetName).xml
 ) 
 if $(PlatformName) == x64 (
-copy $(TargetDir)$(TargetName).dll $(ProjectDir)..\bin\AegisNetwork\x64\$(TargetName).dll
-copy $(TargetDir)$(TargetName).xml $(ProjectDir)..\bin\AegisNetwork\x64\$(TargetName).xml
+copy $(TargetDir)$(TargetName).dll $(ProjectDir)..\bin\x64\$(TargetName).dll
+copy $(TargetDir)$(TargetName).xml $(ProjectDir)..\bin\x64\$(TargetName).xml
 )
 if $(PlatformName) == Any CPU (
-copy $(TargetDir)$(TargetName).dll $(ProjectDir)..\bin\AegisNetwork\any\$(TargetName).dll
-copy $(TargetDir)$(TargetName).xml $(ProjectDir)..\bin\AegisNetwork\any\$(TargetName).xml
+copy $(TargetDir)$(TargetName).dll $(ProjectDir)..\bin\any\$(TargetName).dll
+copy $(TargetDir)$(TargetName).xml $(ProjectDir)..\bin\any\$(TargetName).xml
 )</PostBuildEvent>
   </PropertyGroup>
   <PropertyGroup>
