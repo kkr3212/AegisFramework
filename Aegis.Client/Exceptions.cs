@@ -18,26 +18,26 @@ namespace Aegis.Client
         }
 
 
-        public AegisException(String message)
+        public AegisException(string message)
             : base(message)
         {
         }
 
 
-        public AegisException(Exception innerException, String message)
+        public AegisException(Exception innerException, string message)
             : base(message, innerException)
         {
         }
 
 
-        public AegisException(String message, params object[] args)
-            : base(String.Format(message, args))
+        public AegisException(string message, params object[] args)
+            : base(string.Format(message, args))
         {
         }
 
 
-        public AegisException(Exception innerException, String message, params object[] args)
-            : base(String.Format(message, args), innerException)
+        public AegisException(Exception innerException, string message, params object[] args)
+            : base(string.Format(message, args), innerException)
         {
         }
     }

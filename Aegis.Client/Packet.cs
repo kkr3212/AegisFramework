@@ -147,7 +147,7 @@ namespace Aegis.Client
         /// 패킷의 헤더 위치를 건너띄어 본문 데이터를 읽을 수 있도록 읽기위치를 조절합니다.
         /// 이 함수가 호출되면 ReadIndex는 4에 위치하지만, WriteIndex는 변하지 않습니다.
         /// </summary>
-        public virtual void SkipHeader()
+        public void SkipHeader()
         {
             ResetReadIndex();
 

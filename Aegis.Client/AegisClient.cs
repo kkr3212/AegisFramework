@@ -12,7 +12,7 @@ namespace Aegis.Client
 {
     public partial class AegisClient
     {
-        private String _hostAddress;
+        private string _hostAddress;
         private bool _isRunning;
         private Connector _connector;
         private Stopwatch _stampLastAction;
@@ -20,12 +20,12 @@ namespace Aegis.Client
 
         public event EventHandler_Connected NetworkEvent_Connected;
         public event EventHandler_Disconnected NetworkEvent_Disconnected;
-        public event EventHandler_Send NetworkEvent_Sent;
+        public event EventHandler_Sent NetworkEvent_Sent;
         public event EventHandler_Received NetworkEvent_Received;
         public EventHandler_IsValidPacket PacketValidator;
 
 
-        public String HostAddress
+        public string HostAddress
         {
             get { return _hostAddress; }
             set
@@ -74,8 +74,8 @@ namespace Aegis.Client
 
         public void Connect()
         {
-            if (ConnectionStatus == ConnectionStatus.Connecting
-                || ConnectionStatus == ConnectionStatus.Connected)
+            if (ConnectionStatus == ConnectionStatus.Connecting ||
+                ConnectionStatus == ConnectionStatus.Connected)
                 return;
 
             ConnectionStatus = ConnectionStatus.Connecting;
@@ -85,8 +85,8 @@ namespace Aegis.Client
 
         public void Close()
         {
-            if (ConnectionStatus == ConnectionStatus.Closing
-                || ConnectionStatus == ConnectionStatus.Closed)
+            if (ConnectionStatus == ConnectionStatus.Closing ||
+                ConnectionStatus == ConnectionStatus.Closed)
                 return;
 
             ConnectionStatus = ConnectionStatus.Closing;
@@ -116,9 +116,12 @@ namespace Aegis.Client
 
             while (_isRunning)
             {
-                MessageData data = MQ.Pop(100);
-                if (data != null)
-                    Dispatch(data);
+                List<MessageData> items = MQ.Pop(100);
+                if (items != null)
+                {
+                    foreach (MessageData data in items)
+                        Dispatch(data);
+                }
 
                 else if (ConnectionStatus == ConnectionStatus.Connected &&
                          MQ.Count == 0 &&
@@ -176,7 +179,10 @@ namespace Aegis.Client
                     else if (ConnectionStatus == ConnectionStatus.Connected)
                     {
                         if (EnableSend == false)
+                        {
+                            MQ.AddFirst(data.Type, data.Buffer, data.Size);
                             break;
+                        }
 
 
                         if (_connector.SendPacket(data.Buffer) == true)

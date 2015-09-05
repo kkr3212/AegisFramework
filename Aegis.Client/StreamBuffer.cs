@@ -351,7 +351,7 @@ namespace Aegis.Client
         }
 
 
-        public String GetStringFromUtf8()
+        public string GetStringFromUtf8()
         {
             int i, stringBytes = 0;
             for (i = ReadBytes; i < BufferSize; ++i)
@@ -365,14 +365,14 @@ namespace Aegis.Client
             }
 
 
-            //  String으로 변환할 때 Null terminate를 포함시켜서는 안된다.
-            String val = Encoding.UTF8.GetString(Buffer, ReadBytes, stringBytes);
+            //  string으로 변환할 때 Null terminate를 포함시켜서는 안된다.
+            string val = Encoding.UTF8.GetString(Buffer, ReadBytes, stringBytes);
             ReadBytes += stringBytes + 1;
             return val;
         }
 
 
-        public String GetStringFromUtf16()
+        public string GetStringFromUtf16()
         {
             int i, stringBytes = 0;
             for (i = ReadBytes; i < BufferSize; i += 2)
@@ -388,8 +388,8 @@ namespace Aegis.Client
             }
 
 
-            //  String으로 변환할 때 Null terminate를 포함시켜서는 안된다.
-            String val = Encoding.Unicode.GetString(Buffer, ReadBytes, stringBytes);
+            //  string으로 변환할 때 Null terminate를 포함시켜서는 안된다.
+            string val = Encoding.Unicode.GetString(Buffer, ReadBytes, stringBytes);
             ReadBytes += stringBytes + 2;
             return val;
         }
@@ -476,7 +476,7 @@ namespace Aegis.Client
         }
 
 
-        public String GetStringFromUtf8(int readIndex)
+        public string GetStringFromUtf8(int readIndex)
         {
             int i, stringBytes = 0;
             for (i = readIndex; i < BufferSize; ++i)
@@ -490,12 +490,12 @@ namespace Aegis.Client
             }
 
 
-            //  String으로 변환할 때 Null terminate를 포함시켜서는 안된다.
+            //  string으로 변환할 때 Null terminate를 포함시켜서는 안된다.
             return Encoding.UTF8.GetString(Buffer, readIndex, stringBytes);
         }
 
 
-        public String GetStringFromUtf16(int readIndex)
+        public string GetStringFromUtf16(int readIndex)
         {
             int i, stringBytes = 0;
             for (i = readIndex; i < BufferSize; i += 2)
@@ -511,7 +511,7 @@ namespace Aegis.Client
             }
 
 
-            //  String으로 변환할 때 Null terminate를 포함시켜서는 안된다.
+            //  string으로 변환할 때 Null terminate를 포함시켜서는 안된다.
             return Encoding.Unicode.GetString(Buffer, readIndex, stringBytes);
         }
 
@@ -597,7 +597,7 @@ namespace Aegis.Client
         }
 
 
-        public int PutStringAsUtf8(String var)
+        public int PutStringAsUtf8(string var)
         {
             int prevIndex = WrittenBytes;
             byte[] data = Encoding.UTF8.GetBytes(var);
@@ -608,7 +608,7 @@ namespace Aegis.Client
         }
 
 
-        public int PutStringAsUtf16(String var)
+        public int PutStringAsUtf16(string var)
         {
             int prevIndex = WrittenBytes;
             byte[] data = Encoding.Unicode.GetBytes(var);

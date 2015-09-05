@@ -30,7 +30,7 @@ namespace Aegis.Client
         }
 
 
-        public bool Connect(String ipAddress, int portNo)
+        public bool Connect(string ipAddress, int portNo)
         {
             if (_socket != null)
                 throw new AegisException("This session has already been activated.");

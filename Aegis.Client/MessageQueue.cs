@@ -76,7 +76,7 @@ namespace Aegis.Client
         }
 
 
-        public MessageData Pop(int timeout)
+        public List<MessageData> Pop(int timeout)
         {
             lock (_queue)
             {
@@ -86,10 +86,10 @@ namespace Aegis.Client
                         return null;
                 }
 
+                List<MessageData> ret = _queue.ToList();
+                _queue.Clear();
 
-                MessageData data = _queue.First();
-                _queue.Remove(data);
-                return data;
+                return ret;
             }
         }
     }

@@ -91,7 +91,7 @@ namespace Aegis.Client
         public int SeqNo
         {
             get { return base.GetInt32(4); }
-            private set { base.OverwriteInt32(4, value); }
+            set { base.OverwriteInt32(4, value); }
         }
 
 
@@ -237,7 +237,7 @@ namespace Aegis.Client
         }
 
 
-        public void Encrypt(String iv, String key)
+        public void Encrypt(string iv, string key)
         {
             //  Padding
             {
@@ -291,7 +291,7 @@ namespace Aegis.Client
 
 
 
-        public bool Decrypt(String iv, String key)
+        public bool Decrypt(string iv, string key)
         {
             UInt16 packetSize = Size;
 
@@ -299,7 +299,7 @@ namespace Aegis.Client
             //  Block Size가 일치하지 않으면 복호화를 할 수 없다.
             if ((packetSize - 2) % 16 != 0)
             {
-                Debug.WriteLine(String.Format("BlockSize is not match(packetsize={0}).", packetSize));
+                Debug.WriteLine(string.Format("BlockSize is not match(packetsize={0}).", packetSize));
                 return false;
             }
 

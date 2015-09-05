@@ -30,7 +30,7 @@ namespace Aegis.Client
 
     public delegate void EventHandler_Connected(bool connected);
     public delegate void EventHandler_Disconnected();
-    public delegate void EventHandler_Send(int transBytes);
+    public delegate void EventHandler_Sent(int transBytes);
     public delegate void EventHandler_Received(StreamBuffer buffer);
     public delegate bool EventHandler_IsValidPacket(StreamBuffer buffer, out int packetSize);
 }
