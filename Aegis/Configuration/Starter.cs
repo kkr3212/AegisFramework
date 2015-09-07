@@ -76,9 +76,9 @@ namespace Aegis.Configuration
                 else
                 {
                     channel.StartNetwork(
-                        delegate { return GenerateSession(config.SessionClassName, config.ReceiveBufferSize); }
-                        , config.InitSessionPoolCount, config.MaxSessionPoolCount
-                        , config.ListenIpAddress, config.ListenPortNo);
+                            delegate { return GenerateSession(config.SessionClassName, config.ReceiveBufferSize); },
+                            config.InitSessionPoolCount, config.MaxSessionPoolCount)
+                        .OpenListener(config.ListenIpAddress, config.ListenPortNo);
                 }
             }
         }
@@ -106,9 +106,9 @@ namespace Aegis.Configuration
             else
             {
                 channel.StartNetwork(
-                    delegate { return GenerateSession(config.SessionClassName, config.ReceiveBufferSize); }
-                    , config.InitSessionPoolCount, config.MaxSessionPoolCount
-                    , config.ListenIpAddress, config.ListenPortNo);
+                        delegate { return GenerateSession(config.SessionClassName, config.ReceiveBufferSize); },
+                        config.InitSessionPoolCount, config.MaxSessionPoolCount)
+                    .OpenListener(config.ListenIpAddress, config.ListenPortNo);
             }
 
             return channel;

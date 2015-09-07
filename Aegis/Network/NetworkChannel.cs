@@ -100,7 +100,8 @@ namespace Aegis.Network
         /// <param name="generator">Session 객체를 생성하는 Delegator를 설정합니다. SessionManager에서는 내부적으로 Session Pool을 관리하는데, Pool에 객체가 부족할 때 이 Delegator가 호출됩니다. 그러므로 이 Delegator에서는 ObjectPool 대신 new를 사용해 인스턴스를 생성하는 것이 좋습니다.</param>
         /// <param name="initPoolSize">최초에 생성할 Session의 개수를 지정합니다.</param>
         /// <param name="maxPoolSize">Session 객체의 최대개수를 지정합니다. 0이 입력되면 Session 생성시 최대개수를 무시합니다.</param>
-        public void StartNetwork(SessionGenerateDelegator generator, Int32 initPoolSize, Int32 maxPoolSize)
+        /// <returns>현재 NetworkChannel 객체를 반환합니다.</returns>
+        public NetworkChannel StartNetwork(SessionGenerateDelegator generator, Int32 initPoolSize, Int32 maxPoolSize)
         {
             if (generator == null)
                 throw new AegisException(AegisResult.InvalidArgument, "Argument 'generator' cannot be null.");
@@ -108,27 +109,7 @@ namespace Aegis.Network
             SessionManager.SessionGenerator = generator;
             SessionManager.MaxSessionPoolSize = maxPoolSize;
             SessionManager.CreatePool(initPoolSize);
-        }
-
-
-        /// <summary>
-        /// Acceptor를 사용하는 네트워크 작업을 시작합니다.
-        /// </summary>
-        /// <param name="generator">Session 객체를 생성하는 Delegator를 설정합니다. SessionManager에서는 내부적으로 Session Pool을 관리하는데, Pool에 객체가 부족할 때 이 Delegator가 호출됩니다. 그러므로 이 Delegator에서는 ObjectPool 대신 new를 사용해 인스턴스를 생성하는 것이 좋습니다.</param>
-        /// <param name="initPoolSize">최초에 생성할 Session의 개수를 지정합니다.</param>
-        /// <param name="maxPoolSize">Session 객체의 최대개수를 지정합니다. 0이 입력되면 Session 생성시 최대개수를 무시합니다.</param>
-        /// <param name="ipAddress">접속요청 받을 Ip Address</param>
-        /// <param name="portNo">접속요청 받을 PortNo</param>
-        public void StartNetwork(SessionGenerateDelegator generator, Int32 initPoolSize, Int32 maxPoolSize, String ipAddress, Int32 portNo)
-        {
-            if (generator == null)
-                throw new AegisException(AegisResult.InvalidArgument, "Argument 'generator' cannot be null.");
-
-            SessionManager.SessionGenerator = generator;
-            SessionManager.MaxSessionPoolSize = maxPoolSize;
-            SessionManager.CreatePool(initPoolSize);
-
-            Acceptor.Listen(ipAddress, portNo);
+            return this;
         }
 
 
@@ -148,9 +129,11 @@ namespace Aegis.Network
         /// </summary>
         /// <param name="ipAddress">접속요청 받을 Ip Address</param>
         /// <param name="portNo">접속요청 받을 PortNo</param>
-        public void OpenListener(String ipAddress, Int32 portNo)
+        /// <returns>현재 NetworkChannel 객체를 반환합니다.</returns>
+        public NetworkChannel OpenListener(String ipAddress, Int32 portNo)
         {
             Acceptor.Listen(ipAddress, portNo);
+            return this;
         }
 
 

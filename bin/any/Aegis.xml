@@ -176,21 +176,23 @@
             </summary>
             <param name="recvBufferSize">변경할 수신버퍼의 크기(Byte)</param>
         </member>
-        <member name="M:Aegis.Network.AsyncEventSession.SendPacket(System.Byte[],System.Int32,System.Int32)">
+        <member name="M:Aegis.Network.AsyncEventSession.SendPacket(System.Byte[],System.Int32,System.Int32,System.Action)">
             <summary>
             패킷을 전송합니다.
             </summary>
             <param name="buffer">보낼 데이터가 담긴 버퍼</param>
             <param name="offset">source에서 전송할 시작 위치</param>
             <param name="size">source에서 전송할 크기(Byte)</param>
+            <param name="onSent">패킷 전송이 완료된 후 호출할 Action</param>
         </member>
-        <member name="M:Aegis.Network.AsyncEventSession.SendPacket(Aegis.StreamBuffer)">
+        <member name="M:Aegis.Network.AsyncEventSession.SendPacket(Aegis.StreamBuffer,System.Action)">
             <summary>
             패킷을 전송합니다.
             </summary>
             <param name="buffer">전송할 데이터가 담긴 StreamBuffer</param>
+            <param name="onSent">패킷 전송이 완료된 후 호출할 Action</param>
         </member>
-        <member name="M:Aegis.Network.AsyncEventSession.SendPacket(Aegis.StreamBuffer,Aegis.Network.PacketDeterminator,Aegis.Network.EventHandler_Receive)">
+        <member name="M:Aegis.Network.AsyncEventSession.SendPacket(Aegis.StreamBuffer,Aegis.Network.PacketDeterminator,Aegis.Network.EventHandler_Receive,System.Action)">
             <summary>
             패킷을 전송하고, 특정 패킷이 수신될 경우 dispatcher에 지정된 핸들러를 실행합니다.
             이 기능은 AwaitableMethod보다는 빠르지만, 동시에 많이 호출될 경우 성능이 저하될 수 있습니다.
@@ -198,6 +200,7 @@
             <param name="buffer">전송할 데이터가 담긴 StreamBuffer</param>
             <param name="determinator">dispatcher에 지정된 핸들러를 호출할 것인지 여부를 판단하는 함수를 지정합니다.</param>
             <param name="dispatcher">실행될 함수를 지정합니다.</param>
+            <param name="onSent">패킷 전송이 완료된 후 호출할 Action</param>
         </member>
         <member name="M:Aegis.Randomizer`1.Next">
             <summary>
@@ -319,16 +322,7 @@
             <param name="generator">Session 객체를 생성하는 Delegator를 설정합니다. SessionManager에서는 내부적으로 Session Pool을 관리하는데, Pool에 객체가 부족할 때 이 Delegator가 호출됩니다. 그러므로 이 Delegator에서는 ObjectPool 대신 new를 사용해 인스턴스를 생성하는 것이 좋습니다.</param>
             <param name="initPoolSize">최초에 생성할 Session의 개수를 지정합니다.</param>
             <param name="maxPoolSize">Session 객체의 최대개수를 지정합니다. 0이 입력되면 Session 생성시 최대개수를 무시합니다.</param>
-        </member>
-        <member name="M:Aegis.Network.NetworkChannel.StartNetwork(Aegis.SessionGenerateDelegator,System.Int32,System.Int32,System.String,System.Int32)">
-            <summary>
-            Acceptor를 사용하는 네트워크 작업을 시작합니다.
-            </summary>
-            <param name="generator">Session 객체를 생성하는 Delegator를 설정합니다. SessionManager에서는 내부적으로 Session Pool을 관리하는데, Pool에 객체가 부족할 때 이 Delegator가 호출됩니다. 그러므로 이 Delegator에서는 ObjectPool 대신 new를 사용해 인스턴스를 생성하는 것이 좋습니다.</param>
-            <param name="initPoolSize">최초에 생성할 Session의 개수를 지정합니다.</param>
-            <param name="maxPoolSize">Session 객체의 최대개수를 지정합니다. 0이 입력되면 Session 생성시 최대개수를 무시합니다.</param>
-            <param name="ipAddress">접속요청 받을 Ip Address</param>
-            <param name="portNo">접속요청 받을 PortNo</param>
+            <returns>현재 NetworkChannel 객체를 반환합니다.</returns>
         </member>
         <member name="M:Aegis.Network.NetworkChannel.StopNetwork">
             <summary>
@@ -342,6 +336,7 @@
             </summary>
             <param name="ipAddress">접속요청 받을 Ip Address</param>
             <param name="portNo">접속요청 받을 PortNo</param>
+            <returns>현재 NetworkChannel 객체를 반환합니다.</returns>
         </member>
         <member name="M:Aegis.Network.NetworkChannel.CloseListener">
             <summary>
@@ -569,21 +564,23 @@
             </summary>
             <param name="recvBufferSize">변경할 수신버퍼의 크기(Byte)</param>
         </member>
-        <member name="M:Aegis.Network.AsyncResultSession.SendPacket(System.Byte[],System.Int32,System.Int32)">
+        <member name="M:Aegis.Network.AsyncResultSession.SendPacket(System.Byte[],System.Int32,System.Int32,System.Action)">
             <summary>
             패킷을 전송합니다.
             </summary>
             <param name="buffer">보낼 데이터가 담긴 버퍼</param>
             <param name="offset">source에서 전송할 시작 위치</param>
             <param name="size">source에서 전송할 크기(Byte)</param>
+            <param name="onSent">패킷 전송이 완료된 후 호출할 Action</param>
         </member>
-        <member name="M:Aegis.Network.AsyncResultSession.SendPacket(Aegis.StreamBuffer)">
+        <member name="M:Aegis.Network.AsyncResultSession.SendPacket(Aegis.StreamBuffer,System.Action)">
             <summary>
             패킷을 전송합니다.
             </summary>
             <param name="buffer">전송할 데이터가 담긴 StreamBuffer</param>
+            <param name="onSent">패킷 전송이 완료된 후 호출할 Action</param>
         </member>
-        <member name="M:Aegis.Network.AsyncResultSession.SendPacket(Aegis.StreamBuffer,Aegis.Network.PacketDeterminator,Aegis.Network.EventHandler_Receive)">
+        <member name="M:Aegis.Network.AsyncResultSession.SendPacket(Aegis.StreamBuffer,Aegis.Network.PacketDeterminator,Aegis.Network.EventHandler_Receive,System.Action)">
             <summary>
             패킷을 전송하고, 특정 패킷이 수신될 경우 dispatcher에 지정된 핸들러를 실행합니다.
             이 기능은 AwaitableMethod보다는 빠르지만, 동시에 많이 호출될 경우 성능이 저하될 수 있습니다.
@@ -591,6 +588,7 @@
             <param name="buffer">전송할 데이터가 담긴 StreamBuffer</param>
             <param name="determinator">dispatcher에 지정된 핸들러를 호출할 것인지 여부를 판단하는 함수를 지정합니다.</param>
             <param name="dispatcher">실행될 함수를 지정합니다.</param>
+            <param name="onSent">패킷 전송이 완료된 후 호출할 Action</param>
         </member>
         <member name="P:Aegis.Network.SessionManager.MaxSessionPoolSize">
             <summary>

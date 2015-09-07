@@ -195,14 +195,15 @@ namespace Aegis.Network
         /// <param name="buffer">보낼 데이터가 담긴 버퍼</param>
         /// <param name="offset">source에서 전송할 시작 위치</param>
         /// <param name="size">source에서 전송할 크기(Byte)</param>
-        public override void SendPacket(byte[] buffer, Int32 offset, Int32 size)
+        /// <param name="onSent">패킷 전송이 완료된 후 호출할 Action</param>
+        public override void SendPacket(byte[] buffer, Int32 offset, Int32 size, Action onSent = null)
         {
             try
             {
                 lock (this)
                 {
                     if (Socket != null)
-                        Socket.BeginSend(buffer, offset, size, SocketFlags.None, OnSocket_Send, null);
+                        Socket.BeginSend(buffer, offset, size, SocketFlags.None, OnSocket_Send, onSent);
                 }
             }
             catch (SocketException)
@@ -219,14 +220,15 @@ namespace Aegis.Network
         /// 패킷을 전송합니다.
         /// </summary>
         /// <param name="buffer">전송할 데이터가 담긴 StreamBuffer</param>
-        public override void SendPacket(StreamBuffer buffer)
+        /// <param name="onSent">패킷 전송이 완료된 후 호출할 Action</param>
+        public override void SendPacket(StreamBuffer buffer, Action onSent = null)
         {
             try
             {
                 lock (this)
                 {
                     if (Socket != null)
-                        Socket.BeginSend(buffer.Buffer, 0, buffer.WrittenBytes, SocketFlags.None, OnSocket_Send, null);
+                        Socket.BeginSend(buffer.Buffer, 0, buffer.WrittenBytes, SocketFlags.None, OnSocket_Send, onSent);
                 }
             }
             catch (SocketException)
@@ -246,7 +248,8 @@ namespace Aegis.Network
         /// <param name="buffer">전송할 데이터가 담긴 StreamBuffer</param>
         /// <param name="determinator">dispatcher에 지정된 핸들러를 호출할 것인지 여부를 판단하는 함수를 지정합니다.</param>
         /// <param name="dispatcher">실행될 함수를 지정합니다.</param>
-        public void SendPacket(StreamBuffer buffer, PacketDeterminator determinator, EventHandler_Receive dispatcher)
+        /// <param name="onSent">패킷 전송이 완료된 후 호출할 Action</param>
+        public override void SendPacket(StreamBuffer buffer, PacketDeterminator determinator, EventHandler_Receive dispatcher, Action onSent = null)
         {
             if (determinator == null || dispatcher == null)
                 throw new AegisException(AegisResult.InvalidArgument, "The argument determinator and dispatcher cannot be null.");
@@ -257,7 +260,7 @@ namespace Aegis.Network
                 {
                     _alternator.Add(determinator, dispatcher);
                     if (Socket != null)
-                        Socket.BeginSend(buffer.Buffer, 0, buffer.WrittenBytes, SocketFlags.None, OnSocket_Send, null);
+                        Socket.BeginSend(buffer.Buffer, 0, buffer.WrittenBytes, SocketFlags.None, OnSocket_Send, onSent);
                 }
             }
             catch (SocketException)
@@ -280,6 +283,9 @@ namespace Aegis.Network
                         return;
 
                     Int32 transBytes = Socket.EndSend(ar);
+                    if (ar.AsyncState != null)
+                        ((Action)ar.AsyncState)();
+
                     if (NetworkEvent_Sent != null)
                         NetworkEvent_Sent(this, transBytes);
                 }

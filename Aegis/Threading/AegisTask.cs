@@ -139,6 +139,29 @@ namespace Aegis.Threading
         }
 
 
+        public static Task RunPeriodically(Int32 period, Func<Boolean> action)
+        {
+            return Task.Run(async () =>
+            {
+                Interlocked.Increment(ref _taskCount);
+                while (true)
+                {
+                    try
+                    {
+                        await Delay(period);
+                        if (action() == false)
+                            break;
+                    }
+                    catch (Exception e)
+                    {
+                        Logger.Write(LogType.Err, 1, e.ToString());
+                    }
+                }
+                Interlocked.Decrement(ref _taskCount);
+            });
+        }
+
+
         public static Task Delay(int millisecondsDelay)
         {
             return Task.Delay(millisecondsDelay);
