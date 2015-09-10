@@ -529,7 +529,7 @@ namespace Aegis
 
         public Boolean GetBoolean(Int32 readIndex)
         {
-            if (readIndex + sizeof(byte) > WrittenBytes)
+            if (readIndex + sizeof(Boolean) > WrittenBytes)
                 throw new AegisException(AegisResult.NotEnoughBuffer, "No more readable buffer.");
 
             return (Buffer[readIndex] == 1);
@@ -790,7 +790,7 @@ namespace Aegis
         {
             Int32 prevIndex = WrittenBytes;
 
-            Write(BitConverter.GetBytes(var), 0, 1);
+            Write(BitConverter.GetBytes(var), 0, sizeof(Boolean));
             return prevIndex;
         }
 
@@ -799,7 +799,7 @@ namespace Aegis
         {
             Int32 prevIndex = WrittenBytes;
 
-            Write(var);
+            Write(BitConverter.GetBytes(var), 0, sizeof(SByte));
             return prevIndex;
         }
 
@@ -808,7 +808,7 @@ namespace Aegis
         {
             Int32 prevIndex = WrittenBytes;
 
-            Write(var);
+            Write(BitConverter.GetBytes(var), 0, sizeof(Byte));
             return prevIndex;
         }
 
@@ -817,7 +817,7 @@ namespace Aegis
         {
             Int32 prevIndex = WrittenBytes;
 
-            Write(BitConverter.GetBytes(var));
+            Write(BitConverter.GetBytes(var), 0, sizeof(Char));
             return prevIndex;
         }
 

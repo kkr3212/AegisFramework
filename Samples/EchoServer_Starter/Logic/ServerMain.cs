@@ -31,9 +31,9 @@ namespace EchoServer.Logic
 
             try
             {
-                Logger.Write(LogType.Info, 2, "EchoServer (Aegis {0})", Aegis.Version.ToString());
+                Logger.Write(LogType.Info, 2, "EchoServer (Aegis {0})", Aegis.Configuration.Environment.AegisVersion);
 
-                Aegis.Configuration.Starter.Initialize(System.Reflection.Assembly.GetExecutingAssembly(), "./Config.xml");
+                Aegis.Configuration.Starter.Initialize("./Config.xml");
                 Aegis.Configuration.Starter.StartNetwork();
             }
             catch (Exception e)

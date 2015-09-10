@@ -19,7 +19,6 @@ namespace Aegis.Configuration
     /// </summary>
     public static class Starter
     {
-        private static Assembly _assembly;
         private static Mutex _mutex;
         private static List<ConfigNetworkChannel> _listNetworkConfig;
 
@@ -32,14 +31,10 @@ namespace Aegis.Configuration
 
         /// <summary>
         /// XML 파일로 부터 구성정보를 읽어들입니다.
-        /// assembly에 값이 지정되어야 XML의 NetworkChannel/sessionClass에 정의한 클래스를 생성할 수 있습니다.
-        /// assembly는 sessionClass가 정의된 Assembly에서 System.Reflection.Assembly.GetExecutingAssembly()를 호출하여 얻을 수 있습니다.
         /// </summary>
-        /// <param name="assembly">NetworkChannel/sessionClass가 정의된 Assembly</param>
         /// <param name="configFilename">XML 파일명</param>
-        public static void Initialize(Assembly assembly, String configFilename)
+        public static void Initialize(String configFilename)
         {
-            _assembly = assembly;
             _listNetworkConfig = new List<ConfigNetworkChannel>();
             CustomData = new CustomData("CustomData");
 
@@ -116,6 +111,35 @@ namespace Aegis.Configuration
 
 
         /// <summary>
+        /// 지정된 NetworkChannel만을 생성하고 네트워킹을 시작합니다.
+        /// sessionGenerator가 지정되기 때문에 config file에 정의된 sessionClass, receiveBufferSize는 무시됩니다.
+        /// </summary>
+        /// <param name="networkChannelName">시작할 NetworkChannel 이름</param>
+        /// <param name="sessionGenerator">NetworkSession 객체를 생성하는 Delegator</param>
+        /// <returns>해당 NetworkChannel 객체</returns>
+        public static NetworkChannel StartNetwork(String networkChannelName, SessionGenerateDelegator sessionGenerator)
+        {
+            ConfigNetworkChannel config = _listNetworkConfig.Find(v => v.NetworkChannelName == networkChannelName);
+            if (config == null)
+                throw new AegisException(AegisResult.InvalidArgument, "Invalid NetworkChannel name({0}).", networkChannelName);
+
+
+            NetworkChannel channel = NetworkChannel.CreateChannel(config.NetworkChannelName);
+            if (config.ListenIpAddress.Length == 0 || config.ListenPortNo == 0)
+            {
+                channel.StartNetwork(sessionGenerator, config.InitSessionPoolCount, config.MaxSessionPoolCount);
+            }
+            else
+            {
+                channel.StartNetwork(sessionGenerator, config.InitSessionPoolCount, config.MaxSessionPoolCount)
+                       .OpenListener(config.ListenIpAddress, config.ListenPortNo);
+            }
+
+            return channel;
+        }
+
+
+        /// <summary>
         /// 실행중인 모든 NetworkChannel을 중지합니다.
         /// </summary>
         public static void StopNetwork()
@@ -144,7 +168,7 @@ namespace Aegis.Configuration
 
         private static NetworkSession GenerateSession(String sessionClassName, Int32 receiveBufferSize)
         {
-            Type type = _assembly.GetType(sessionClassName);
+            Type type = Environment.ExecutingAssembly.GetType(sessionClassName);
             if (type == null)
                 throw new AegisException(AegisResult.InvalidArgument, "'{0}' session class is not exists.", sessionClassName);
 

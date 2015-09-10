@@ -91,6 +91,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Configuration\ConfigData.cs" />
+    <Compile Include="Configuration\Environment.cs" />
     <Compile Include="Configuration\Starter.cs" />
     <Compile Include="Converter\DateTimeConverter.cs" />
     <Compile Include="Converter\StringConverter.cs" />
