@@ -34,7 +34,8 @@ namespace Aegis.Data.MySql
 
         public void Dispose()
         {
-            MySql.ReturnDBC(this);
+            if (MySql != null)
+                MySql.ReturnDBC(this);
         }
 
 

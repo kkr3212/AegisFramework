@@ -9,7 +9,7 @@ using System.Threading;
 namespace Aegis
 {
     /// <summary>
-    /// 이 Queue는 Thread에 안정적입니다.
+    /// Queue에서 요소를 가져올 때 Queue가 비어있다면 새로운 요소가 삽입될 때 까지 대기합니다.
     /// </summary>
     /// <typeparam name="T">Queue의 요소 형식을 지정합니다.</typeparam>
     public class BlockingQueue<T>
@@ -18,7 +18,8 @@ namespace Aegis
         private Int32 _queuedCount = 0;
         private Boolean _canceled = false;
 
-        public Int32 QueuedCount { get { return _queuedCount; } }
+        public List<T> Items { get { return _queue.ToList(); } }
+        public Int32 Count { get { return _queuedCount; } }
 
 
 

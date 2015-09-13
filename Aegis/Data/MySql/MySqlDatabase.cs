@@ -39,20 +39,29 @@ namespace Aegis.Data.MySql
         }
 
 
-
-
-
         public MySqlDatabase(String ipAddress, Int32 portNo, String charSet, String dbName, String userId, String userPwd)
         {
             Initialize(ipAddress, portNo, charSet, dbName, userId, userPwd);
         }
 
 
-
-
-
         public void Initialize(String ipAddress, Int32 portNo, String charSet, String dbName, String userId, String userPwd)
         {
+            //  Connection Test
+            using (DBConnector dbc = new DBConnector(null))
+            {
+                try
+                {
+                    dbc.Connect(ipAddress, portNo, charSet, dbName, userId, userPwd);
+                    dbc.Close();
+                }
+                catch (Exception e)
+                {
+                    throw new AegisException(e, "Invalid MySQL connection.");
+                }
+            }
+
+
             using (_lock.WriterLock)
             {
                 IpAddress = ipAddress;

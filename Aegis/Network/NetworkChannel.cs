@@ -76,11 +76,7 @@ namespace Aegis.Network
         {
             lock (Channels)
             {
-                NetworkChannel channel = Channels.Find(v => v.Name == name);
-                if (channel != null)
-                    return channel;
-
-                throw new AegisException(AegisResult.NoNetworkChannelName, "Invalid NetworkChannel name({0}).", name);
+                return Channels.Find(v => v.Name == name);
             }
         }
 
