@@ -98,9 +98,9 @@ namespace Aegis.Network
 
         public abstract void SetReceiveBufferSize(Int32 recvBufferSize);
         internal abstract void WaitForReceive();
-        public abstract void SendPacket(byte[] buffer, Int32 offset, Int32 size, Action onSent = null);
-        public abstract void SendPacket(StreamBuffer buffer, Action onSent = null);
-        public abstract void SendPacket(StreamBuffer buffer, PacketDeterminator determinator, EventHandler_Receive dispatcher, Action onSent = null);
+        public abstract void SendPacket(byte[] buffer, Int32 offset, Int32 size, Action<StreamBuffer> onSent = null);
+        public abstract void SendPacket(StreamBuffer buffer, Action<StreamBuffer> onSent = null);
+        public abstract void SendPacket(StreamBuffer buffer, PacketDeterminator determinator, EventHandler_Receive dispatcher, Action<StreamBuffer> onSent = null);
 
 
         internal void AttachSocket(Socket socket)

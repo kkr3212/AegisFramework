@@ -196,14 +196,20 @@ namespace Aegis.Network
         /// <param name="offset">source에서 전송할 시작 위치</param>
         /// <param name="size">source에서 전송할 크기(Byte)</param>
         /// <param name="onSent">패킷 전송이 완료된 후 호출할 Action</param>
-        public override void SendPacket(byte[] buffer, Int32 offset, Int32 size, Action onSent = null)
+        public override void SendPacket(byte[] buffer, Int32 offset, Int32 size, Action<StreamBuffer> onSent = null)
         {
             try
             {
                 lock (this)
                 {
                     if (Socket != null)
-                        Socket.BeginSend(buffer, offset, size, SocketFlags.None, OnSocket_Send, onSent);
+                    {
+                        if (onSent == null)
+                            Socket.BeginSend(buffer, offset, size, SocketFlags.None, OnSocket_Send, null);
+                        else
+                            Socket.BeginSend(buffer, offset, size, SocketFlags.None, OnSocket_Send,
+                                             new NetworkSendToken(new StreamBuffer(buffer, offset, size), onSent));
+                    }
                 }
             }
             catch (SocketException)
@@ -221,14 +227,23 @@ namespace Aegis.Network
         /// </summary>
         /// <param name="buffer">전송할 데이터가 담긴 StreamBuffer</param>
         /// <param name="onSent">패킷 전송이 완료된 후 호출할 Action</param>
-        public override void SendPacket(StreamBuffer buffer, Action onSent = null)
+        public override void SendPacket(StreamBuffer buffer, Action<StreamBuffer> onSent = null)
         {
             try
             {
                 lock (this)
                 {
                     if (Socket != null)
-                        Socket.BeginSend(buffer.Buffer, 0, buffer.WrittenBytes, SocketFlags.None, OnSocket_Send, onSent);
+                    {
+                        //  ReadIndex가 OnSocket_Send에서 사용되므로 ReadIndex를 초기화해야 한다.
+                        buffer.ResetReadIndex();
+
+                        if (onSent == null)
+                            Socket.BeginSend(buffer.Buffer, 0, buffer.WrittenBytes, SocketFlags.None, OnSocket_Send, null);
+                        else
+                            Socket.BeginSend(buffer.Buffer, 0, buffer.WrittenBytes, SocketFlags.None, OnSocket_Send,
+                                             new NetworkSendToken(buffer, onSent));
+                    }
                 }
             }
             catch (SocketException)
@@ -249,7 +264,7 @@ namespace Aegis.Network
         /// <param name="determinator">dispatcher에 지정된 핸들러를 호출할 것인지 여부를 판단하는 함수를 지정합니다.</param>
         /// <param name="dispatcher">실행될 함수를 지정합니다.</param>
         /// <param name="onSent">패킷 전송이 완료된 후 호출할 Action</param>
-        public override void SendPacket(StreamBuffer buffer, PacketDeterminator determinator, EventHandler_Receive dispatcher, Action onSent = null)
+        public override void SendPacket(StreamBuffer buffer, PacketDeterminator determinator, EventHandler_Receive dispatcher, Action<StreamBuffer> onSent = null)
         {
             if (determinator == null || dispatcher == null)
                 throw new AegisException(AegisResult.InvalidArgument, "The argument determinator and dispatcher cannot be null.");
@@ -260,7 +275,16 @@ namespace Aegis.Network
                 {
                     _alternator.Add(determinator, dispatcher);
                     if (Socket != null)
-                        Socket.BeginSend(buffer.Buffer, 0, buffer.WrittenBytes, SocketFlags.None, OnSocket_Send, onSent);
+                    {
+                        //  ReadIndex가 OnSocket_Send에서 사용되므로 ReadIndex를 초기화해야 한다.
+                        buffer.ResetReadIndex();
+
+                        if (onSent == null)
+                            Socket.BeginSend(buffer.Buffer, 0, buffer.WrittenBytes, SocketFlags.None, OnSocket_Send, null);
+                        else
+                            Socket.BeginSend(buffer.Buffer, 0, buffer.WrittenBytes, SocketFlags.None, OnSocket_Send,
+                                             new NetworkSendToken(buffer, onSent));
+                    }
                 }
             }
             catch (SocketException)
@@ -282,9 +306,16 @@ namespace Aegis.Network
                     if (Socket == null)
                         return;
 
+
                     Int32 transBytes = Socket.EndSend(ar);
-                    if (ar.AsyncState != null)
-                        ((Action)ar.AsyncState)();
+                    NetworkSendToken token = (NetworkSendToken)ar.AsyncState;
+
+                    if (token != null)
+                    {
+                        token.Buffer.Read(transBytes);
+                        if (token.Buffer.ReadableSize == 0)
+                            token.ActionOnCompletion(token.Buffer);
+                    }
 
                     if (NetworkEvent_Sent != null)
                         NetworkEvent_Sent(this, transBytes);

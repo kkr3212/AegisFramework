@@ -20,7 +20,6 @@ namespace Aegis.Network
     {
         private StreamBuffer _receivedBuffer, _dispatchBuffer;
         private SocketAsyncEventArgs _saeaRecv;
-        private Queue<SocketAsyncEventArgs> _queueSaeaSend = new Queue<SocketAsyncEventArgs>();
 
         public AwaitableMethod AwaitableMethod { get; private set; }
         private ResponseAlternator _alternator;
@@ -205,37 +204,22 @@ namespace Aegis.Network
         /// <param name="offset">source에서 전송할 시작 위치</param>
         /// <param name="size">source에서 전송할 크기(Byte)</param>
         /// <param name="onSent">패킷 전송이 완료된 후 호출할 Action</param>
-        public override void SendPacket(byte[] buffer, Int32 offset, Int32 size, Action onSent = null)
+        public override void SendPacket(byte[] buffer, Int32 offset, Int32 size, Action<StreamBuffer> onSent = null)
         {
             try
             {
-                SocketAsyncEventArgs saea;
-
-
-                lock (_queueSaeaSend)
-                {
-                    if (_queueSaeaSend.Count() == 0)
-                    {
-                        saea = new SocketAsyncEventArgs();
-                        saea.Completed += OnComplete_Send;
-                    }
-                    else
-                        saea = _queueSaeaSend.Dequeue();
-                }
-
                 lock (this)
                 {
                     if (Socket == null)
-                    {
-                        lock (_queueSaeaSend)
-                        {
-                            _queueSaeaSend.Enqueue(saea);
-                        }
                         return;
-                    }
 
-                    saea.UserToken = onSent;
+
+                    SocketAsyncEventArgs saea = new SocketAsyncEventArgs();
+                    saea.Completed += OnComplete_Send;
                     saea.SetBuffer(buffer, offset, size);
+                    if (onSent != null)
+                        saea.UserToken = new NetworkSendToken(new StreamBuffer(buffer, offset, size), onSent);
+
                     if (Socket.SendAsync(saea) == false && NetworkEvent_Sent != null)
                         NetworkEvent_Sent(this, saea.BytesTransferred);
                 }
@@ -255,40 +239,26 @@ namespace Aegis.Network
         /// </summary>
         /// <param name="buffer">전송할 데이터가 담긴 StreamBuffer</param>
         /// <param name="onSent">패킷 전송이 완료된 후 호출할 Action</param>
-        public override void SendPacket(StreamBuffer buffer, Action onSent = null)
+        public override void SendPacket(StreamBuffer buffer, Action<StreamBuffer> onSent = null)
         {
             try
             {
-                SocketAsyncEventArgs saea;
-
-
-                lock (_queueSaeaSend)
-                {
-                    if (Socket == null)
-                        return;
-
-                    if (_queueSaeaSend.Count() == 0)
-                    {
-                        saea = new SocketAsyncEventArgs();
-                        saea.Completed += OnComplete_Send;
-                    }
-                    else
-                        saea = _queueSaeaSend.Dequeue();
-                }
-
                 lock (this)
                 {
                     if (Socket == null)
-                    {
-                        lock (_queueSaeaSend)
-                        {
-                            _queueSaeaSend.Enqueue(saea);
-                        }
                         return;
-                    }
 
-                    saea.UserToken = onSent;
+
+                    //  ReadIndex가 OnSocket_Send에서 사용되므로 ReadIndex를 초기화해야 한다.
+                    buffer.ResetReadIndex();
+
+
+                    SocketAsyncEventArgs saea = new SocketAsyncEventArgs();
+                    saea.Completed += OnComplete_Send;
                     saea.SetBuffer(buffer.Buffer, 0, buffer.WrittenBytes);
+                    if (onSent != null)
+                        saea.UserToken = new NetworkSendToken(buffer, onSent);
+
                     if (Socket.SendAsync(saea) == false && NetworkEvent_Sent != null)
                         NetworkEvent_Sent(this, saea.BytesTransferred);
                 }
@@ -311,7 +281,7 @@ namespace Aegis.Network
         /// <param name="determinator">dispatcher에 지정된 핸들러를 호출할 것인지 여부를 판단하는 함수를 지정합니다.</param>
         /// <param name="dispatcher">실행될 함수를 지정합니다.</param>
         /// <param name="onSent">패킷 전송이 완료된 후 호출할 Action</param>
-        public override void SendPacket(StreamBuffer buffer, PacketDeterminator determinator, EventHandler_Receive dispatcher, Action onSent = null)
+        public override void SendPacket(StreamBuffer buffer, PacketDeterminator determinator, EventHandler_Receive dispatcher, Action<StreamBuffer> onSent = null)
         {
             if (determinator == null || dispatcher == null)
                 throw new AegisException(AegisResult.InvalidArgument, "The argument determinator and dispatcher cannot be null.");
@@ -319,39 +289,23 @@ namespace Aegis.Network
 
             try
             {
-                SocketAsyncEventArgs saea;
-
-
-                lock (_queueSaeaSend)
-                {
-                    if (Socket == null)
-                        return;
-
-                    if (_queueSaeaSend.Count() == 0)
-                    {
-                        saea = new SocketAsyncEventArgs();
-                        saea.Completed += OnComplete_Send;
-                    }
-                    else
-                        saea = _queueSaeaSend.Dequeue();
-                }
-
-
                 lock (this)
                 {
                     if (Socket == null)
-                    {
-                        lock (_queueSaeaSend)
-                        {
-                            _queueSaeaSend.Enqueue(saea);
-                        }
                         return;
-                    }
+
+                    //  ReadIndex가 OnSocket_Send에서 사용되므로 ReadIndex를 초기화해야 한다.
+                    buffer.ResetReadIndex();
+
+
+                    SocketAsyncEventArgs saea = new SocketAsyncEventArgs();
+                    saea.Completed += OnComplete_Send;
+                    saea.SetBuffer(buffer.Buffer, 0, buffer.WrittenBytes);
+                    if (onSent != null)
+                        saea.UserToken = new NetworkSendToken(buffer, onSent);
 
                     _alternator.Add(determinator, dispatcher);
 
-                    saea.UserToken = onSent;
-                    saea.SetBuffer(buffer.Buffer, 0, buffer.WrittenBytes);
                     if (Socket.SendAsync(saea) == false && NetworkEvent_Sent != null)
                         NetworkEvent_Sent(this, saea.BytesTransferred);
                 }
@@ -370,8 +324,14 @@ namespace Aegis.Network
         {
             try
             {
-                if (saea.UserToken != null)
-                    ((Action)saea.UserToken)();
+                NetworkSendToken token = (NetworkSendToken)saea.UserToken;
+                if (token != null)
+                {
+                    token.Buffer.Read(saea.BytesTransferred);
+                    if (token.Buffer.ReadableSize == 0)
+                        token.ActionOnCompletion(token.Buffer);
+                }
+
 
                 if (NetworkEvent_Sent != null)
                 {
@@ -386,15 +346,6 @@ namespace Aegis.Network
             {
                 Logger.Write(LogType.Err, 1, e.ToString());
             }
-
-
-            AegisTask.Run(() =>
-            {
-                lock (_queueSaeaSend)
-                {
-                    _queueSaeaSend.Enqueue(saea);
-                }
-            });
         }
     }
 }

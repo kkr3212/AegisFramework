@@ -182,7 +182,7 @@
             </summary>
             <param name="recvBufferSize">변경할 수신버퍼의 크기(Byte)</param>
         </member>
-        <member name="M:Aegis.Network.AsyncEventSession.SendPacket(System.Byte[],System.Int32,System.Int32,System.Action)">
+        <member name="M:Aegis.Network.AsyncEventSession.SendPacket(System.Byte[],System.Int32,System.Int32,System.Action{Aegis.StreamBuffer})">
             <summary>
             패킷을 전송합니다.
             </summary>
@@ -191,14 +191,14 @@
             <param name="size">source에서 전송할 크기(Byte)</param>
             <param name="onSent">패킷 전송이 완료된 후 호출할 Action</param>
         </member>
-        <member name="M:Aegis.Network.AsyncEventSession.SendPacket(Aegis.StreamBuffer,System.Action)">
+        <member name="M:Aegis.Network.AsyncEventSession.SendPacket(Aegis.StreamBuffer,System.Action{Aegis.StreamBuffer})">
             <summary>
             패킷을 전송합니다.
             </summary>
             <param name="buffer">전송할 데이터가 담긴 StreamBuffer</param>
             <param name="onSent">패킷 전송이 완료된 후 호출할 Action</param>
         </member>
-        <member name="M:Aegis.Network.AsyncEventSession.SendPacket(Aegis.StreamBuffer,Aegis.Network.PacketDeterminator,Aegis.Network.EventHandler_Receive,System.Action)">
+        <member name="M:Aegis.Network.AsyncEventSession.SendPacket(Aegis.StreamBuffer,Aegis.Network.PacketDeterminator,Aegis.Network.EventHandler_Receive,System.Action{Aegis.StreamBuffer})">
             <summary>
             패킷을 전송하고, 특정 패킷이 수신될 경우 dispatcher에 지정된 핸들러를 실행합니다.
             이 기능은 AwaitableMethod보다는 빠르지만, 동시에 많이 호출될 경우 성능이 저하될 수 있습니다.
@@ -570,7 +570,7 @@
             </summary>
             <param name="recvBufferSize">변경할 수신버퍼의 크기(Byte)</param>
         </member>
-        <member name="M:Aegis.Network.AsyncResultSession.SendPacket(System.Byte[],System.Int32,System.Int32,System.Action)">
+        <member name="M:Aegis.Network.AsyncResultSession.SendPacket(System.Byte[],System.Int32,System.Int32,System.Action{Aegis.StreamBuffer})">
             <summary>
             패킷을 전송합니다.
             </summary>
@@ -579,14 +579,14 @@
             <param name="size">source에서 전송할 크기(Byte)</param>
             <param name="onSent">패킷 전송이 완료된 후 호출할 Action</param>
         </member>
-        <member name="M:Aegis.Network.AsyncResultSession.SendPacket(Aegis.StreamBuffer,System.Action)">
+        <member name="M:Aegis.Network.AsyncResultSession.SendPacket(Aegis.StreamBuffer,System.Action{Aegis.StreamBuffer})">
             <summary>
             패킷을 전송합니다.
             </summary>
             <param name="buffer">전송할 데이터가 담긴 StreamBuffer</param>
             <param name="onSent">패킷 전송이 완료된 후 호출할 Action</param>
         </member>
-        <member name="M:Aegis.Network.AsyncResultSession.SendPacket(Aegis.StreamBuffer,Aegis.Network.PacketDeterminator,Aegis.Network.EventHandler_Receive,System.Action)">
+        <member name="M:Aegis.Network.AsyncResultSession.SendPacket(Aegis.StreamBuffer,Aegis.Network.PacketDeterminator,Aegis.Network.EventHandler_Receive,System.Action{Aegis.StreamBuffer})">
             <summary>
             패킷을 전송하고, 특정 패킷이 수신될 경우 dispatcher에 지정된 핸들러를 실행합니다.
             이 기능은 AwaitableMethod보다는 빠르지만, 동시에 많이 호출될 경우 성능이 저하될 수 있습니다.
