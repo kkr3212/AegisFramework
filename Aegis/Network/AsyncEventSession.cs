@@ -278,13 +278,13 @@ namespace Aegis.Network
         /// 이 기능은 AwaitableMethod보다는 빠르지만, 동시에 많이 호출될 경우 성능이 저하될 수 있습니다.
         /// </summary>
         /// <param name="buffer">전송할 데이터가 담긴 StreamBuffer</param>
-        /// <param name="determinator">dispatcher에 지정된 핸들러를 호출할 것인지 여부를 판단하는 함수를 지정합니다.</param>
+        /// <param name="criterion">dispatcher에 지정된 핸들러를 호출할 것인지 여부를 판단하는 함수를 지정합니다.</param>
         /// <param name="dispatcher">실행될 함수를 지정합니다.</param>
         /// <param name="onSent">패킷 전송이 완료된 후 호출할 Action</param>
-        public override void SendPacket(StreamBuffer buffer, PacketDeterminator determinator, EventHandler_Receive dispatcher, Action<StreamBuffer> onSent = null)
+        public override void SendPacket(StreamBuffer buffer, PacketCriterion criterion, EventHandler_Receive dispatcher, Action<StreamBuffer> onSent = null)
         {
-            if (determinator == null || dispatcher == null)
-                throw new AegisException(AegisResult.InvalidArgument, "The argument determinator and dispatcher cannot be null.");
+            if (criterion == null || dispatcher == null)
+                throw new AegisException(AegisResult.InvalidArgument, "The argument criterion and dispatcher cannot be null.");
 
 
             try
@@ -304,7 +304,7 @@ namespace Aegis.Network
                     if (onSent != null)
                         saea.UserToken = new NetworkSendToken(buffer, onSent);
 
-                    _alternator.Add(determinator, dispatcher);
+                    _alternator.Add(criterion, dispatcher);
 
                     if (Socket.SendAsync(saea) == false && NetworkEvent_Sent != null)
                         NetworkEvent_Sent(this, saea.BytesTransferred);

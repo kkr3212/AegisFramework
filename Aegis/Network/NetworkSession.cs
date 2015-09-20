@@ -56,7 +56,7 @@ namespace Aegis.Network
     /// </summary>
     /// <param name="buffer">수신된 데이터가 담긴 버퍼</param>
     /// <returns>true를 반환할 경우 지정된 핸들러가 호출됩니다.</returns>
-    public delegate Boolean PacketDeterminator(StreamBuffer buffer);
+    public delegate Boolean PacketCriterion(StreamBuffer buffer);
 
 
 
@@ -100,7 +100,7 @@ namespace Aegis.Network
         internal abstract void WaitForReceive();
         public abstract void SendPacket(byte[] buffer, Int32 offset, Int32 size, Action<StreamBuffer> onSent = null);
         public abstract void SendPacket(StreamBuffer buffer, Action<StreamBuffer> onSent = null);
-        public abstract void SendPacket(StreamBuffer buffer, PacketDeterminator determinator, EventHandler_Receive dispatcher, Action<StreamBuffer> onSent = null);
+        public abstract void SendPacket(StreamBuffer buffer, PacketCriterion criterion, EventHandler_Receive dispatcher, Action<StreamBuffer> onSent = null);
 
 
         internal void AttachSocket(Socket socket)

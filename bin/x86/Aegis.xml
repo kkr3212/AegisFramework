@@ -121,7 +121,7 @@
             <param name="packetSize">유효한 패킷의 크기</param>
             <returns>true를 반환할 경우 유효한 패킷으로 처리합니다.</returns>
         </member>
-        <member name="T:Aegis.Network.PacketDeterminator">
+        <member name="T:Aegis.Network.PacketCriterion">
             <summary>
             수신된 패킷이 지정된 Dispatch를 수행하기에 적합한지 여부를 확인합니다.
             적합할 경우 true를 반환해야 하며, 이 때에는 NetworkEvent_Received에 지정된 핸들러가 호출되지 않습니다.
@@ -198,13 +198,13 @@
             <param name="buffer">전송할 데이터가 담긴 StreamBuffer</param>
             <param name="onSent">패킷 전송이 완료된 후 호출할 Action</param>
         </member>
-        <member name="M:Aegis.Network.AsyncEventSession.SendPacket(Aegis.StreamBuffer,Aegis.Network.PacketDeterminator,Aegis.Network.EventHandler_Receive,System.Action{Aegis.StreamBuffer})">
+        <member name="M:Aegis.Network.AsyncEventSession.SendPacket(Aegis.StreamBuffer,Aegis.Network.PacketCriterion,Aegis.Network.EventHandler_Receive,System.Action{Aegis.StreamBuffer})">
             <summary>
             패킷을 전송하고, 특정 패킷이 수신될 경우 dispatcher에 지정된 핸들러를 실행합니다.
             이 기능은 AwaitableMethod보다는 빠르지만, 동시에 많이 호출될 경우 성능이 저하될 수 있습니다.
             </summary>
             <param name="buffer">전송할 데이터가 담긴 StreamBuffer</param>
-            <param name="determinator">dispatcher에 지정된 핸들러를 호출할 것인지 여부를 판단하는 함수를 지정합니다.</param>
+            <param name="criterion">dispatcher에 지정된 핸들러를 호출할 것인지 여부를 판단하는 함수를 지정합니다.</param>
             <param name="dispatcher">실행될 함수를 지정합니다.</param>
             <param name="onSent">패킷 전송이 완료된 후 호출할 Action</param>
         </member>
@@ -371,6 +371,11 @@
             데이터 읽기의 경우, 쓰기된 크기 이상으로 읽어들일 수 없습니다.
             </summary>
         </member>
+        <member name="F:Aegis.Network.Packet.HeaderSize">
+            <summary>
+            패킷의 해더 크기(Byte)
+            </summary>
+        </member>
         <member name="M:Aegis.Network.Packet.#ctor(System.UInt16)">
             <summary>
             고유번호를 지정하여 패킷을 생성합니다.
@@ -397,6 +402,12 @@
             <param name="source">복사할 데이터가 담긴 byte 배열</param>
             <param name="startIndex">source에서 복사할 시작 위치</param>
             <param name="size">복사할 크기(Byte)</param>
+        </member>
+        <member name="M:Aegis.Network.Packet.Clone">
+            <summary>
+            이 SecurityPacket 객체와 동일한 내용의 새로운 객체를 생성합니다.
+            </summary>
+            <returns>현재 SecurityPacket의 데이터가 복제된 객체</returns>
         </member>
         <member name="M:Aegis.Network.Packet.GetPID(System.Byte[])">
             <summary>
@@ -456,6 +467,11 @@
             패킷의 고유번호를 지정하거나 가져옵니다.
             </summary>
         </member>
+        <member name="F:Aegis.Network.SecurityPacket.HeaderSize">
+            <summary>
+            패킷의 해더 크기(Byte)
+            </summary>
+        </member>
         <member name="M:Aegis.Network.SecurityPacket.#ctor(System.UInt16)">
             <summary>
             고유번호를 지정하여 패킷을 생성합니다.
@@ -482,6 +498,12 @@
             <param name="source">복사할 데이터가 담긴 byte 배열</param>
             <param name="startIndex">source에서 복사할 시작 위치</param>
             <param name="size">복사할 크기(Byte)</param>
+        </member>
+        <member name="M:Aegis.Network.SecurityPacket.Clone">
+            <summary>
+            이 SecurityPacket 객체와 동일한 내용의 새로운 객체를 생성합니다.
+            </summary>
+            <returns>현재 SecurityPacket의 데이터가 복제된 객체</returns>
         </member>
         <member name="M:Aegis.Network.SecurityPacket.GetPID(System.Byte[])">
             <summary>
@@ -586,13 +608,13 @@
             <param name="buffer">전송할 데이터가 담긴 StreamBuffer</param>
             <param name="onSent">패킷 전송이 완료된 후 호출할 Action</param>
         </member>
-        <member name="M:Aegis.Network.AsyncResultSession.SendPacket(Aegis.StreamBuffer,Aegis.Network.PacketDeterminator,Aegis.Network.EventHandler_Receive,System.Action{Aegis.StreamBuffer})">
+        <member name="M:Aegis.Network.AsyncResultSession.SendPacket(Aegis.StreamBuffer,Aegis.Network.PacketCriterion,Aegis.Network.EventHandler_Receive,System.Action{Aegis.StreamBuffer})">
             <summary>
             패킷을 전송하고, 특정 패킷이 수신될 경우 dispatcher에 지정된 핸들러를 실행합니다.
             이 기능은 AwaitableMethod보다는 빠르지만, 동시에 많이 호출될 경우 성능이 저하될 수 있습니다.
             </summary>
             <param name="buffer">전송할 데이터가 담긴 StreamBuffer</param>
-            <param name="determinator">dispatcher에 지정된 핸들러를 호출할 것인지 여부를 판단하는 함수를 지정합니다.</param>
+            <param name="criterion">dispatcher에 지정된 핸들러를 호출할 것인지 여부를 판단하는 함수를 지정합니다.</param>
             <param name="dispatcher">실행될 함수를 지정합니다.</param>
             <param name="onSent">패킷 전송이 완료된 후 호출할 Action</param>
         </member>

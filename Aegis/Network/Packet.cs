@@ -29,6 +29,10 @@ namespace Aegis.Network
             get { return GetUInt16(2); }
             set { OverwriteUInt16(2, value); }
         }
+        /// <summary>
+        /// 패킷의 해더 크기(Byte)
+        /// </summary>
+        public const Int32 HeaderSize = 4;
 
 
 
@@ -84,6 +88,19 @@ namespace Aegis.Network
         public Packet(byte[] source, Int32 startIndex, Int32 size)
         {
             Write(source, startIndex, size);
+        }
+
+
+        /// <summary>
+        /// 이 SecurityPacket 객체와 동일한 내용의 새로운 객체를 생성합니다.
+        /// </summary>
+        /// <returns>현재 SecurityPacket의 데이터가 복제된 객체</returns>
+        public override StreamBuffer Clone()
+        {
+            Packet packet = new Packet(this);
+            packet.Read(ReadBytes);
+
+            return packet;
         }
 
 

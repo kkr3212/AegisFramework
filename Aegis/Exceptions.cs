@@ -25,6 +25,12 @@ namespace Aegis
         }
 
 
+        public AegisException(Int32 resultCode)
+        {
+            ResultCodeNo = resultCode;
+        }
+
+
         public AegisException(Int32 resultCode, String message)
             : base(message)
         {
@@ -35,6 +41,13 @@ namespace Aegis
         public AegisException(Exception innerException, String message)
             : base(message, innerException)
         {
+        }
+
+
+        public AegisException(Exception innerException, Int32 resultCode)
+            : base("", innerException)
+        {
+            ResultCodeNo = resultCode;
         }
 
 

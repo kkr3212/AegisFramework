@@ -12,13 +12,13 @@ namespace Aegis.Network
     {
         private struct Data
         {
-            public PacketDeterminator Determinator;
+            public PacketCriterion Criterion;
             public EventHandler_Receive Dispatcher;
 
 
-            public Data(PacketDeterminator determinator, EventHandler_Receive dispatcher)
+            public Data(PacketCriterion criterion, EventHandler_Receive dispatcher)
             {
-                Determinator = determinator;
+                Criterion = criterion;
                 Dispatcher = dispatcher;
             }
         }
@@ -38,9 +38,9 @@ namespace Aegis.Network
         }
 
 
-        public void Add(PacketDeterminator determinator, EventHandler_Receive dispatcher)
+        public void Add(PacketCriterion criterion, EventHandler_Receive dispatcher)
         {
-            _listResponseAction.Add(new Data(determinator, dispatcher));
+            _listResponseAction.Add(new Data(criterion, dispatcher));
         }
 
 
@@ -48,7 +48,7 @@ namespace Aegis.Network
         {
             foreach (var data in _listResponseAction)
             {
-                if (data.Determinator(buffer) == true)
+                if (data.Criterion(buffer) == true)
                 {
                     _listResponseAction.Remove(data);
                     data.Dispatcher(_session, buffer);
