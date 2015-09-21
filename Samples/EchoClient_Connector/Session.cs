@@ -90,7 +90,7 @@ namespace EchoClient
             Task.Run(() =>
             {
                 packet.SkipHeader();
-                switch (packet.PID)
+                switch (packet.PacketId)
                 {
                     case 0x01: OnHello(packet); break;
                     case 0x03: OnEcho_Res(packet); break;

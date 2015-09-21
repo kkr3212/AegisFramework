@@ -52,7 +52,7 @@
     <Compile Include="MessageQueue.cs" />
     <Compile Include="Packet.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="SecurityPacket.cs" />
+    <Compile Include="SecurePacket.cs" />
     <Compile Include="StreamBuffer.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

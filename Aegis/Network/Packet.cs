@@ -24,7 +24,7 @@ namespace Aegis.Network
         /// <summary>
         /// 패킷의 고유번호를 지정하거나 가져옵니다.
         /// </summary>
-        public UInt16 PID
+        public UInt16 PacketId
         {
             get { return GetUInt16(2); }
             set { OverwriteUInt16(2, value); }
@@ -41,31 +41,31 @@ namespace Aegis.Network
         public Packet()
         {
             PutUInt16(0);       //  Size
-            PutUInt16(0);       //  PID
+            PutUInt16(0);       //  PacketId
         }
 
 
         /// <summary>
         /// 고유번호를 지정하여 패킷을 생성합니다.
         /// </summary>
-        /// <param name="pid">패킷의 고유번호</param>
-        public Packet(UInt16 pid)
+        /// <param name="packetId">패킷의 고유번호</param>
+        public Packet(UInt16 packetId)
         {
-            PutUInt16(0);       //  Size
-            PutUInt16(pid);     //  PID
+            PutUInt16(0);           //  Size
+            PutUInt16(packetId);    //  PacketId
         }
 
 
         /// <summary>
         /// 고유번호와 패킷의 기본 크기를 지정하여 패킷을 생성합니다.
         /// </summary>
-        /// <param name="pid">패킷의 고유번호</param>
+        /// <param name="packetId">패킷의 고유번호</param>
         /// <param name="capacity">패킷 버퍼의 크기</param>
-        public Packet(UInt16 pid, UInt16 capacity)
+        public Packet(UInt16 packetId, UInt16 capacity)
         {
             Capacity(capacity);
-            PutUInt16(0);       //  Size
-            PutUInt16(pid);     //  PID
+            PutUInt16(0);           //  Size
+            PutUInt16(packetId);    //  PacketId
         }
 
 
@@ -92,9 +92,9 @@ namespace Aegis.Network
 
 
         /// <summary>
-        /// 이 SecurityPacket 객체와 동일한 내용의 새로운 객체를 생성합니다.
+        /// 이 SecurePacket 객체와 동일한 내용의 새로운 객체를 생성합니다.
         /// </summary>
-        /// <returns>현재 SecurityPacket의 데이터가 복제된 객체</returns>
+        /// <returns>현재 SecurePacket의 데이터가 복제된 객체</returns>
         public override StreamBuffer Clone()
         {
             Packet packet = new Packet(this);
@@ -105,12 +105,12 @@ namespace Aegis.Network
 
 
         /// <summary>
-        /// 지정된 버퍼에서 PID 값을 가져옵니다.
+        /// 지정된 버퍼에서 PacketId 값을 가져옵니다.
         /// buffer는 패킷 헤더가 온전히 포함된 데이터로 지정되어야 합니다.
         /// </summary>
         /// <param name="buffer">패킷 데이터가 담긴 버퍼</param>
-        /// <returns>패킷의 PID를 반환합니다.</returns>
-        public static UInt16 GetPID(byte[] buffer)
+        /// <returns>패킷의 PacketId를 반환합니다.</returns>
+        public static UInt16 GetPacketId(byte[] buffer)
         {
             if (buffer.Length < 4)
                 return 0;
@@ -141,17 +141,16 @@ namespace Aegis.Network
 
 
         /// <summary>
-        /// 패킷 버퍼를 초기화합니다. 기존의 PID 값은 유지됩니다.
+        /// 패킷 버퍼를 초기화합니다. 기존의 PacketId 값은 유지됩니다.
         /// </summary>
         public override void Clear()
         {
-            UInt16 pid = PID;
+            UInt16 packetId = PacketId;
 
 
             base.Clear();
-
-            PutUInt16(0);       //  Size
-            PutUInt16(pid);     //  PID
+            PutUInt16(0);           //  Size
+            PutUInt16(packetId);    //  PacketId
         }
 
 
@@ -206,7 +205,7 @@ namespace Aegis.Network
             ResetReadIndex();
 
             GetUInt16();        //  Size
-            GetUInt16();        //  PID
+            GetUInt16();        //  PacketId
         }
     }
 }

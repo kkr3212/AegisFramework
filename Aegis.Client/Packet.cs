@@ -23,7 +23,7 @@ namespace Aegis.Client
         /// <summary>
         /// 패킷의 고유번호를 지정하거나 가져옵니다.
         /// </summary>
-        public UInt16 PID
+        public UInt16 PacketId
         {
             get { return GetUInt16(2); }
             set { OverwriteUInt16(2, value); }
@@ -36,31 +36,31 @@ namespace Aegis.Client
         public Packet()
         {
             PutUInt16(0);       //  Size
-            PutUInt16(0);       //  PID
+            PutUInt16(0);       //  PacketId
         }
 
 
         /// <summary>
         /// 고유번호를 지정하여 패킷을 생성합니다.
         /// </summary>
-        /// <param name="pid">패킷의 고유번호</param>
-        public Packet(UInt16 pid)
+        /// <param name="packetId">패킷의 고유번호</param>
+        public Packet(UInt16 packetId)
         {
-            PutUInt16(0);       //  Size
-            PutUInt16(pid);     //  PID
+            PutUInt16(0);           //  Size
+            PutUInt16(packetId);    //  PacketId
         }
 
 
         /// <summary>
         /// 고유번호와 패킷의 기본 크기를 지정하여 패킷을 생성합니다.
         /// </summary>
-        /// <param name="pid">패킷의 고유번호</param>
+        /// <param name="packetId">패킷의 고유번호</param>
         /// <param name="capacity">패킷 버퍼의 크기</param>
-        public Packet(UInt16 pid, UInt16 capacity)
+        public Packet(UInt16 packetId, UInt16 capacity)
         {
             Capacity(capacity);
-            PutUInt16(0);       //  Size
-            PutUInt16(pid);     //  PID
+            PutUInt16(0);           //  Size
+            PutUInt16(packetId);    //  PacketId
         }
 
 
@@ -87,17 +87,17 @@ namespace Aegis.Client
 
 
         /// <summary>
-        /// 패킷 버퍼를 초기화합니다. 기존의 PID 값은 유지됩니다.
+        /// 패킷 버퍼를 초기화합니다. 기존의 PacketId 값은 유지됩니다.
         /// </summary>
         public override void Clear()
         {
-            UInt16 pid = PID;
+            UInt16 packetId = PacketId;
 
 
             base.Clear();
 
-            PutUInt16(0);       //  Size
-            PutUInt16(pid);     //  PID
+            PutUInt16(0);           //  Size
+            PutUInt16(packetId);    //  PacketId
         }
 
 
@@ -152,7 +152,7 @@ namespace Aegis.Client
             ResetReadIndex();
 
             GetUInt16();        //  Size
-            GetUInt16();        //  PID
+            GetUInt16();        //  PacketId
         }
     }
 }

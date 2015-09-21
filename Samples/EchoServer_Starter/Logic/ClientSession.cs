@@ -71,7 +71,7 @@ namespace EchoServer.Logic
             AegisTask.Run(() =>
             {
                 packet.SkipHeader();
-                switch (packet.PID)
+                switch (packet.PacketId)
                 {
                     case 0x02: OnEcho_Req(packet); break;
                 }

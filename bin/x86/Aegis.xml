@@ -380,13 +380,13 @@
             <summary>
             고유번호를 지정하여 패킷을 생성합니다.
             </summary>
-            <param name="pid">패킷의 고유번호</param>
+            <param name="packetId">패킷의 고유번호</param>
         </member>
         <member name="M:Aegis.Network.Packet.#ctor(System.UInt16,System.UInt16)">
             <summary>
             고유번호와 패킷의 기본 크기를 지정하여 패킷을 생성합니다.
             </summary>
-            <param name="pid">패킷의 고유번호</param>
+            <param name="packetId">패킷의 고유번호</param>
             <param name="capacity">패킷 버퍼의 크기</param>
         </member>
         <member name="M:Aegis.Network.Packet.#ctor(Aegis.StreamBuffer)">
@@ -409,13 +409,13 @@
             </summary>
             <returns>현재 SecurityPacket의 데이터가 복제된 객체</returns>
         </member>
-        <member name="M:Aegis.Network.Packet.GetPID(System.Byte[])">
+        <member name="M:Aegis.Network.Packet.GetPacketId(System.Byte[])">
             <summary>
-            지정된 버퍼에서 PID 값을 가져옵니다.
+            지정된 버퍼에서 PacketId 값을 가져옵니다.
             buffer는 패킷 헤더가 온전히 포함된 데이터로 지정되어야 합니다.
             </summary>
             <param name="buffer">패킷 데이터가 담긴 버퍼</param>
-            <returns>패킷의 PID를 반환합니다.</returns>
+            <returns>패킷의 PacketId를 반환합니다.</returns>
         </member>
         <member name="M:Aegis.Network.Packet.IsValidPacket(Aegis.StreamBuffer,System.Int32@)">
             <summary>
@@ -428,7 +428,7 @@
         </member>
         <member name="M:Aegis.Network.Packet.Clear">
             <summary>
-            패킷 버퍼를 초기화합니다. 기존의 PID 값은 유지됩니다.
+            패킷 버퍼를 초기화합니다. 기존의 PacketId 값은 유지됩니다.
             </summary>
         </member>
         <member name="M:Aegis.Network.Packet.Clear(Aegis.StreamBuffer)">
@@ -462,7 +462,7 @@
             현재 패킷의 크기를 가져옵니다. 패킷의 크기값은 임의로 변경할 수 없습니다.
             </summary>
         </member>
-        <member name="P:Aegis.Network.Packet.PID">
+        <member name="P:Aegis.Network.Packet.PacketId">
             <summary>
             패킷의 고유번호를 지정하거나 가져옵니다.
             </summary>
@@ -476,13 +476,13 @@
             <summary>
             고유번호를 지정하여 패킷을 생성합니다.
             </summary>
-            <param name="pid">패킷의 고유번호</param>
+            <param name="packetId">패킷의 고유번호</param>
         </member>
         <member name="M:Aegis.Network.SecurityPacket.#ctor(System.UInt16,System.UInt16)">
             <summary>
             고유번호와 패킷의 기본 크기를 지정하여 패킷을 생성합니다.
             </summary>
-            <param name="pid">패킷의 고유번호</param>
+            <param name="packetId">패킷의 고유번호</param>
             <param name="capacity">패킷 버퍼의 크기</param>
         </member>
         <member name="M:Aegis.Network.SecurityPacket.#ctor(Aegis.StreamBuffer)">
@@ -505,13 +505,13 @@
             </summary>
             <returns>현재 SecurityPacket의 데이터가 복제된 객체</returns>
         </member>
-        <member name="M:Aegis.Network.SecurityPacket.GetPID(System.Byte[])">
+        <member name="M:Aegis.Network.SecurityPacket.GetPacketId(System.Byte[])">
             <summary>
-            지정된 버퍼에서 PID 값을 가져옵니다.
+            지정된 버퍼에서 PacketId 값을 가져옵니다.
             buffer는 패킷 헤더가 온전히 포함된 데이터로 지정되어야 합니다.
             </summary>
             <param name="buffer">패킷 데이터가 담긴 버퍼</param>
-            <returns>패킷의 PID를 반환합니다.</returns>
+            <returns>패킷의 PacketId를 반환합니다.</returns>
         </member>
         <member name="M:Aegis.Network.SecurityPacket.IsValidPacket(Aegis.StreamBuffer,System.Int32@)">
             <summary>
@@ -524,7 +524,7 @@
         </member>
         <member name="M:Aegis.Network.SecurityPacket.Clear">
             <summary>
-            패킷 버퍼를 초기화합니다. 기존의 PID 값은 유지됩니다.
+            패킷 버퍼를 초기화합니다. 기존의 PacketId 값은 유지됩니다.
             </summary>
         </member>
         <member name="M:Aegis.Network.SecurityPacket.Clear(Aegis.StreamBuffer)">
@@ -558,7 +558,7 @@
             현재 패킷의 크기를 가져옵니다. 패킷의 크기값은 임의로 변경할 수 없습니다.
             </summary>
         </member>
-        <member name="P:Aegis.Network.SecurityPacket.PID">
+        <member name="P:Aegis.Network.SecurityPacket.PacketId">
             <summary>
             패킷의 고유번호를 지정하거나 가져옵니다.
             </summary>

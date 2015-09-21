@@ -14,7 +14,7 @@ namespace Aegis.Network
     {
         private struct TCSData
         {
-            public UInt16 pid;
+            public UInt16 packetId;
             public Func<Packet, Boolean> predicate;
             public TaskCompletionSource<Packet> tcs;
         }
@@ -81,7 +81,7 @@ namespace Aegis.Network
             {
                 foreach (TCSData data in _listTCS)
                 {
-                    if (data.pid == packet.PID
+                    if (data.packetId == packet.PacketId
                         && (data.predicate == null || data.predicate(packet) == true))
                     {
                         data.tcs.SetResult(new Packet(packet));
@@ -96,10 +96,10 @@ namespace Aegis.Network
         }
 
 
-        public virtual async Task<Packet> SendAndWaitResponse(Packet packet, UInt16 responsePID)
+        public virtual async Task<Packet> SendAndWaitResponse(Packet packet, UInt16 responsePacketId)
         {
             TaskCompletionSource<Packet> tcs = new TaskCompletionSource<Packet>();
-            TCSData data = new TCSData() { pid = responsePID, tcs = tcs, predicate = null };
+            TCSData data = new TCSData() { packetId = responsePacketId, tcs = tcs, predicate = null };
             Packet response = null;
 
 
@@ -126,11 +126,11 @@ namespace Aegis.Network
         }
 
 
-        public virtual async Task<Packet> SendAndWaitResponse(Packet packet, UInt16 responsePID, Int32 timeout)
+        public virtual async Task<Packet> SendAndWaitResponse(Packet packet, UInt16 responsePacketId, Int32 timeout)
         {
             TaskCompletionSource<Packet> tcs = new TaskCompletionSource<Packet>();
             CancellationTokenSource cancel = new CancellationTokenSource();
-            TCSData data = new TCSData() { pid = responsePID, tcs = tcs, predicate = null };
+            TCSData data = new TCSData() { packetId = responsePacketId, tcs = tcs, predicate = null };
             Packet response = null;
 
 
@@ -171,17 +171,17 @@ namespace Aegis.Network
 
 
             if (response == null)
-                throw new WaitResponseTimeoutException("The waiting time of ResponsePID(0x{0:X}) has expired.", responsePID);
+                throw new WaitResponseTimeoutException("The waiting time of ResponsePacketId(0x{0:X}) has expired.", responsePacketId);
 
 
             return response;
         }
 
 
-        public virtual async Task<Packet> SendAndWaitResponse(Packet packet, UInt16 responsePID, Func<Packet, Boolean> predicate)
+        public virtual async Task<Packet> SendAndWaitResponse(Packet packet, UInt16 responsePacketId, Func<Packet, Boolean> predicate)
         {
             TaskCompletionSource<Packet> tcs = new TaskCompletionSource<Packet>();
-            TCSData data = new TCSData() { pid = responsePID, tcs = tcs, predicate = predicate };
+            TCSData data = new TCSData() { packetId = responsePacketId, tcs = tcs, predicate = predicate };
             Packet response = null;
 
 
@@ -208,11 +208,11 @@ namespace Aegis.Network
         }
 
 
-        public virtual async Task<Packet> SendAndWaitResponse(Packet packet, UInt16 responsePID, Func<Packet, Boolean> predicate, Int32 timeout)
+        public virtual async Task<Packet> SendAndWaitResponse(Packet packet, UInt16 responsePacketId, Func<Packet, Boolean> predicate, Int32 timeout)
         {
             TaskCompletionSource<Packet> tcs = new TaskCompletionSource<Packet>();
             CancellationTokenSource cancel = new CancellationTokenSource();
-            TCSData data = new TCSData() { pid = responsePID, tcs = tcs, predicate = predicate };
+            TCSData data = new TCSData() { packetId = responsePacketId, tcs = tcs, predicate = predicate };
             Packet response = null;
 
 
@@ -253,7 +253,7 @@ namespace Aegis.Network
 
 
             if (response == null)
-                throw new WaitResponseTimeoutException("The waiting time of ResponsePID(0x{0:X}) has expired.", responsePID);
+                throw new WaitResponseTimeoutException("The waiting time of ResponsePacketId(0x{0:X}) has expired.", responsePacketId);
 
             return response;
         }

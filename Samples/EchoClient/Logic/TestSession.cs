@@ -67,7 +67,7 @@ namespace EchoClient.Logic
             AegisTask.Run(() =>
             {
                 packet.SkipHeader();
-                switch (packet.PID)
+                switch (packet.PacketId)
                 {
                     case 0x01: OnHello(packet); break;
                     case 0x03: OnEcho_Res(packet); break;
@@ -91,7 +91,7 @@ namespace EchoClient.Logic
 
 
             SendPacket(reqPacket,
-                        (buffer) => { return Packet.GetPID(buffer.Buffer) == 0x03; },
+                        (buffer) => { return Packet.GetPacketId(buffer.Buffer) == 0x03; },
                         (session, buffer) =>
                         {
                             packet.SkipHeader();
