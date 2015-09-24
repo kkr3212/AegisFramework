@@ -22,7 +22,7 @@ namespace Aegis.Network
         private SocketAsyncEventArgs _saeaRecv;
 
         public AwaitableMethod AwaitableMethod { get; private set; }
-        private ResponseAlternator _alternator;
+        private ResponseSelector _responseSelector;
 
 
         public event EventHandler_Send NetworkEvent_Sent;
@@ -45,7 +45,7 @@ namespace Aegis.Network
             _saeaRecv.Completed += OnComplete_Receive;
 
             AwaitableMethod = new AwaitableMethod(this);
-            _alternator = new ResponseAlternator(this);
+            _responseSelector = new ResponseSelector(this);
         }
 
 
@@ -62,7 +62,7 @@ namespace Aegis.Network
             _saeaRecv.Completed += OnComplete_Receive;
 
             AwaitableMethod = new AwaitableMethod(this);
-            _alternator = new ResponseAlternator(this);
+            _responseSelector = new ResponseSelector(this);
         }
 
 
@@ -166,7 +166,7 @@ namespace Aegis.Network
                             _receivedBuffer.Read(packetSize);
                             _dispatchBuffer.ResetReadIndex();
 
-                            if (_alternator.Dispatch(_dispatchBuffer) == false &&
+                            if (_responseSelector.Dispatch(_dispatchBuffer) == false &&
                                 NetworkEvent_Received != null)
                             {
                                 NetworkEvent_Received(this, _dispatchBuffer);
@@ -304,7 +304,7 @@ namespace Aegis.Network
                     if (onSent != null)
                         saea.UserToken = new NetworkSendToken(buffer, onSent);
 
-                    _alternator.Add(criterion, dispatcher);
+                    _responseSelector.Add(criterion, dispatcher);
 
                     if (Socket.SendAsync(saea) == false && NetworkEvent_Sent != null)
                         NetworkEvent_Sent(this, saea.BytesTransferred);

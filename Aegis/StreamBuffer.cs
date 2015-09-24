@@ -15,7 +15,7 @@ namespace Aegis
     /// </summary>
     public class StreamBuffer
     {
-        public static Int32 AllocBlockSize = 128;
+        public const Int32 AllocBlockSize = 128;
 
         public Int32 ReadBytes { get; private set; }
         public Int32 WrittenBytes { get; private set; }

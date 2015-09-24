@@ -113,11 +113,10 @@ namespace Aegis.Threading
         }
 
 
-        public static Task RunPeriodically(Int32 period, CancellationToken cancellationToken, Action action)
+        public static Thread RunPeriodically(Int32 period, CancellationToken cancellationToken, Action action)
         {
-            return Task.Run(async () =>
+            Thread thread = new Thread(async () =>
             {
-                Interlocked.Increment(ref _taskCount);
                 while (cancellationToken.IsCancellationRequested == false)
                 {
                     try
@@ -134,8 +133,10 @@ namespace Aegis.Threading
                         Logger.Write(LogType.Err, 1, e.ToString());
                     }
                 }
-                Interlocked.Decrement(ref _taskCount);
             });
+            thread.Start();
+
+            return thread;
         }
 
 

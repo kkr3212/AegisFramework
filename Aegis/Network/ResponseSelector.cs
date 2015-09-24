@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace Aegis.Network
 {
-    internal class ResponseAlternator
+    internal class ResponseSelector
     {
         private struct Data
         {
@@ -31,7 +31,7 @@ namespace Aegis.Network
         private readonly List<Data> _listResponseAction;
 
 
-        public ResponseAlternator(NetworkSession session)
+        public ResponseSelector(NetworkSession session)
         {
             _session = session;
             _listResponseAction = new List<Data>();
@@ -50,8 +50,15 @@ namespace Aegis.Network
             {
                 if (data.Criterion(buffer) == true)
                 {
-                    _listResponseAction.Remove(data);
-                    data.Dispatcher(_session, buffer);
+                    try
+                    {
+                        _listResponseAction.Remove(data);
+                        data.Dispatcher(_session, buffer);
+                    }
+                    catch (Exception e)
+                    {
+                        Logger.Write(LogType.Err, 1, e.ToString());
+                    }
                     return true;
                 }
             }

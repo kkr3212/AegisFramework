@@ -128,7 +128,7 @@ namespace Aegis.Network
         /// <returns>true를 반환하면 OnReceive를 통해 수신된 데이터가 전달됩니다.</returns>
         public static Boolean IsValidPacket(StreamBuffer buffer, out Int32 packetSize)
         {
-            if (buffer.WrittenBytes < 4)
+            if (buffer.WrittenBytes < HeaderSize)
             {
                 packetSize = 0;
                 return false;

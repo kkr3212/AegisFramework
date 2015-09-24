@@ -140,13 +140,22 @@ namespace Aegis.Data.MySql
         }
 
 
-        public void PostQuery(Action<DataReader> postAction)
+        public void PostQuery(Action<DataReader> actionOnComplete)
         {
             _isAsync = true;
             _mysql.WorkerQueue.Post(() =>
             {
                 DataReader reader = Query();
-                postAction(reader);
+
+                try
+                {
+                    actionOnComplete(reader);
+                }
+                catch (Exception e)
+                {
+                    Logger.Write(LogType.Err, 1, CommandText.ToString());
+                    Logger.Write(LogType.Err, 1, e.ToString());
+                }
 
                 _isAsync = false;
                 Dispose();

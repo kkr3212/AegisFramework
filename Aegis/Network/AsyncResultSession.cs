@@ -21,7 +21,7 @@ namespace Aegis.Network
         private StreamBuffer _receivedBuffer, _dispatchBuffer;
 
         public AwaitableMethod AwaitableMethod { get; private set; }
-        private ResponseAlternator _alternator;
+        private ResponseSelector _responseSelector;
 
 
         public event EventHandler_Send NetworkEvent_Sent;
@@ -41,7 +41,7 @@ namespace Aegis.Network
             _dispatchBuffer = new StreamBuffer();
 
             AwaitableMethod = new AwaitableMethod(this);
-            _alternator = new ResponseAlternator(this);
+            _responseSelector = new ResponseSelector(this);
         }
 
 
@@ -55,7 +55,7 @@ namespace Aegis.Network
             _dispatchBuffer = new StreamBuffer();
 
             AwaitableMethod = new AwaitableMethod(this);
-            _alternator = new ResponseAlternator(this);
+            _responseSelector = new ResponseSelector(this);
         }
 
 
@@ -158,7 +158,7 @@ namespace Aegis.Network
                             _dispatchBuffer.ResetReadIndex();
 
 
-                            if (_alternator.Dispatch(_dispatchBuffer) == false &&
+                            if (_responseSelector.Dispatch(_dispatchBuffer) == false &&
                                 NetworkEvent_Received != null)
                             {
                                 NetworkEvent_Received(this, _dispatchBuffer);
@@ -273,7 +273,7 @@ namespace Aegis.Network
             {
                 lock (this)
                 {
-                    _alternator.Add(criterion, dispatcher);
+                    _responseSelector.Add(criterion, dispatcher);
                     if (Socket != null)
                     {
                         //  ReadIndex가 OnSocket_Send에서 사용되므로 ReadIndex를 초기화해야 한다.
