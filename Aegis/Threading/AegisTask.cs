@@ -113,16 +113,17 @@ namespace Aegis.Threading
         }
 
 
-        public static Thread RunPeriodically(Int32 period, CancellationToken cancellationToken, Action action)
+        public static Thread RunPeriodically(Int32 periodByMillisecond, CancellationToken cancellationToken, Func<Boolean> func)
         {
-            Thread thread = new Thread(async () =>
+            Thread thread = new Thread(() =>
             {
                 while (cancellationToken.IsCancellationRequested == false)
                 {
                     try
                     {
-                        await Delay(period, cancellationToken);
-                        action();
+                        if (cancellationToken.WaitHandle.WaitOne(periodByMillisecond) == true ||
+                            func() == false)
+                            break;
                     }
                     catch (TaskCanceledException)
                     {
@@ -137,29 +138,6 @@ namespace Aegis.Threading
             thread.Start();
 
             return thread;
-        }
-
-
-        public static Task RunPeriodically(Int32 period, Func<Boolean> action)
-        {
-            return Task.Run(async () =>
-            {
-                Interlocked.Increment(ref _taskCount);
-                while (true)
-                {
-                    try
-                    {
-                        await Delay(period);
-                        if (action() == false)
-                            break;
-                    }
-                    catch (Exception e)
-                    {
-                        Logger.Write(LogType.Err, 1, e.ToString());
-                    }
-                }
-                Interlocked.Decrement(ref _taskCount);
-            });
         }
 
 
