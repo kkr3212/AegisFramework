@@ -55,9 +55,9 @@ namespace Aegis.Data.MySql
                     dbc.Connect(ipAddress, portNo, charSet, dbName, userId, userPwd);
                     dbc.Close();
                 }
-                catch (Exception e)
+                catch (Exception)
                 {
-                    throw new AegisException(e, "Invalid MySQL connection.");
+                    throw new AegisException(AegisResult.MySqlConnectionFailed, "Invalid MySQL connection.");
                 }
             }
 

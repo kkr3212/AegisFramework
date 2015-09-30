@@ -24,5 +24,7 @@ namespace Aegis
         public const Int32 AcceptorIsRunning = 9;       //  Acceptor가 이미 실행중입니다.
         public const Int32 JobCanceled = 10;            //  진행중인 작업이 취소되었습니다.
         public const Int32 DataReaderNotClosed = 11;    //  DataReader가 사용중입니다. 먼저 진행중인 쿼리를 종료해야 합니다.
+
+        public const Int32 MySqlConnectionFailed = 100; //  MySql Database에 접속할 수 없습니다.
     }
 }

@@ -158,7 +158,7 @@ namespace Aegis.Network
         /// 패킷 버퍼를 초기화하고 source 데이터를 저장합니다. Packet Header의 Size는 source 버퍼의 헤더값이 사용됩니다.
         /// </summary>
         /// <param name="source">저장할 데이터</param>
-        public void Clear(StreamBuffer source)
+        public virtual void Clear(StreamBuffer source)
         {
             if (source.BufferSize < 4)
                 throw new AegisException(AegisResult.InvalidArgument, "The source size must be at lest 4 bytes.");
@@ -175,7 +175,7 @@ namespace Aegis.Network
         /// <param name="source">저장할 데이터</param>
         /// <param name="index">저장할 데이터의 시작위치</param>
         /// <param name="size">저장할 데이터 크기(Byte)</param>
-        public void Clear(byte[] source, Int32 index, Int32 size)
+        public virtual void Clear(byte[] source, Int32 index, Int32 size)
         {
             if (size < 4)
                 throw new AegisException(AegisResult.InvalidArgument, "The source size must be at lest 4 bytes.");
