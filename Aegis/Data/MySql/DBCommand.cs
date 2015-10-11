@@ -145,10 +145,9 @@ namespace Aegis.Data.MySql
             _isAsync = true;
             _mysql.WorkerQueue.Post(() =>
             {
-                DataReader reader = Query();
-
                 try
                 {
+                    DataReader reader = Query();
                     actionOnComplete(reader);
                 }
                 catch (Exception e)
