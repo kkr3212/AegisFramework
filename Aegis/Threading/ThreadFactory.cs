@@ -26,6 +26,7 @@ namespace Aegis.Threading
             }
         }
         private static List<ThreadInfo> _threads = new List<ThreadInfo>();
+        public static Int32 Count { get { return _threads.Count(); } }
 
 
 
@@ -82,7 +83,6 @@ namespace Aegis.Threading
                     }
                 }
             });
-            thread.Name = String.Format("Call periodically for {0}", func.Method.Name);
             thread.Start();
 
             return thread;
