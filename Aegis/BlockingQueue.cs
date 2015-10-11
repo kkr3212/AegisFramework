@@ -79,7 +79,7 @@ namespace Aegis
 
 
         /// <summary>
-        /// Pop에 대기중인 쓰레드에서 JobCanceledException이 발생합니다.
+        /// Dequeue에 대기중인 쓰레드에서 JobCanceledException이 발생합니다.
         /// Clear를 호출해 초기화하기 전 까지는 Pop을 사용할 수 없습니다.
         /// </summary>
         public void Cancel()

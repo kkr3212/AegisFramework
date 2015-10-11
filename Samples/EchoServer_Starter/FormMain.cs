@@ -16,10 +16,6 @@ namespace EchoServer
 {
     public partial class FormMain : Form
     {
-        private CancellationTokenSource _cts;
-
-
-
         public FormMain()
         {
             InitializeComponent();
@@ -37,9 +33,7 @@ namespace EchoServer
             _tbLog.Text = "";
 
             ServerMain.Instance.StartServer(_tbLog);
-
-            _cts = new CancellationTokenSource();
-            (new Thread(Run)).Start();
+            Aegis.Threading.ThreadFactory.CallPeriodically(100, UpdateStatistics);
         }
 
 
@@ -48,9 +42,6 @@ namespace EchoServer
             _btnStart.Enabled = true;
             _btnStop.Enabled = false;
 
-
-            if (_cts != null)
-                _cts.Cancel();
             ServerMain.Instance.StopServer();
         }
 
@@ -60,48 +51,28 @@ namespace EchoServer
             _btnStart.Enabled = true;
             _btnStop.Enabled = false;
 
-
-            if (_cts != null)
-                _cts.Cancel();
             ServerMain.Instance.StopServer();
         }
 
 
-        private async void Run()
+        private Boolean UpdateStatistics()
         {
-            while (_btnStart.Enabled == false)
+            if (InvokeRequired)
+                Invoke((MethodInvoker)delegate { UpdateStatistics(); });
+            else
             {
-                await Task.Run(() =>
-                {
-                    try
-                    {
-                        if (InvokeRequired)
-                            Invoke((MethodInvoker)delegate { UpdateStatistics(); });
-                        else
-                            UpdateStatistics();
-                    }
-                    catch (Exception)
-                    {
-                    }
-                }, _cts.Token);
+                Int32 sessionCount = ServerMain.Instance.GetActiveSessionCount();
+                Int32 receiveCount = ClientSession.Counter_ReceiveCount.Value;
+                Int32 receiveBytes = ClientSession.Counter_ReceiveBytes.Value;
 
 
-                await Task.Delay(100);
+                _lbActiveSession.Text = String.Format("{0:N0}", sessionCount);
+                _lbReceiveCount.Text = String.Format("{0:N0}", receiveCount);
+                _lbReceiveBytes.Text = String.Format("{0:N0}", receiveBytes);
+                _lbTaskCount.Text = Aegis.Threading.AegisTask.TaskCount.ToString();
             }
-        }
 
-
-        private void UpdateStatistics()
-        {
-            Int32 sessionCount = ServerMain.Instance.GetActiveSessionCount();
-            Int32 receiveCount = ClientSession.Counter_ReceiveCount.Value;
-            Int32 receiveBytes = ClientSession.Counter_ReceiveBytes.Value;
-
-
-            _lbActiveSession.Text = String.Format("{0:N0}", sessionCount);
-            _lbReceiveCount.Text = String.Format("{0:N0}", receiveCount);
-            _lbReceiveBytes.Text = String.Format("{0:N0}", receiveBytes);
-            _lbTaskCount.Text = Aegis.Threading.AegisTask.TaskCount.ToString();
+            return true;
         }
     }
 }

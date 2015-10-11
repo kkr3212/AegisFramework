@@ -45,6 +45,7 @@ namespace Aegis.Configuration
         public static void Release()
         {
             StopNetwork();
+            Threading.ThreadFactory.StopAllThreads();
 
             if (_mutex != null)
             {

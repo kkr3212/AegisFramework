@@ -113,34 +113,6 @@ namespace Aegis.Threading
         }
 
 
-        public static Thread RunPeriodically(Int32 periodByMillisecond, CancellationToken cancellationToken, Func<Boolean> func)
-        {
-            Thread thread = new Thread(() =>
-            {
-                while (cancellationToken.IsCancellationRequested == false)
-                {
-                    try
-                    {
-                        if (cancellationToken.WaitHandle.WaitOne(periodByMillisecond) == true ||
-                            func() == false)
-                            break;
-                    }
-                    catch (TaskCanceledException)
-                    {
-                        break;
-                    }
-                    catch (Exception e)
-                    {
-                        Logger.Write(LogType.Err, 1, e.ToString());
-                    }
-                }
-            });
-            thread.Start();
-
-            return thread;
-        }
-
-
         public static Task Delay(int millisecondsDelay)
         {
             return Task.Delay(millisecondsDelay);
