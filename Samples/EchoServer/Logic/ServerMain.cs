@@ -47,7 +47,7 @@ namespace EchoServer.Logic
         public void StopServer()
         {
             _networkClient.StopNetwork();
-            Aegis.Threading.ThreadFactory.StopAllThreads();
+            Aegis.Threading.ThreadExtend.CancelAll();
 
             Logger.Release();
         }

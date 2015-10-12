@@ -33,7 +33,7 @@ namespace EchoServer
             _tbLog.Text = "";
 
             ServerMain.Instance.StartServer(_tbLog);
-            Aegis.Threading.ThreadFactory.CallPeriodically(100, UpdateStatistics);
+            Aegis.Threading.ThreadExtend.CallPeriodically(100, UpdateStatistics);
         }
 
 

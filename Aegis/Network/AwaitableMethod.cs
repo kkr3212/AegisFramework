@@ -169,6 +169,8 @@ namespace Aegis.Network
                 }
             });
 
+            cancel.Dispose();
+
 
             if (response == null)
                 throw new WaitResponseTimeoutException("The waiting time of ResponsePacketId(0x{0:X}) has expired.", responsePacketId);
@@ -250,6 +252,8 @@ namespace Aegis.Network
                     _listTCS.Remove(data);
                 }
             });
+
+            cancel.Dispose();
 
 
             if (response == null)

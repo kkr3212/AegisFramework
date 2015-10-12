@@ -121,7 +121,7 @@
     <Compile Include="Network\SessionManager.cs" />
     <Compile Include="ObjectPool.cs" />
     <Compile Include="Randomizer.cs" />
-    <Compile Include="Threading\ThreadFactory.cs" />
+    <Compile Include="Threading\ThreadExtend.cs" />
     <Compile Include="Threading\ReaderLock.cs" />
     <Compile Include="AegisResult.cs" />
     <Compile Include="BlockingQueue.cs" />

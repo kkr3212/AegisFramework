@@ -87,7 +87,10 @@ namespace Aegis.Data.MySql
             using (_lock.WriterLock)
             {
                 if (_cancelTasks != null)
+                {
                     _cancelTasks.Cancel();
+                    _cancelTasks.Dispose();
+                }
 
 
                 foreach (DBConnector dbc in _poolDBC)
