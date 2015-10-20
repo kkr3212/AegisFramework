@@ -97,7 +97,7 @@ namespace Aegis.Data.MySql
         public void PostQueryNoReader()
         {
             _isAsync = true;
-            _mysql.QueryWorker?.Post(() =>
+            SpinWorker.PostWork(() =>
             {
                 try
                 {
@@ -118,7 +118,7 @@ namespace Aegis.Data.MySql
         public void PostQueryNoReader(Action actionOnCompletion)
         {
             _isAsync = true;
-            _mysql.QueryWorker?.Post(() =>
+            SpinWorker.PostWork(() =>
             {
                 try
                 {
@@ -129,22 +129,20 @@ namespace Aegis.Data.MySql
                     Logger.Write(LogType.Err, 1, CommandText.ToString());
                     Logger.Write(LogType.Err, 1, e.ToString());
                 }
-
-
-                WorkerQueue.Post(() =>
+            },
+            () =>
+            {
+                try
                 {
-                    try
-                    {
-                        actionOnCompletion();
-                    }
-                    catch (Exception e)
-                    {
-                        Logger.Write(LogType.Err, 1, e.ToString());
-                    }
+                    actionOnCompletion();
+                }
+                catch (Exception e)
+                {
+                    Logger.Write(LogType.Err, 1, e.ToString());
+                }
 
-                    _isAsync = false;
-                    Dispose();
-                });
+                _isAsync = false;
+                Dispose();
             });
         }
 
@@ -152,7 +150,7 @@ namespace Aegis.Data.MySql
         public void PostQuery(Action actionOnCompletion)
         {
             _isAsync = true;
-            _mysql.QueryWorker?.Post(() =>
+            SpinWorker.PostWork(() =>
             {
                 try
                 {
@@ -163,22 +161,20 @@ namespace Aegis.Data.MySql
                     Logger.Write(LogType.Err, 1, CommandText.ToString());
                     Logger.Write(LogType.Err, 1, e.ToString());
                 }
-
-
-                WorkerQueue.Post(() =>
+            },
+            () =>
+            {
+                try
                 {
-                    try
-                    {
-                        actionOnCompletion();
-                    }
-                    catch (Exception e)
-                    {
-                        Logger.Write(LogType.Err, 1, e.ToString());
-                    }
+                    actionOnCompletion();
+                }
+                catch (Exception e)
+                {
+                    Logger.Write(LogType.Err, 1, e.ToString());
+                }
 
-                    _isAsync = false;
-                    Dispose();
-                });
+                _isAsync = false;
+                Dispose();
             });
         }
 
@@ -186,7 +182,7 @@ namespace Aegis.Data.MySql
         public void PostQuery(Action<DBCommand> actionOnCompletion)
         {
             _isAsync = true;
-            _mysql.QueryWorker?.Post(() =>
+            SpinWorker.PostWork(() =>
             {
                 try
                 {
@@ -197,22 +193,20 @@ namespace Aegis.Data.MySql
                     Logger.Write(LogType.Err, 1, CommandText.ToString());
                     Logger.Write(LogType.Err, 1, e.ToString());
                 }
-
-
-                WorkerQueue.Post(() =>
+            },
+            () =>
+            {
+                try
                 {
-                    try
-                    {
-                        actionOnCompletion(this);
-                    }
-                    catch (Exception e)
-                    {
-                        Logger.Write(LogType.Err, 1, e.ToString());
-                    }
+                    actionOnCompletion(this);
+                }
+                catch (Exception e)
+                {
+                    Logger.Write(LogType.Err, 1, e.ToString());
+                }
 
-                    _isAsync = false;
-                    Dispose();
-                });
+                _isAsync = false;
+                Dispose();
             });
         }
 

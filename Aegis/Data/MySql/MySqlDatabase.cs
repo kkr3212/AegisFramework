@@ -31,8 +31,6 @@ namespace Aegis.Data.MySql
         public Int32 PooledDBCCount { get { return _listPoolDBC.Count; } }
         public Int32 ActiveDBCCount { get { return _listActiveDBC.Count; } }
 
-        internal WorkerThread QueryWorker { get; set; }
-
 
 
 
@@ -76,7 +74,6 @@ namespace Aegis.Data.MySql
             UseConnectionPool = true;
 
 
-            QueryWorker = new WorkerThread(String.Format("DBWorker({0})", dbName));
             _cancelTasks = new CancellationTokenSource();
             PingTest();
         }
@@ -84,10 +81,6 @@ namespace Aegis.Data.MySql
 
         public void Release()
         {
-            QueryWorker?.Stop();
-            QueryWorker = null;
-
-
             using (_lock.WriterLock)
             {
                 _cancelTasks?.Cancel();
@@ -101,17 +94,6 @@ namespace Aegis.Data.MySql
                 _listPoolDBC.Clear();
                 _listActiveDBC.Clear();
             }
-        }
-
-
-        /// <summary>
-        /// 비동기 쿼리를 수행할 Thread의 개수를 설정합니다.
-        /// </summary>
-        /// <param name="threadCount">비동기 쿼리를 수행할 Thread의 개수</param>
-        public void SetThreadCount(Int32 threadCount)
-        {
-            QueryWorker.Stop();
-            QueryWorker.Start(threadCount);
         }
 
 

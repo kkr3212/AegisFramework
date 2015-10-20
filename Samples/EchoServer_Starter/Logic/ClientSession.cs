@@ -63,8 +63,17 @@ namespace EchoServer.Logic
 
         private void OnEcho_Req(Packet packet)
         {
-            Packet resPacket = new Packet(0x03);
-            SendPacket(resPacket);
+            using (var cmd = new Aegis.Data.MySql.DBCommand(ServerMain.MySql))
+            {
+                cmd.CommandText.Append("select * from t_character_rune;");
+                cmd.PostQuery(() =>
+                {
+                    while (cmd.Reader.Read()) ;
+
+                    Packet resPacket = new Packet(0x03);
+                    SendPacket(resPacket);
+                });
+            }
         }
     }
 }

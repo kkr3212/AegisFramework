@@ -21,18 +21,28 @@
             <param name="defaultValue">path에서 값을 가져올 수 없으면 default값을 반환합니다.</param>
             <returns>path에 값이 정의되어있으면 해당 값을 반환하고 path가 잘못되어있으면 defaultValue를 반환합니다.</returns>
         </member>
-        <member name="M:Aegis.Starter.Initialize(System.Int32)">
+        <member name="M:Aegis.Starter.Initialize(System.Int32,System.Int32)">
             <summary>
             AegisNetwork 모듈을 초기화합니다.
+            workerThreadCount와 dispatchThreadCount의 의미는 다음과 같습니다.
+            -1 : 해당 작업을 AegisTask에서 실행됩니다.
+            0 : 해당 작업을 호출하는 쓰레드에서 실행됩니다.
+            >0 : 정해진 ThreadPool에서 해당 작업이 실행됩니다.
             </summary>
-            <param name="threadCount">WorkerQueue를 구동시킬 Thread 개수</param>
+            <param name="workerThreadCount">백그라운드에서 작업을 처리할 Thread 개수</param>
+            <param name="dispatchThreadCount">작업결과를 전달할 Thread 개수</param>
         </member>
-        <member name="M:Aegis.Starter.Initialize(System.Int32,System.String)">
+        <member name="M:Aegis.Starter.Initialize(System.String,System.Int32,System.Int32)">
             <summary>
             구성정보 파일(XML)을 사용하여 AegisNetwork 모듈을 초기화합니다.
+            workerThreadCount와 dispatchThreadCount의 의미는 다음과 같습니다.
+            -1 : 해당 작업을 AegisTask에서 실행됩니다.
+            0 : 해당 작업을 호출하는 쓰레드에서 실행됩니다.
+            >0 : 정해진 ThreadPool에서 해당 작업이 실행됩니다.
             </summary>
-            <param name="threadCount">WorkerQueue를 구동시킬 Thread 개수</param>
             <param name="configFilename">XML 파일명</param>
+            <param name="workerThreadCount">백그라운드에서 작업을 처리할 Thread 개수</param>
+            <param name="dispatchThreadCount">작업결과를 전달할 Thread 개수</param>
         </member>
         <member name="M:Aegis.Starter.Release">
             <summary>
@@ -83,12 +93,6 @@
             UnixTimeStamp 값을 DateTime으로 변환합니다.
             </summary>
             <returns>UnixTimeStamp를 변환한 DateTime값</returns>
-        </member>
-        <member name="M:Aegis.Data.MySql.MySqlDatabase.SetThreadCount(System.Int32)">
-            <summary>
-            비동기 쿼리를 수행할 Thread의 개수를 설정합니다.
-            </summary>
-            <param name="threadCount">비동기 쿼리를 수행할 Thread의 개수</param>
         </member>
         <member name="P:Aegis.Network.Session.SessionId">
             <summary>
@@ -466,6 +470,28 @@
             <param name="min">최소값</param>
             <param name="max">최대값</param>
             <returns>임의 값</returns>
+        </member>
+        <member name="M:Aegis.SpinWorker.PostWork(System.Action)">
+            <summary>
+            actionWork 기능을 비동기로 실행합니다.
+            이 작업은 WorkerThread에 의해 실행되므로, 객체의 동기화에 주의해야 합니다.
+            </summary>
+            <param name="actionWork">비동기로 실행할 작업</param>
+        </member>
+        <member name="M:Aegis.SpinWorker.PostWork(System.Action,System.Action)">
+            <summary>
+            비동기 백그라운드 작업과 결과처리 작업으로 이루어진 기능을 실행합니다.
+            actionWork는 WorkerThread에 의해 비동기로 실행되고, actionWork 작업이 끝나면
+            actionDispatch가 DispatchThread에서 실행됩니다.
+            </summary>
+            <param name="actionWork">비동기로 실행할 작업</param>
+            <param name="actionDispatch">DispatchThread에서 실행할 작업</param>
+        </member>
+        <member name="M:Aegis.SpinWorker.PostDispatch(System.Action)">
+            <summary>
+            actionDispatch 작업을 DispatchThread에서 실행합니다.
+            </summary>
+            <param name="actionDispatch">수행할 작업</param>
         </member>
         <member name="T:Aegis.Threading.AegisTask">
             <summary>

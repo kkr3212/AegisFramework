@@ -26,29 +26,39 @@ namespace Aegis
 
         /// <summary>
         /// AegisNetwork 모듈을 초기화합니다.
+        /// workerThreadCount와 dispatchThreadCount의 의미는 다음과 같습니다.
+        /// -1 : 해당 작업을 AegisTask에서 실행됩니다.
+        /// 0 : 해당 작업을 호출하는 쓰레드에서 실행됩니다.
+        /// >0 : 정해진 ThreadPool에서 해당 작업이 실행됩니다.
         /// </summary>
-        /// <param name="threadCount">WorkerQueue를 구동시킬 Thread 개수</param>
-        public static void Initialize(Int32 threadCount)
+        /// <param name="workerThreadCount">백그라운드에서 작업을 처리할 Thread 개수</param>
+        /// <param name="dispatchThreadCount">작업결과를 전달할 Thread 개수</param>
+        public static void Initialize(Int32 workerThreadCount = -1, Int32 dispatchThreadCount = 1)
         {
             _listNetworkConfig = new List<ConfigNetworkChannel>();
             CustomData = new CustomData("CustomData");
 
-            WorkerQueue.Initialize(threadCount);
+            SpinWorker.Initialize(workerThreadCount, dispatchThreadCount);
         }
 
 
         /// <summary>
         /// 구성정보 파일(XML)을 사용하여 AegisNetwork 모듈을 초기화합니다.
+        /// workerThreadCount와 dispatchThreadCount의 의미는 다음과 같습니다.
+        /// -1 : 해당 작업을 AegisTask에서 실행됩니다.
+        /// 0 : 해당 작업을 호출하는 쓰레드에서 실행됩니다.
+        /// >0 : 정해진 ThreadPool에서 해당 작업이 실행됩니다.
         /// </summary>
-        /// <param name="threadCount">WorkerQueue를 구동시킬 Thread 개수</param>
         /// <param name="configFilename">XML 파일명</param>
-        public static void Initialize(Int32 threadCount, String configFilename)
+        /// <param name="workerThreadCount">백그라운드에서 작업을 처리할 Thread 개수</param>
+        /// <param name="dispatchThreadCount">작업결과를 전달할 Thread 개수</param>
+        public static void Initialize(String configFilename, Int32 workerThreadCount = -1, Int32 dispatchThreadCount = 1)
         {
             _listNetworkConfig = new List<ConfigNetworkChannel>();
             CustomData = new CustomData("CustomData");
 
             LoadConfigFile(configFilename);
-            WorkerQueue.Initialize(threadCount);
+            SpinWorker.Initialize(workerThreadCount, dispatchThreadCount);
         }
 
 
@@ -58,7 +68,7 @@ namespace Aegis
         public static void Release()
         {
             StopNetwork();
-            WorkerQueue.Release();
+            SpinWorker.Release();
             Threading.ThreadExtend.CancelAll();
 
             if (_mutex != null)

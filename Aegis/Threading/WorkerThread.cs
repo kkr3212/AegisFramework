@@ -31,6 +31,10 @@ namespace Aegis.Threading
 
         public void Start(Int32 threadCount)
         {
+            if (threadCount < 1)
+                return;
+
+
             lock (this)
             {
                 _works.Clear();

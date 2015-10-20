@@ -34,7 +34,7 @@ namespace EchoClient.Logic
                 Logger.Write(LogType.Info, 2, "EchoClient (Aegis {0})", Aegis.Configuration.Environment.AegisVersion);
 
 
-                Starter.Initialize(1);
+                Starter.Initialize();
                 _networkServer.StartNetwork(delegate { return new TestSession(); }, clientCount, clientCount);
             }
             catch (Exception e)

@@ -19,6 +19,7 @@ namespace EchoServer.Logic
 
 
 
+
         private ServerMain()
         {
         }
@@ -34,8 +35,10 @@ namespace EchoServer.Logic
             {
                 Logger.Write(LogType.Info, 2, "EchoServer (Aegis {0})", Aegis.Configuration.Environment.AegisVersion);
 
-                Starter.Initialize(1, "./Config.xml");
+                Starter.Initialize("./Config.xml");
                 Starter.StartNetwork();
+
+                MySql.Initialize("192.168.0.10", 3306, "euckr", "pirates_world1_userdatadb_0", "root", "3382");
             }
             catch (Exception e)
             {
@@ -47,6 +50,7 @@ namespace EchoServer.Logic
         public void StopServer()
         {
             Starter.Release();
+            MySql.Release();
             Logger.Release();
         }
 

@@ -87,7 +87,7 @@ namespace Aegis.Network
                 if (SessionManager != null)
                     SessionManager.ActivateSession(this);
 
-                WorkerQueue.Post(() =>
+                SpinWorker.PostDispatch(() =>
                 {
                     lock (this)
                     {
@@ -152,7 +152,7 @@ namespace Aegis.Network
                         if (SessionManager != null)
                             SessionManager.ActivateSession(this);
 
-                        WorkerQueue.Post(() =>
+                        SpinWorker.PostDispatch(() =>
                         {
                             if (NetworkEvent_Connected != null)
                                 NetworkEvent_Connected(this, true);
@@ -165,7 +165,7 @@ namespace Aegis.Network
                         Socket.Close();
                         Socket = null;
 
-                        WorkerQueue.Post(() =>
+                        SpinWorker.PostDispatch(() =>
                         {
                             if (NetworkEvent_Connected != null)
                                 NetworkEvent_Connected(this, false);
@@ -200,7 +200,7 @@ namespace Aegis.Network
                     Socket = null;
 
 
-                    WorkerQueue.Post(() =>
+                    SpinWorker.PostDispatch(() =>
                     {
                         if (NetworkEvent_Closed != null)
                             NetworkEvent_Closed(this);
@@ -262,7 +262,7 @@ namespace Aegis.Network
         internal void OnReceived(StreamBuffer buffer)
         {
             StreamBuffer buf = new StreamBuffer(buffer);
-            WorkerQueue.Post(() =>
+            SpinWorker.PostDispatch(() =>
             {
                 if (NetworkEvent_Received != null)
                     NetworkEvent_Received(this, buf);
