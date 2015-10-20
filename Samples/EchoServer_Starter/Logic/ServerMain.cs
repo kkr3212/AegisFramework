@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Aegis;
 using Aegis.Network;
+using Aegis.Data.MySql;
 
 
 
@@ -13,7 +14,7 @@ namespace EchoServer.Logic
     public class ServerMain
     {
         public static ServerMain Instance { get { return Singleton<ServerMain>.Instance; } }
-
+        public static MySqlDatabase MySql = new MySqlDatabase();
 
 
 
@@ -33,8 +34,8 @@ namespace EchoServer.Logic
             {
                 Logger.Write(LogType.Info, 2, "EchoServer (Aegis {0})", Aegis.Configuration.Environment.AegisVersion);
 
-                Aegis.Configuration.Starter.Initialize("./Config.xml");
-                Aegis.Configuration.Starter.StartNetwork();
+                Starter.Initialize(1, "./Config.xml");
+                Starter.StartNetwork();
             }
             catch (Exception e)
             {
@@ -45,7 +46,7 @@ namespace EchoServer.Logic
 
         public void StopServer()
         {
-            Aegis.Configuration.Starter.Release();
+            Starter.Release();
             Logger.Release();
         }
 

@@ -11,68 +11,6 @@ using System.Net.Sockets;
 
 namespace Aegis.Network
 {
-    /// <summary>
-    /// 클라이언트의 연결요청에 의해 Session이 활성화된 경우 호출됩니다.
-    /// </summary>
-    /// <param name="session">이벤트가 발생된 SessionBase 객체</param>
-    public delegate void EventHandler_Accept(Session session);
-    /// <summary>
-    /// 이 Session 객체가 Connect를 사용하여 서버에 연결요청하면 결과가 전달됩니다.
-    /// </summary>
-    /// <param name="session">이벤트가 발생된 SessionBase 객체</param>
-    /// <param name="connected">tru인 경우 연결에 성공</param>
-    public delegate void EventHandler_Connect(Session session, Boolean connected);
-    /// <summary>
-    /// 원격지와의 연결이 종료되면 Session 객체를 초기화하기 전에 호출됩니다.
-    /// </summary>
-    /// <param name="session">이벤트가 발생된 SessionBase 객체</param>
-    public delegate void EventHandler_Close(Session session);
-    /// <summary>
-    /// 패킷 전송에 성공하면 전송된 크기를 전달합니다.
-    /// </summary>
-    /// <param name="session">이벤트가 발생된 SessionBase 객체</param>
-    /// <param name="transBytes">전송된 Bytes</param>
-    public delegate void EventHandler_Send(Session session, Int32 transBytes);
-    /// <summary>
-    /// 패킷 하나가 완전히 수신되면 이 함수가 호출됩니다.
-    /// 전달된 buffer 객체는 현재 Thread에서만 유효하므로, 비동기 작업시에는 새로운 StreamBuffer로 복사해야 합니다.
-    /// </summary>
-    /// <param name="session">이벤트가 발생된 SessionBase 객체</param>
-    /// <param name="buffer">수신된 패킷이 담긴 StreamBuffer</param>
-    public delegate void EventHandler_Receive(Session session, StreamBuffer buffer);
-    /// <summary>
-    /// 수신된 데이터가 유효한 패킷인지 여부를 확인합니다.
-    /// 유효한 패킷으로 판단되면 packetSize에 이 패킷의 정확한 크기를 입력하고 true를 반환해야 합니다.
-    /// </summary>
-    /// <param name="session">이벤트가 발생된 SessionBase 객체</param>
-    /// <param name="buffer">수신된 데이터가 담긴 버퍼</param>
-    /// <param name="packetSize">유효한 패킷의 크기</param>
-    /// <returns>true를 반환할 경우 유효한 패킷으로 처리합니다.</returns>
-    public delegate Boolean EventHandler_IsValidPacket(Session session, StreamBuffer buffer, out Int32 packetSize);
-    /// <summary>
-    /// 수신된 패킷이 지정된 Dispatch를 수행하기에 적합한지 여부를 확인합니다.
-    /// 적합할 경우 true를 반환해야 하며, 이 때에는 NetworkEvent_Received에 지정된 핸들러가 호출되지 않습니다.
-    /// </summary>
-    /// <param name="buffer">수신된 데이터가 담긴 버퍼</param>
-    /// <returns>true를 반환할 경우 지정된 핸들러가 호출됩니다.</returns>
-    public delegate Boolean PacketCriterion(StreamBuffer buffer);
-
-
-    public enum NetworkMethodType
-    {
-        /// <summary>
-        /// Begin 계열의 Socket API를 사용하여 원격지의 호스트와 네트워킹을 할 수 있는 기능을 제공합니다.
-        /// </summary>
-        AsyncResult,
-
-        /// <summary>
-        /// Async 계열의 Socket API를 사용하여 원격지의 호스트와 네트워킹을 할 수 있는 기능을 제공합니다.
-        /// </summary>
-        AsyncEvent
-    }
-
-
-
     public class Session
     {
         private static Int32 NextSessionId = 0;
@@ -100,7 +38,6 @@ namespace Aegis.Network
         public event EventHandler_Accept NetworkEvent_Accepted;
         public event EventHandler_Connect NetworkEvent_Connected;
         public event EventHandler_Close NetworkEvent_Closed;
-        public event EventHandler_Send NetworkEvent_Sent;
         public event EventHandler_Receive NetworkEvent_Received;
         public EventHandler_IsValidPacket PacketValidator;
 
@@ -150,13 +87,16 @@ namespace Aegis.Network
                 if (SessionManager != null)
                     SessionManager.ActivateSession(this);
 
-                lock (this)
+                WorkerQueue.Post(() =>
                 {
-                    if (NetworkEvent_Accepted != null)
-                        NetworkEvent_Accepted(this);
+                    lock (this)
+                    {
+                        if (NetworkEvent_Accepted != null)
+                            NetworkEvent_Accepted(this);
 
-                    WaitForReceive();
-                }
+                        _method.WaitForReceive();
+                    }
+                });
             }
             catch (Exception e)
             {
@@ -212,18 +152,24 @@ namespace Aegis.Network
                         if (SessionManager != null)
                             SessionManager.ActivateSession(this);
 
-                        if (NetworkEvent_Connected != null)
-                            NetworkEvent_Connected(this, true);
+                        WorkerQueue.Post(() =>
+                        {
+                            if (NetworkEvent_Connected != null)
+                                NetworkEvent_Connected(this, true);
+                        });
 
-                        WaitForReceive();
+                        _method.WaitForReceive();
                     }
                     else
                     {
                         Socket.Close();
                         Socket = null;
 
-                        if (NetworkEvent_Connected != null)
-                            NetworkEvent_Connected(this, false);
+                        WorkerQueue.Post(() =>
+                        {
+                            if (NetworkEvent_Connected != null)
+                                NetworkEvent_Connected(this, false);
+                        });
                     }
                 }
             }
@@ -253,8 +199,12 @@ namespace Aegis.Network
                     Socket.Close();
                     Socket = null;
 
-                    if (NetworkEvent_Closed != null)
-                        NetworkEvent_Closed(this);
+
+                    WorkerQueue.Post(() =>
+                    {
+                        if (NetworkEvent_Closed != null)
+                            NetworkEvent_Closed(this);
+                    });
 
 
                     _method.Clear();
@@ -268,12 +218,6 @@ namespace Aegis.Network
 
             if (SessionManager != null)
                 SessionManager.InactivateSession(this);
-        }
-
-
-        internal void WaitForReceive()
-        {
-            _method.WaitForReceive();
         }
 
 
@@ -315,19 +259,14 @@ namespace Aegis.Network
         }
 
 
-        internal void OnSent(Int32 transBytes)
-        {
-            if (NetworkEvent_Sent != null)
-                NetworkEvent_Sent(this, transBytes);
-        }
-
-
         internal void OnReceived(StreamBuffer buffer)
         {
-            if (NetworkEvent_Received == null)
-                return;
-
-            NetworkEvent_Received(this, buffer);
+            StreamBuffer buf = new StreamBuffer(buffer);
+            WorkerQueue.Post(() =>
+            {
+                if (NetworkEvent_Received != null)
+                    NetworkEvent_Received(this, buf);
+            });
         }
     }
 }

@@ -1,22 +1,17 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Threading;
-using System.Threading.Tasks;
 using System.Reflection;
 using System.Xml;
-using Aegis.Threading;
 using Aegis.Network;
 using Aegis.Converter;
+using Aegis.Configuration;
 
 
 
-namespace Aegis.Configuration
+namespace Aegis
 {
-    /// <summary>
-    /// XML 파일에서 네트워크 구성정보를 읽어들여 실행합니다.
-    /// </summary>
     public static class Starter
     {
         private static Mutex _mutex;
@@ -30,21 +25,40 @@ namespace Aegis.Configuration
 
 
         /// <summary>
-        /// XML 파일로 부터 구성정보를 읽어들입니다.
+        /// AegisNetwork 모듈을 초기화합니다.
         /// </summary>
+        /// <param name="threadCount">WorkerQueue를 구동시킬 Thread 개수</param>
+        public static void Initialize(Int32 threadCount)
+        {
+            _listNetworkConfig = new List<ConfigNetworkChannel>();
+            CustomData = new CustomData("CustomData");
+
+            WorkerQueue.Initialize(threadCount);
+        }
+
+
+        /// <summary>
+        /// 구성정보 파일(XML)을 사용하여 AegisNetwork 모듈을 초기화합니다.
+        /// </summary>
+        /// <param name="threadCount">WorkerQueue를 구동시킬 Thread 개수</param>
         /// <param name="configFilename">XML 파일명</param>
-        public static void Initialize(String configFilename)
+        public static void Initialize(Int32 threadCount, String configFilename)
         {
             _listNetworkConfig = new List<ConfigNetworkChannel>();
             CustomData = new CustomData("CustomData");
 
             LoadConfigFile(configFilename);
+            WorkerQueue.Initialize(threadCount);
         }
 
 
+        /// <summary>
+        /// 사용중인 모든 리소스를 반환하고, AegisNetwork을 종료합니다.
+        /// </summary>
         public static void Release()
         {
             StopNetwork();
+            WorkerQueue.Release();
             Threading.ThreadExtend.CancelAll();
 
             if (_mutex != null)
@@ -160,8 +174,7 @@ namespace Aegis.Configuration
         public static NetworkChannel StopNetwork(String networkChannelName)
         {
             NetworkChannel channel = NetworkChannel.Channels.Find(v => v.Name == networkChannelName);
-            if (channel != null)
-                channel.StopNetwork();
+            channel?.StopNetwork();
 
             return channel;
         }
@@ -169,7 +182,7 @@ namespace Aegis.Configuration
 
         private static Session GenerateSession(String sessionClassName)
         {
-            Type type = Environment.ExecutingAssembly.GetType(sessionClassName);
+            Type type = Configuration.Environment.ExecutingAssembly.GetType(sessionClassName);
             if (type == null)
                 throw new AegisException(AegisResult.InvalidArgument, "'{0}' session class is not exists.", sessionClassName);
 

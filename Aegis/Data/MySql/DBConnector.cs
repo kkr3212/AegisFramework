@@ -11,44 +11,31 @@ using MySql.Data.MySqlClient;
 
 namespace Aegis.Data.MySql
 {
-    internal sealed class DBConnector : IDisposable
+    internal sealed class DBConnector
     {
-        private MySqlConnection _dbc;
-        private IntervalCounter _qps = new IntervalCounter(1000);
-
-
-        public MySqlDatabase MySql { get; set; }
-        public MySqlConnection Connection { get { return _dbc; } }
-        public String ConnectionString { get { return _dbc.ConnectionString; } }
-        public Int32 QPS { get { return _qps.Value; } }
+        public MySqlConnection Connection { get; private set; }
+        public String ConnectionString { get { return Connection.ConnectionString; } }
+        public IntervalCounter QPS { get; private set; }
 
 
 
 
 
-        internal DBConnector(MySqlDatabase parent)
+        internal DBConnector()
         {
-            MySql = parent;
-        }
-
-
-        public void Dispose()
-        {
-            if (MySql != null)
-                MySql.ReturnDBC(this);
         }
 
 
         public void Connect(String hostIp, Int32 hostPortNo, String charSet, String dbName, String user, String pwd, Int32 commandTimeoutSec = 60)
         {
-            if (_dbc != null)
+            if (Connection != null)
                 return;
 
 
-            _dbc = new MySqlConnection(String.Format("Server={0};Port={1};CharSet={2};Database={3};Uid={4};Pwd={5};"
+            QPS = new IntervalCounter(1000);
+            Connection = new MySqlConnection(String.Format("Server={0};Port={1};CharSet={2};Database={3};Uid={4};Pwd={5};"
                                             , hostIp, hostPortNo, charSet, dbName, user, pwd));
-            _dbc.Open();
-            _qps.Reset();
+            Connection.Open();
 
 
             /*using (DBCommand cmd = DBCommand.NewCommand(MySql))
@@ -61,24 +48,18 @@ namespace Aegis.Data.MySql
 
         public void Close()
         {
-            if (_dbc != null)
+            if (Connection != null)
             {
-                _dbc.Close();
-                _dbc = null;
+                Connection.Close();
+                Connection = null;
             }
         }
 
 
         public void Ping()
         {
-            if (_dbc != null)
-                _dbc.Ping();
-        }
-
-
-        internal void IncreaseQueryCount()
-        {
-            _qps.Add(1);
+            if (Connection != null)
+                Connection.Ping();
         }
     }
 }

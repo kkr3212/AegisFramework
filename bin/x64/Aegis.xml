@@ -21,30 +21,37 @@
             <param name="defaultValue">path에서 값을 가져올 수 없으면 default값을 반환합니다.</param>
             <returns>path에 값이 정의되어있으면 해당 값을 반환하고 path가 잘못되어있으면 defaultValue를 반환합니다.</returns>
         </member>
-        <member name="T:Aegis.Configuration.Starter">
+        <member name="M:Aegis.Starter.Initialize(System.Int32)">
             <summary>
-            XML 파일에서 네트워크 구성정보를 읽어들여 실행합니다.
+            AegisNetwork 모듈을 초기화합니다.
             </summary>
+            <param name="threadCount">WorkerQueue를 구동시킬 Thread 개수</param>
         </member>
-        <member name="M:Aegis.Configuration.Starter.Initialize(System.String)">
+        <member name="M:Aegis.Starter.Initialize(System.Int32,System.String)">
             <summary>
-            XML 파일로 부터 구성정보를 읽어들입니다.
+            구성정보 파일(XML)을 사용하여 AegisNetwork 모듈을 초기화합니다.
             </summary>
+            <param name="threadCount">WorkerQueue를 구동시킬 Thread 개수</param>
             <param name="configFilename">XML 파일명</param>
         </member>
-        <member name="M:Aegis.Configuration.Starter.StartNetwork">
+        <member name="M:Aegis.Starter.Release">
+            <summary>
+            사용중인 모든 리소스를 반환하고, AegisNetwork을 종료합니다.
+            </summary>
+        </member>
+        <member name="M:Aegis.Starter.StartNetwork">
             <summary>
             NetworkChannel을 생성하고 네트워킹을 시작합니다.
             </summary>
         </member>
-        <member name="M:Aegis.Configuration.Starter.StartNetwork(System.String)">
+        <member name="M:Aegis.Starter.StartNetwork(System.String)">
             <summary>
             지정된 NetworkChannel만을 생성하고 네트워킹을 시작합니다.
             </summary>
             <param name="networkChannelName">시작할 NetworkChannel 이름</param>
             <returns>해당 NetworkChannel 객체</returns>
         </member>
-        <member name="M:Aegis.Configuration.Starter.StartNetwork(System.String,Aegis.SessionGenerateDelegator)">
+        <member name="M:Aegis.Starter.StartNetwork(System.String,Aegis.SessionGenerateDelegator)">
             <summary>
             지정된 NetworkChannel만을 생성하고 네트워킹을 시작합니다.
             sessionGenerator가 지정되기 때문에 config file에 정의된 sessionClass, receiveBufferSize는 무시됩니다.
@@ -53,12 +60,12 @@
             <param name="sessionGenerator">Session 객체를 생성하는 Delegator</param>
             <returns>해당 NetworkChannel 객체</returns>
         </member>
-        <member name="M:Aegis.Configuration.Starter.StopNetwork">
+        <member name="M:Aegis.Starter.StopNetwork">
             <summary>
             실행중인 모든 NetworkChannel을 중지합니다.
             </summary>
         </member>
-        <member name="M:Aegis.Configuration.Starter.StopNetwork(System.String)">
+        <member name="M:Aegis.Starter.StopNetwork(System.String)">
             <summary>
             지정된 NetworkChannel만 중지합니다.
             </summary>
@@ -77,66 +84,25 @@
             </summary>
             <returns>UnixTimeStamp를 변환한 DateTime값</returns>
         </member>
-        <member name="T:Aegis.Network.EventHandler_Accept">
+        <member name="M:Aegis.Data.MySql.MySqlDatabase.SetThreadCount(System.Int32)">
             <summary>
-            클라이언트의 연결요청에 의해 Session이 활성화된 경우 호출됩니다.
+            비동기 쿼리를 수행할 Thread의 개수를 설정합니다.
             </summary>
-            <param name="session">이벤트가 발생된 SessionBase 객체</param>
+            <param name="threadCount">비동기 쿼리를 수행할 Thread의 개수</param>
         </member>
-        <member name="T:Aegis.Network.EventHandler_Connect">
+        <member name="P:Aegis.Network.Session.SessionId">
             <summary>
-            이 Session 객체가 Connect를 사용하여 서버에 연결요청하면 결과가 전달됩니다.
-            </summary>
-            <param name="session">이벤트가 발생된 SessionBase 객체</param>
-            <param name="connected">tru인 경우 연결에 성공</param>
-        </member>
-        <member name="T:Aegis.Network.EventHandler_Close">
-            <summary>
-            원격지와의 연결이 종료되면 Session 객체를 초기화하기 전에 호출됩니다.
-            </summary>
-            <param name="session">이벤트가 발생된 SessionBase 객체</param>
-        </member>
-        <member name="T:Aegis.Network.EventHandler_Send">
-            <summary>
-            패킷 전송에 성공하면 전송된 크기를 전달합니다.
-            </summary>
-            <param name="session">이벤트가 발생된 SessionBase 객체</param>
-            <param name="transBytes">전송된 Bytes</param>
-        </member>
-        <member name="T:Aegis.Network.EventHandler_Receive">
-            <summary>
-            패킷 하나가 완전히 수신되면 이 함수가 호출됩니다.
-            전달된 buffer 객체는 현재 Thread에서만 유효하므로, 비동기 작업시에는 새로운 StreamBuffer로 복사해야 합니다.
-            </summary>
-            <param name="session">이벤트가 발생된 SessionBase 객체</param>
-            <param name="buffer">수신된 패킷이 담긴 StreamBuffer</param>
-        </member>
-        <member name="T:Aegis.Network.EventHandler_IsValidPacket">
-            <summary>
-            수신된 데이터가 유효한 패킷인지 여부를 확인합니다.
-            유효한 패킷으로 판단되면 packetSize에 이 패킷의 정확한 크기를 입력하고 true를 반환해야 합니다.
-            </summary>
-            <param name="session">이벤트가 발생된 SessionBase 객체</param>
-            <param name="buffer">수신된 데이터가 담긴 버퍼</param>
-            <param name="packetSize">유효한 패킷의 크기</param>
-            <returns>true를 반환할 경우 유효한 패킷으로 처리합니다.</returns>
-        </member>
-        <member name="T:Aegis.Network.PacketCriterion">
-            <summary>
-            수신된 패킷이 지정된 Dispatch를 수행하기에 적합한지 여부를 확인합니다.
-            적합할 경우 true를 반환해야 하며, 이 때에는 NetworkEvent_Received에 지정된 핸들러가 호출되지 않습니다.
-            </summary>
-            <param name="buffer">수신된 데이터가 담긴 버퍼</param>
-            <returns>true를 반환할 경우 지정된 핸들러가 호출됩니다.</returns>
-        </member>
-        <member name="F:Aegis.Network.NetworkMethodType.AsyncResult">
-            <summary>
-            Begin 계열의 Socket API를 사용하여 원격지의 호스트와 네트워킹을 할 수 있는 기능을 제공합니다.
+            이 Session 객체의 고유번호입니다.
             </summary>
         </member>
-        <member name="F:Aegis.Network.NetworkMethodType.AsyncEvent">
+        <member name="P:Aegis.Network.Session.Socket">
             <summary>
-            Async 계열의 Socket API를 사용하여 원격지의 호스트와 네트워킹을 할 수 있는 기능을 제공합니다.
+            이 Session에서 현재 사용중인 Socket 객체입니다. null일 경우, 네트워킹이 활성화되지 않은 상태입니다.
+            </summary>
+        </member>
+        <member name="P:Aegis.Network.Session.Connected">
+            <summary>
+            원격지의 호스트와 통신이 가능한 상태인지 여부를 확인합니다.
             </summary>
         </member>
         <member name="M:Aegis.Network.Session.Connect(System.String,System.Int32)">
@@ -169,7 +135,7 @@
             <param name="buffer">전송할 데이터가 담긴 StreamBuffer</param>
             <param name="onSent">패킷 전송이 완료된 후 호출할 Action</param>
         </member>
-        <member name="M:Aegis.Network.Session.SendPacket(Aegis.StreamBuffer,Aegis.Network.PacketCriterion,Aegis.Network.EventHandler_Receive,System.Action{Aegis.StreamBuffer})">
+        <member name="M:Aegis.Network.Session.SendPacket(Aegis.StreamBuffer,Aegis.PacketCriterion,Aegis.EventHandler_Receive,System.Action{Aegis.StreamBuffer})">
             <summary>
             패킷을 전송하고, 특정 패킷이 수신될 경우 dispatcher에 지정된 핸들러를 실행합니다.
             이 기능은 AwaitableMethod보다는 빠르지만, 동시에 많이 호출될 경우 성능이 저하될 수 있습니다.
@@ -179,112 +145,15 @@
             <param name="dispatcher">실행될 함수를 지정합니다.</param>
             <param name="onSent">패킷 전송이 완료된 후 호출할 Action</param>
         </member>
-        <member name="P:Aegis.Network.Session.SessionId">
+        <member name="P:Aegis.Network.NetworkChannel.Name">
             <summary>
-            이 Session 객체의 고유번호입니다.
+            이 NetworkChannel 객체의 고유한 이름입니다.
             </summary>
         </member>
-        <member name="P:Aegis.Network.Session.Socket">
+        <member name="P:Aegis.Network.NetworkChannel.SessionManager">
             <summary>
-            이 Session에서 현재 사용중인 Socket 객체입니다. null일 경우, 네트워킹이 활성화되지 않은 상태입니다.
+            이 NetworkChannel에서 사용하는 Session 객체를 관리합니다.
             </summary>
-        </member>
-        <member name="P:Aegis.Network.Session.Connected">
-            <summary>
-            원격지의 호스트와 통신이 가능한 상태인지 여부를 확인합니다.
-            </summary>
-        </member>
-        <member name="M:Aegis.Randomizer`1.Next">
-            <summary>
-            지정되지 않은 범위 내에서 임의 값을 반환합니다.
-            </summary>
-            <returns>임의 값</returns>
-        </member>
-        <member name="M:Aegis.Randomizer`1.Next(System.Int32,System.Int32)">
-            <summary>
-            min 값 이상 부터 max 값 미만 사이의 임의 값을 반환합니다.
-            </summary>
-            <param name="min">최소값</param>
-            <param name="max">최대값</param>
-            <returns>임의 값</returns>
-        </member>
-        <member name="M:Aegis.Randomizer`1.AddItem(System.Int32,`0)">
-            <summary>
-            NextItem 함수에서 확률적으로 가져올 수 있는 객체를 추가합니다.
-            </summary>
-            <param name="prob">확률값</param>
-            <param name="item">추가할 객체</param>
-        </member>
-        <member name="M:Aegis.Randomizer`1.NextItem(System.Int32,System.Boolean)">
-            <summary>
-            저장된 Object 중 임의의 하나를 선택하여 반환합니다.
-            fraction 값이 저장된 Object의 prob 합 보다 작거나 같으면 저장된 Object 중 하나를 반환합니다.
-            fraction 값이 저장된 Object의 prob 합 보다 크면 저장된 Object 중 하나를 반환하거나 혹은 default을 반환합니다.
-            </summary>
-            <param name="fraction">확률값</param>
-            <param name="eraseItem">true인 경우, 저장된 Object 중 하나를 반환할 때 해당 Object가 다음에 선택되지 않도록 목록에서 삭제합니다.</param>
-            <returns>임의로 선택된 객체 혹은 선택되지 않았을 경우 null을 반환합니다.</returns>
-        </member>
-        <member name="M:Aegis.Randomizer`1.NextNumber">
-            <summary>
-            지정되지 않은 범위 내에서 임의 값을 반환합니다.
-            </summary>
-            <returns>임의 값</returns>
-        </member>
-        <member name="M:Aegis.Randomizer`1.NextNumber(System.Int32,System.Int32)">
-            <summary>
-            min 값 이상 부터 max 값 미만 사이의 임의 값을 반환합니다.
-            </summary>
-            <param name="min">최소값</param>
-            <param name="max">최대값</param>
-            <returns>임의 값</returns>
-        </member>
-        <member name="T:Aegis.Threading.AegisTask">
-            <summary>
-            이 클래스는 System.Threading.Tasks.Task의 각 메서드 기능과 완전히 동일합니다.
-            다만, Task 내에서 발생되는 Exception을 핸들링하여 정보를 Logger로 보내는 기능이 추가되어있습니다.
-            Task 내에서 TaskCanceledException이 발생할 경우에는 어떠한 동작도 하지 않습니다.
-            </summary>
-        </member>
-        <member name="P:Aegis.Threading.AegisTask.TaskCount">
-            <summary>
-            현재 실행중인 Task의 갯수를 가져옵니다.
-            </summary>
-        </member>
-        <member name="M:Aegis.Logger.AddLogger(Aegis.ILogMedia)">
-            <summary>
-            사용할 LogMedia를 추가합니다.
-            이미 추가된 인스턴스인 경우 무시됩니다.
-            </summary>
-            <param name="media">추가할 LogMedia 인스턴스</param>
-        </member>
-        <member name="M:Aegis.Logger.RemoveLogger(Aegis.ILogMedia)">
-            <summary>
-            LogMedia 목록에서 지정한 LogMedia를 제거합니다.
-            정상적으로 제거된 경우 해당 LogMedia의 Release가 호출됩니다.
-            </summary>
-            <param name="media">제거할 LogMedia 인스턴스</param>
-        </member>
-        <member name="M:Aegis.Logger.Release">
-            <summary>
-            전체 LogMedia를 제거하고 사용중인 리소스를 반환합니다.
-            사용중인 LogMedia의 Release가 호출됩니다.
-            </summary>
-        </member>
-        <member name="M:Aegis.Logger.Write(Aegis.LogType,System.Int32,System.String,System.Object[])">
-            <summary>
-            추가된 ILogMedia 전체에 로그 문자열을 전달합니다.
-            </summary>
-            <param name="type">로그의 종류. EnabledType에 정의되지 않으면 무시됩니다.</param>
-            <param name="level">로그의 레벨. EnabledLevel보다 큰 경우 무시됩니다.</param>
-            <param name="format">로그 문자열</param>
-            <param name="args">로그 문자열의 인자</param>
-        </member>
-        <member name="T:Aegis.MinMaxValue`1">
-            <summary>
-            값의 변경내역 가운데서 최대/최소값을 확인할 수 있습니다.
-            </summary>
-            <typeparam name="T">값의 형식</typeparam>
         </member>
         <member name="M:Aegis.Network.NetworkChannel.CreateChannel(System.String)">
             <summary>
@@ -335,26 +204,19 @@
             Listener를 종료합니다.
             </summary>
         </member>
-        <member name="P:Aegis.Network.NetworkChannel.Name">
-            <summary>
-            이 NetworkChannel 객체의 고유한 이름입니다.
-            </summary>
-        </member>
-        <member name="P:Aegis.Network.NetworkChannel.SessionManager">
-            <summary>
-            이 NetworkChannel에서 사용하는 Session 객체를 관리합니다.
-            </summary>
-        </member>
         <member name="T:Aegis.Network.Packet">
             <summary>
             Size(2 bytes), PacketId(2 bytes)로 구성된 4바이트 헤더를 갖는 기본 패킷 구성입니다.
             </summary>
         </member>
-        <member name="T:Aegis.StreamBuffer">
+        <member name="P:Aegis.Network.Packet.Size">
             <summary>
-            데이터를 순차적으로 읽거나 쓸 수 있는 버퍼입니다.
-            데이터 쓰기의 경우, 버퍼가 부족하면 자동으로 증가시킵니다.
-            데이터 읽기의 경우, 쓰기된 크기 이상으로 읽어들일 수 없습니다.
+            현재 패킷의 크기를 가져옵니다. 패킷의 크기값은 임의로 변경할 수 없습니다.
+            </summary>
+        </member>
+        <member name="P:Aegis.Network.Packet.PacketId">
+            <summary>
+            패킷의 고유번호를 지정하거나 가져옵니다.
             </summary>
         </member>
         <member name="F:Aegis.Network.Packet.HeaderSize">
@@ -443,14 +305,19 @@
             이 함수가 호출되면 ReadIndex는 4에 위치하지만, WriteIndex는 변하지 않습니다.
             </summary>
         </member>
-        <member name="P:Aegis.Network.Packet.Size">
+        <member name="P:Aegis.Network.SecurePacket.Size">
             <summary>
             현재 패킷의 크기를 가져옵니다. 패킷의 크기값은 임의로 변경할 수 없습니다.
             </summary>
         </member>
-        <member name="P:Aegis.Network.Packet.PacketId">
+        <member name="P:Aegis.Network.SecurePacket.PacketId">
             <summary>
             패킷의 고유번호를 지정하거나 가져옵니다.
+            </summary>
+        </member>
+        <member name="P:Aegis.Network.SecurePacket.SeqNo">
+            <summary>
+            패킷의 Sequence number를 가져옵니다.
             </summary>
         </member>
         <member name="F:Aegis.Network.SecurePacket.HeaderSize">
@@ -539,21 +406,6 @@
             이 함수가 호출되면 ReadIndex는 4에 위치하지만, WriteIndex는 변하지 않습니다.
             </summary>
         </member>
-        <member name="P:Aegis.Network.SecurePacket.Size">
-            <summary>
-            현재 패킷의 크기를 가져옵니다. 패킷의 크기값은 임의로 변경할 수 없습니다.
-            </summary>
-        </member>
-        <member name="P:Aegis.Network.SecurePacket.PacketId">
-            <summary>
-            패킷의 고유번호를 지정하거나 가져옵니다.
-            </summary>
-        </member>
-        <member name="P:Aegis.Network.SecurePacket.SeqNo">
-            <summary>
-            패킷의 Sequence number를 가져옵니다.
-            </summary>
-        </member>
         <member name="P:Aegis.Network.SessionManager.MaxSessionPoolSize">
             <summary>
             최대 값으로 지정된 Session의 개수를 가져옵니다.
@@ -569,6 +421,152 @@
             <summary>
             현재 활성화 상태인 Session 목록을 가져옵니다.
             </summary>
+        </member>
+        <member name="M:Aegis.Randomizer`1.Next">
+            <summary>
+            지정되지 않은 범위 내에서 임의 값을 반환합니다.
+            </summary>
+            <returns>임의 값</returns>
+        </member>
+        <member name="M:Aegis.Randomizer`1.Next(System.Int32,System.Int32)">
+            <summary>
+            min 값 이상 부터 max 값 미만 사이의 임의 값을 반환합니다.
+            </summary>
+            <param name="min">최소값</param>
+            <param name="max">최대값</param>
+            <returns>임의 값</returns>
+        </member>
+        <member name="M:Aegis.Randomizer`1.AddItem(System.Int32,`0)">
+            <summary>
+            NextItem 함수에서 확률적으로 가져올 수 있는 객체를 추가합니다.
+            </summary>
+            <param name="prob">확률값</param>
+            <param name="item">추가할 객체</param>
+        </member>
+        <member name="M:Aegis.Randomizer`1.NextItem(System.Int32,System.Boolean)">
+            <summary>
+            저장된 Object 중 임의의 하나를 선택하여 반환합니다.
+            fraction 값이 저장된 Object의 prob 합 보다 작거나 같으면 저장된 Object 중 하나를 반환합니다.
+            fraction 값이 저장된 Object의 prob 합 보다 크면 저장된 Object 중 하나를 반환하거나 혹은 default을 반환합니다.
+            </summary>
+            <param name="fraction">확률값</param>
+            <param name="eraseItem">true인 경우, 저장된 Object 중 하나를 반환할 때 해당 Object가 다음에 선택되지 않도록 목록에서 삭제합니다.</param>
+            <returns>임의로 선택된 객체 혹은 선택되지 않았을 경우 null을 반환합니다.</returns>
+        </member>
+        <member name="M:Aegis.Randomizer`1.NextNumber">
+            <summary>
+            지정되지 않은 범위 내에서 임의 값을 반환합니다.
+            </summary>
+            <returns>임의 값</returns>
+        </member>
+        <member name="M:Aegis.Randomizer`1.NextNumber(System.Int32,System.Int32)">
+            <summary>
+            min 값 이상 부터 max 값 미만 사이의 임의 값을 반환합니다.
+            </summary>
+            <param name="min">최소값</param>
+            <param name="max">최대값</param>
+            <returns>임의 값</returns>
+        </member>
+        <member name="T:Aegis.Threading.AegisTask">
+            <summary>
+            이 클래스는 System.Threading.Tasks.Task의 각 메서드 기능과 완전히 동일합니다.
+            다만, Task 내에서 발생되는 Exception을 핸들링하여 정보를 Logger로 보내는 기능이 추가되어있습니다.
+            Task 내에서 TaskCanceledException이 발생할 경우에는 어떠한 동작도 하지 않습니다.
+            </summary>
+        </member>
+        <member name="P:Aegis.Threading.AegisTask.TaskCount">
+            <summary>
+            현재 실행중인 Task의 갯수를 가져옵니다.
+            </summary>
+        </member>
+        <member name="T:Aegis.EventHandler_Accept">
+            <summary>
+            클라이언트의 연결요청에 의해 Session이 활성화된 경우 호출됩니다.
+            </summary>
+            <param name="session">이벤트가 발생된 SessionBase 객체</param>
+        </member>
+        <member name="T:Aegis.EventHandler_Connect">
+            <summary>
+            이 Session 객체가 Connect를 사용하여 서버에 연결요청하면 결과가 전달됩니다.
+            </summary>
+            <param name="session">이벤트가 발생된 SessionBase 객체</param>
+            <param name="connected">tru인 경우 연결에 성공</param>
+        </member>
+        <member name="T:Aegis.EventHandler_Close">
+            <summary>
+            원격지와의 연결이 종료되면 Session 객체를 초기화하기 전에 호출됩니다.
+            </summary>
+            <param name="session">이벤트가 발생된 SessionBase 객체</param>
+        </member>
+        <member name="T:Aegis.EventHandler_Receive">
+            <summary>
+            패킷 하나가 완전히 수신되면 이 함수가 호출됩니다.
+            전달된 buffer 객체는 현재 Thread에서만 유효하므로, 비동기 작업시에는 새로운 StreamBuffer로 복사해야 합니다.
+            </summary>
+            <param name="session">이벤트가 발생된 SessionBase 객체</param>
+            <param name="buffer">수신된 패킷이 담긴 StreamBuffer</param>
+        </member>
+        <member name="T:Aegis.EventHandler_IsValidPacket">
+            <summary>
+            수신된 데이터가 유효한 패킷인지 여부를 확인합니다.
+            유효한 패킷으로 판단되면 packetSize에 이 패킷의 정확한 크기를 입력하고 true를 반환해야 합니다.
+            </summary>
+            <param name="buffer">수신된 데이터가 담긴 버퍼</param>
+            <param name="packetSize">유효한 패킷의 크기</param>
+            <returns>true를 반환할 경우 유효한 패킷으로 처리합니다.</returns>
+        </member>
+        <member name="T:Aegis.PacketCriterion">
+            <summary>
+            수신된 패킷이 지정된 Dispatch를 수행하기에 적합한지 여부를 확인합니다.
+            적합할 경우 true를 반환해야 하며, 이 때에는 NetworkEvent_Received에 지정된 핸들러가 호출되지 않습니다.
+            </summary>
+            <param name="buffer">수신된 데이터가 담긴 버퍼</param>
+            <returns>true를 반환할 경우 지정된 핸들러가 호출됩니다.</returns>
+        </member>
+        <member name="F:Aegis.NetworkMethodType.AsyncResult">
+            <summary>
+            Begin 계열의 Socket API를 사용하여 원격지의 호스트와 네트워킹을 할 수 있는 기능을 제공합니다.
+            </summary>
+        </member>
+        <member name="F:Aegis.NetworkMethodType.AsyncEvent">
+            <summary>
+            Async 계열의 Socket API를 사용하여 원격지의 호스트와 네트워킹을 할 수 있는 기능을 제공합니다.
+            </summary>
+        </member>
+        <member name="M:Aegis.Logger.AddLogger(Aegis.ILogMedia)">
+            <summary>
+            사용할 LogMedia를 추가합니다.
+            이미 추가된 인스턴스인 경우 무시됩니다.
+            </summary>
+            <param name="media">추가할 LogMedia 인스턴스</param>
+        </member>
+        <member name="M:Aegis.Logger.RemoveLogger(Aegis.ILogMedia)">
+            <summary>
+            LogMedia 목록에서 지정한 LogMedia를 제거합니다.
+            정상적으로 제거된 경우 해당 LogMedia의 Release가 호출됩니다.
+            </summary>
+            <param name="media">제거할 LogMedia 인스턴스</param>
+        </member>
+        <member name="M:Aegis.Logger.Release">
+            <summary>
+            전체 LogMedia를 제거하고 사용중인 리소스를 반환합니다.
+            사용중인 LogMedia의 Release가 호출됩니다.
+            </summary>
+        </member>
+        <member name="M:Aegis.Logger.Write(Aegis.LogType,System.Int32,System.String,System.Object[])">
+            <summary>
+            추가된 ILogMedia 전체에 로그 문자열을 전달합니다.
+            </summary>
+            <param name="type">로그의 종류. EnabledType에 정의되지 않으면 무시됩니다.</param>
+            <param name="level">로그의 레벨. EnabledLevel보다 큰 경우 무시됩니다.</param>
+            <param name="format">로그 문자열</param>
+            <param name="args">로그 문자열의 인자</param>
+        </member>
+        <member name="T:Aegis.MinMaxValue`1">
+            <summary>
+            값의 변경내역 가운데서 최대/최소값을 확인할 수 있습니다.
+            </summary>
+            <typeparam name="T">값의 형식</typeparam>
         </member>
         <member name="M:Aegis.Randomizer.Next">
             <summary>
@@ -621,6 +619,13 @@
             <summary>
             Dequeue에 대기중인 쓰레드에서 JobCanceledException이 발생합니다.
             Clear를 호출해 초기화하기 전 까지는 Pop을 사용할 수 없습니다.
+            </summary>
+        </member>
+        <member name="T:Aegis.StreamBuffer">
+            <summary>
+            데이터를 순차적으로 읽거나 쓸 수 있는 버퍼입니다.
+            데이터 쓰기의 경우, 버퍼가 부족하면 자동으로 증가시킵니다.
+            데이터 읽기의 경우, 쓰기된 크기 이상으로 읽어들일 수 없습니다.
             </summary>
         </member>
     </members>

@@ -13,11 +13,11 @@ using Aegis.Network;
 namespace Aegis.Data.MySql
 {
     [DebuggerDisplay("Name={DBName}, Host={IpAddress},{PortNo}")]
-    public sealed class MySqlDatabase : IDisposable
+    public sealed class MySqlDatabase
     {
-        private Queue<DBConnector> _poolDBC = new Queue<DBConnector>();
+        private List<DBConnector> _listPoolDBC = new List<DBConnector>();
+        private List<DBConnector> _listActiveDBC = new List<DBConnector>();
         private RWLock _lock = new RWLock();
-        private Int32 _dbcCount;
         private CancellationTokenSource _cancelTasks;
 
 
@@ -28,7 +28,10 @@ namespace Aegis.Data.MySql
         public String IpAddress { get; private set; }
         public Int32 PortNo { get; private set; }
         public Boolean UseConnectionPool { get; set; }
-        internal WorkerThread WorkerQueue { get; set; }
+        public Int32 PooledDBCCount { get { return _listPoolDBC.Count; } }
+        public Int32 ActiveDBCCount { get { return _listActiveDBC.Count; } }
+
+        internal WorkerThread QueryWorker { get; set; }
 
 
 
@@ -47,36 +50,33 @@ namespace Aegis.Data.MySql
 
         public void Initialize(String ipAddress, Int32 portNo, String charSet, String dbName, String userId, String userPwd)
         {
+            if (_cancelTasks != null)
+                throw new AegisException(AegisResult.AlreadyInitialized);
+
+
             //  Connection Test
-            using (DBConnector dbc = new DBConnector(null))
+            try
             {
-                try
-                {
-                    dbc.Connect(ipAddress, portNo, charSet, dbName, userId, userPwd);
-                    dbc.Close();
-                }
-                catch (Exception)
-                {
-                    throw new AegisException(AegisResult.MySqlConnectionFailed, "Invalid MySQL connection.");
-                }
+                DBConnector dbc = new DBConnector();
+                dbc.Connect(ipAddress, portNo, charSet, dbName, userId, userPwd);
+                dbc.Close();
+            }
+            catch (Exception)
+            {
+                throw new AegisException(AegisResult.MySqlConnectionFailed, "Invalid MySQL connection.");
             }
 
 
-            using (_lock.WriterLock)
-            {
-                IpAddress = ipAddress;
-                PortNo = portNo;
-                CharSet = charSet;
-                DBName = dbName;
-                UserId = userId;
-                UserPwd = userPwd;
-
-                _dbcCount = 0;
-                UseConnectionPool = true;
-                WorkerQueue = new WorkerThread(String.Format("DBWorker({0})", dbName));
-            }
+            IpAddress = ipAddress;
+            PortNo = portNo;
+            CharSet = charSet;
+            DBName = dbName;
+            UserId = userId;
+            UserPwd = userPwd;
+            UseConnectionPool = true;
 
 
+            QueryWorker = new WorkerThread(String.Format("DBWorker({0})", dbName));
             _cancelTasks = new CancellationTokenSource();
             PingTest();
         }
@@ -84,39 +84,34 @@ namespace Aegis.Data.MySql
 
         public void Release()
         {
+            QueryWorker?.Stop();
+            QueryWorker = null;
+
+
             using (_lock.WriterLock)
             {
-                if (_cancelTasks != null)
-                {
-                    _cancelTasks.Cancel();
-                    _cancelTasks.Dispose();
-                }
+                _cancelTasks?.Cancel();
+                _cancelTasks?.Dispose();
+                _cancelTasks = null;
 
 
-                foreach (DBConnector dbc in _poolDBC)
-                    dbc.Close();
+                _listPoolDBC.ForEach(v => v.Close());
+                _listActiveDBC.ForEach(v => v.Close());
 
-                _poolDBC.Clear();
-                _dbcCount = 0;
-
-                WorkerQueue.Stop();
+                _listPoolDBC.Clear();
+                _listActiveDBC.Clear();
             }
         }
 
 
-        public void Dispose()
+        /// <summary>
+        /// 비동기 쿼리를 수행할 Thread의 개수를 설정합니다.
+        /// </summary>
+        /// <param name="threadCount">비동기 쿼리를 수행할 Thread의 개수</param>
+        public void SetThreadCount(Int32 threadCount)
         {
-            Release();
-        }
-
-
-        public void SetWorketQueue(Int32 threadCount)
-        {
-            using (_lock.WriterLock)
-            {
-                WorkerQueue.Stop();
-                WorkerQueue.Start(threadCount);
-            }
+            QueryWorker.Stop();
+            QueryWorker.Start(threadCount);
         }
 
 
@@ -129,12 +124,13 @@ namespace Aegis.Data.MySql
                     await Task.Delay(60000, _cancelTasks.Token);
 
 
-                    //  모든 DBConnector의 Ping을 한번씩 호출한다.
-                    Int32 cnt = _poolDBC.Count();
+                    //  연결유지를 위해 동작중이 아닌 DBConnector의 Ping을 한번씩 호출한다.
+                    Int32 cnt = _listPoolDBC.Count;
                     while (cnt-- > 0)
                     {
-                        using (DBConnector dbc = GetDBC())
-                            dbc.Ping();
+                        DBConnector dbc = GetDBC();
+                        dbc.Ping();
+                        ReturnDBC(dbc);
                     }
                 }
                 catch (TaskCanceledException)
@@ -148,28 +144,17 @@ namespace Aegis.Data.MySql
         }
 
 
-        public void GetCount(out Int32 dbcCount, out Int32 activeCount)
-        {
-            using (_lock.ReaderLock)
-            {
-                dbcCount = _dbcCount;
-                activeCount = _dbcCount - _poolDBC.Count;
-            }
-        }
-
-
         public void IncreasePool(Int32 count)
         {
             while (count-- > 0)
             {
-                DBConnector dbc = new DBConnector(this);
+                DBConnector dbc = new DBConnector();
                 dbc.Connect(IpAddress, PortNo, CharSet, DBName, UserId, UserPwd);
-                ++_dbcCount;
 
 
                 using (_lock.WriterLock)
                 {
-                    _poolDBC.Enqueue(dbc);
+                    _listPoolDBC.Add(dbc);
                 }
             }
         }
@@ -182,14 +167,17 @@ namespace Aegis.Data.MySql
 
             using (_lock.WriterLock)
             {
-                if (_poolDBC.Count() == 0)
+                if (_listPoolDBC.Count == 0)
                 {
-                    dbc = new DBConnector(this);
+                    dbc = new DBConnector();
                     dbc.Connect(IpAddress, PortNo, CharSet, DBName, UserId, UserPwd);
-                    ++_dbcCount;
                 }
                 else
-                    dbc = _poolDBC.Dequeue();
+                {
+                    dbc = _listPoolDBC.ElementAt(0);
+                    _listPoolDBC.RemoveAt(0);
+                    _listActiveDBC.Add(dbc);
+                }
             }
 
             return dbc;
@@ -202,7 +190,8 @@ namespace Aegis.Data.MySql
             {
                 using (_lock.WriterLock)
                 {
-                    _poolDBC.Enqueue(dbc);
+                    _listActiveDBC.Remove(dbc);
+                    _listPoolDBC.Add(dbc);
                 }
             }
             else
@@ -217,8 +206,8 @@ namespace Aegis.Data.MySql
 
             using (_lock.ReaderLock)
             {
-                foreach (DBConnector dbc in _poolDBC)
-                    qps += dbc.QPS;
+                _listPoolDBC.ForEach(v => qps += v.QPS.Value);
+                _listActiveDBC.ForEach(v => qps += v.QPS.Value);
             }
 
             return qps;

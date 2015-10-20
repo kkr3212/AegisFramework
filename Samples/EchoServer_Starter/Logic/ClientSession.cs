@@ -25,21 +25,7 @@ namespace EchoServer.Logic
             base.NetworkEvent_Accepted += OnAcceptd;
             base.NetworkEvent_Closed += OnClosed;
             base.NetworkEvent_Received += OnReceived;
-            base.PacketValidator += IsValidPacket;
-        }
-
-
-        private Boolean IsValidPacket(Session session, StreamBuffer buffer, out int packetSize)
-        {
-            if (buffer.WrittenBytes < 4)
-            {
-                packetSize = 0;
-                return false;
-            }
-
-            //  최초 2바이트를 수신할 패킷의 크기로 처리
-            packetSize = buffer.GetUInt16();
-            return (packetSize > 0 && buffer.WrittenBytes >= packetSize);
+            base.PacketValidator += Packet.IsValidPacket;
         }
 
 
@@ -67,14 +53,11 @@ namespace EchoServer.Logic
 
 
             Packet packet = new Packet(buffer);
-            AegisTask.Run(() =>
+            packet.SkipHeader();
+            switch (packet.PacketId)
             {
-                packet.SkipHeader();
-                switch (packet.PacketId)
-                {
-                    case 0x02: OnEcho_Req(packet); break;
-                }
-            });
+                case 0x02: OnEcho_Req(packet); break;
+            }
         }
 
 

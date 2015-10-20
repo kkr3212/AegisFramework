@@ -44,39 +44,31 @@ namespace Aegis.Network
 
         public void WaitForReceive()
         {
-            AegisTask.Run(() =>
+            try
             {
-                Boolean ret = true;
-
-
-                try
+                lock (_session)
                 {
-                    lock (_session)
+                    if (_session.Socket == null)
+                        return;
+
+
+                    if (_receivedBuffer.WritableSize == 0)
+                        _receivedBuffer.Resize(_receivedBuffer.BufferSize * 2);
+
+                    if (_session.Socket.Connected)
                     {
-                        if (_session.Socket == null)
-                            return;
-
-
-                        if (_receivedBuffer.WritableSize == 0)
-                            _receivedBuffer.Resize(_receivedBuffer.BufferSize * 2);
-
-                        if (_session.Socket.Connected)
-                        {
-                            _saeaRecv.SetBuffer(_receivedBuffer.Buffer, _receivedBuffer.WrittenBytes, _receivedBuffer.WritableSize);
-                            ret = _session.Socket.ReceiveAsync(_saeaRecv);
-                        }
-                        else
-                            _session.Close();
+                        _saeaRecv.SetBuffer(_receivedBuffer.Buffer, _receivedBuffer.WrittenBytes, _receivedBuffer.WritableSize);
+                        if (_session.Socket.ReceiveAsync(_saeaRecv) == false)
+                            OnComplete_Receive(null, _saeaRecv);
                     }
-
-                    if (ret == false)
-                        OnComplete_Receive(null, _saeaRecv);
+                    else
+                        _session.Close();
                 }
-                catch (Exception)
-                {
-                    _session.Close();
-                }
-            });
+            }
+            catch (Exception)
+            {
+                _session.Close();
+            }
         }
 
 
@@ -107,7 +99,7 @@ namespace Aegis.Network
 
                         _dispatchBuffer.ResetReadIndex();
                         if (_session.PacketValidator == null ||
-                            _session.PacketValidator(_session, _dispatchBuffer, out packetSize) == false)
+                            _session.PacketValidator(_dispatchBuffer, out packetSize) == false)
                             break;
 
                         try
@@ -162,7 +154,7 @@ namespace Aegis.Network
                         saea.UserToken = new NetworkSendToken(new StreamBuffer(buffer, offset, size), onSent);
 
                     if (_session.Socket.SendAsync(saea) == false)
-                        _session.OnSent(saea.BytesTransferred);
+                        OnComplete_Receive(null, saea);
                 }
             }
             catch (SocketException)
@@ -196,7 +188,7 @@ namespace Aegis.Network
                         saea.UserToken = new NetworkSendToken(buffer, onSent);
 
                     if (_session.Socket.SendAsync(saea) == false)
-                        _session.OnSent(saea.BytesTransferred);
+                        OnComplete_Receive(null, saea);
                 }
             }
             catch (SocketException)
@@ -235,7 +227,7 @@ namespace Aegis.Network
                     _responseSelector.Add(criterion, dispatcher);
 
                     if (_session.Socket.SendAsync(saea) == false)
-                        _session.OnSent(saea.BytesTransferred);
+                        OnComplete_Receive(null, saea);
                 }
             }
             catch (SocketException)
@@ -257,11 +249,8 @@ namespace Aegis.Network
                 {
                     token.Buffer.Read(saea.BytesTransferred);
                     if (token.Buffer.ReadableSize == 0)
-                        token.ActionOnCompletion(token.Buffer);
+                        token.CompletionAction();
                 }
-
-
-                _session.OnSent(saea.BytesTransferred);
             }
             catch (SocketException)
             {

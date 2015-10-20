@@ -93,7 +93,7 @@
   <ItemGroup>
     <Compile Include="Configuration\ConfigData.cs" />
     <Compile Include="Configuration\Environment.cs" />
-    <Compile Include="Configuration\Starter.cs" />
+    <Compile Include="Starter.cs" />
     <Compile Include="Converter\DateTimeConverter.cs" />
     <Compile Include="Converter\StringConverter.cs" />
     <Compile Include="Data\MySql\DataReader.cs" />
@@ -109,6 +109,7 @@
     <Compile Include="Network\SessionMethodAsyncResult.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="RandomizerT.cs" />
+    <Compile Include="WorkerQueue.cs" />
     <Compile Include="SequentialNumber.cs" />
     <Compile Include="Threading\AegisTask.cs" />
     <Compile Include="Definitions.cs" />
@@ -136,20 +137,17 @@
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
     <PostBuildEvent>if $(PlatformName) == x86 (
-rd /s /q $(ProjectDir)..\bin\x86
-mkdir $(ProjectDir)..\bin\x86
+if not exist $(ProjectDir)..\bin\x86 mkdir $(ProjectDir)..\bin\x86
 copy $(TargetDir)$(TargetName).dll $(ProjectDir)..\bin\x86\$(TargetName).dll
 copy $(TargetDir)$(TargetName).xml $(ProjectDir)..\bin\x86\$(TargetName).xml
 ) 
 if $(PlatformName) == x64 (
-rd /s /q $(ProjectDir)..\bin\x64
-mkdir $(ProjectDir)..\bin\x64
+if not exist $(ProjectDir)..\bin\x64 mkdir $(ProjectDir)..\bin\x64
 copy $(TargetDir)$(TargetName).dll $(ProjectDir)..\bin\x64\$(TargetName).dll
 copy $(TargetDir)$(TargetName).xml $(ProjectDir)..\bin\x64\$(TargetName).xml
 )
 if $(PlatformName) == Any CPU (
-rd /s /q $(ProjectDir)..\bin\any
-mkdir $(ProjectDir)..\bin\any
+if not exist $(ProjectDir)..\bin\any mkdir $(ProjectDir)..\bin\any
 copy $(TargetDir)$(TargetName).dll $(ProjectDir)..\bin\any\$(TargetName).dll
 copy $(TargetDir)$(TargetName).xml $(ProjectDir)..\bin\any\$(TargetName).xml
 )</PostBuildEvent>

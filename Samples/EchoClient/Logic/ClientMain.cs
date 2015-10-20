@@ -34,8 +34,8 @@ namespace EchoClient.Logic
                 Logger.Write(LogType.Info, 2, "EchoClient (Aegis {0})", Aegis.Configuration.Environment.AegisVersion);
 
 
+                Starter.Initialize(1);
                 _networkServer.StartNetwork(delegate { return new TestSession(); }, clientCount, clientCount);
-                //_networkServer.StartNetwork(delegate { return new AwaitSession(); }, clientCount, clientCount);
             }
             catch (Exception e)
             {
@@ -47,6 +47,7 @@ namespace EchoClient.Logic
         public void StopServer()
         {
             _networkServer.StopNetwork();
+            Starter.Release();
             Logger.Release();
         }
     }

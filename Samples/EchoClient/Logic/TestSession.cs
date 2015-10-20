@@ -24,24 +24,10 @@ namespace EchoClient.Logic
             base.NetworkEvent_Connected += OnConnected;
             base.NetworkEvent_Closed += OnClosed;
             base.NetworkEvent_Received += OnReceived;
-            base.PacketValidator += IsValidPacket;
+            base.PacketValidator += Packet.IsValidPacket;
 
 
             Connect("192.168.0.100", 10100);
-        }
-
-
-        private Boolean IsValidPacket(Session session, StreamBuffer buffer, out int packetSize)
-        {
-            if (buffer.WrittenBytes < 4)
-            {
-                packetSize = 0;
-                return false;
-            }
-
-            //  최초 2바이트를 수신할 패킷의 크기로 처리
-            packetSize = buffer.GetUInt16();
-            return (packetSize > 0 && buffer.WrittenBytes >= packetSize);
         }
 
 
@@ -63,15 +49,12 @@ namespace EchoClient.Logic
         private void OnReceived(Session session, StreamBuffer buffer)
         {
             Packet packet = new Packet(buffer);
-            AegisTask.Run(() =>
+            packet.SkipHeader();
+            switch (packet.PacketId)
             {
-                packet.SkipHeader();
-                switch (packet.PacketId)
-                {
-                    case 0x01: OnHello(packet); break;
-                    case 0x03: OnEcho_Res(packet); break;
-                }
-            });
+                case 0x01: OnHello(packet); break;
+                case 0x03: OnEcho_Res(packet); break;
+            }
         }
 
 

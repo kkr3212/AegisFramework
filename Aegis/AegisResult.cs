@@ -23,8 +23,10 @@ namespace Aegis
         public const Int32 NetworkError = 8;            //  네트워크 관련 에러가 발생했습니다. (InnerException 참고)
         public const Int32 AcceptorIsRunning = 9;       //  Acceptor가 이미 실행중입니다.
         public const Int32 JobCanceled = 10;            //  진행중인 작업이 취소되었습니다.
-        public const Int32 DataReaderNotClosed = 11;    //  DataReader가 사용중입니다. 먼저 진행중인 쿼리를 종료해야 합니다.
+        public const Int32 NotInitialized = 11;         //  초기화되지 않은 객체입니다.
+        public const Int32 AlreadyInitialized = 12;     //  이미 초기화된 객체입니다.
 
         public const Int32 MySqlConnectionFailed = 100; //  MySql Database에 접속할 수 없습니다.
+        public const Int32 DataReaderNotClosed = 101;   //  DataReader가 사용중입니다. 먼저 진행중인 쿼리를 종료해야 합니다.
     }
 }
