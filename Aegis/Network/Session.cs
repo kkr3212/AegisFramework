@@ -171,7 +171,7 @@ namespace Aegis.Network
         /// </summary>
         /// <param name="ipAddress">접속할 서버의 Ip Address</param>
         /// <param name="portNo">접속할 서버의 PortNo</param>
-        public void Connect(String ipAddress, Int32 portNo)
+        public virtual void Connect(String ipAddress, Int32 portNo)
         {
             lock (this)
             {
@@ -238,7 +238,7 @@ namespace Aegis.Network
         /// 사용중인 리소스를 반환하고 소켓을 종료하여 네트워크 작업을 종료합니다.
         /// 종료 처리가 진행되기 이전에 OnClose 함수가 호출됩니다.
         /// </summary>
-        public void Close()
+        public virtual void Close()
         {
             try
             {
@@ -284,7 +284,7 @@ namespace Aegis.Network
         /// <param name="offset">source에서 전송할 시작 위치</param>
         /// <param name="size">source에서 전송할 크기(Byte)</param>
         /// <param name="onSent">패킷 전송이 완료된 후 호출할 Action</param>
-        public void SendPacket(byte[] buffer, Int32 offset, Int32 size, Action<StreamBuffer> onSent = null)
+        public virtual void SendPacket(byte[] buffer, Int32 offset, Int32 size, Action<StreamBuffer> onSent = null)
         {
             _method.SendPacket(buffer, offset, size, onSent);
         }
@@ -295,7 +295,7 @@ namespace Aegis.Network
         /// </summary>
         /// <param name="buffer">전송할 데이터가 담긴 StreamBuffer</param>
         /// <param name="onSent">패킷 전송이 완료된 후 호출할 Action</param>
-        public void SendPacket(StreamBuffer buffer, Action<StreamBuffer> onSent = null)
+        public virtual void SendPacket(StreamBuffer buffer, Action<StreamBuffer> onSent = null)
         {
             _method.SendPacket(buffer, onSent);
         }
@@ -309,7 +309,7 @@ namespace Aegis.Network
         /// <param name="criterion">dispatcher에 지정된 핸들러를 호출할 것인지 여부를 판단하는 함수를 지정합니다.</param>
         /// <param name="dispatcher">실행될 함수를 지정합니다.</param>
         /// <param name="onSent">패킷 전송이 완료된 후 호출할 Action</param>
-        public void SendPacket(StreamBuffer buffer, PacketCriterion criterion, EventHandler_Receive dispatcher, Action<StreamBuffer> onSent = null)
+        public virtual void SendPacket(StreamBuffer buffer, PacketCriterion criterion, EventHandler_Receive dispatcher, Action<StreamBuffer> onSent = null)
         {
             _method.SendPacket(buffer, criterion, dispatcher, onSent);
         }
