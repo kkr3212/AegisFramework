@@ -11,7 +11,7 @@ using Aegis.Network;
 
 namespace EchoClient.Logic
 {
-    public class TestSession : AsyncResultSession
+    public class TestSession : Session
     {
         private byte[] _tempBuffer = new byte[1024 * 1024];
 
@@ -20,7 +20,6 @@ namespace EchoClient.Logic
 
 
         public TestSession()
-            : base(4096)
         {
             base.NetworkEvent_Connected += OnConnected;
             base.NetworkEvent_Closed += OnClosed;
@@ -32,7 +31,7 @@ namespace EchoClient.Logic
         }
 
 
-        private Boolean IsValidPacket(NetworkSession session, StreamBuffer buffer, out int packetSize)
+        private Boolean IsValidPacket(Session session, StreamBuffer buffer, out int packetSize)
         {
             if (buffer.WrittenBytes < 4)
             {
@@ -46,7 +45,7 @@ namespace EchoClient.Logic
         }
 
 
-        private void OnConnected(NetworkSession session, Boolean connected)
+        private void OnConnected(Session session, Boolean connected)
         {
             if (connected == true)
                 Logger.Write(LogType.Info, 2, "[{0}] Connected", SessionId);
@@ -55,13 +54,13 @@ namespace EchoClient.Logic
         }
 
 
-        private void OnClosed(NetworkSession session)
+        private void OnClosed(Session session)
         {
             Logger.Write(LogType.Info, 2, "[{0}] Closed", SessionId);
         }
 
 
-        private void OnReceived(NetworkSession session, StreamBuffer buffer)
+        private void OnReceived(Session session, StreamBuffer buffer)
         {
             Packet packet = new Packet(buffer);
             AegisTask.Run(() =>

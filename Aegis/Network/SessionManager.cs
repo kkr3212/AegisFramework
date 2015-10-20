@@ -14,8 +14,8 @@ namespace Aegis.Network
     public class SessionManager
     {
         internal NetworkChannel NetworkChannel { get; private set; }
-        private List<NetworkSession> _inactiveSessions;
-        private Dictionary<Int32, NetworkSession> _activeSessions;
+        private List<Session> _inactiveSessions;
+        private Dictionary<Int32, Session> _activeSessions;
         private Int32 _sessionId = 0, _activeSessionCount;
 
 
@@ -32,7 +32,7 @@ namespace Aegis.Network
         /// <summary>
         /// 현재 활성화 상태인 Session 목록을 가져옵니다.
         /// </summary>
-        public List<NetworkSession> ActiveSessions
+        public List<Session> ActiveSessions
         {
             get
             {
@@ -48,8 +48,8 @@ namespace Aegis.Network
         internal SessionManager(NetworkChannel networkChannel)
         {
             NetworkChannel = networkChannel;
-            _inactiveSessions = new List<NetworkSession>();
-            _activeSessions = new Dictionary<Int32, NetworkSession>();
+            _inactiveSessions = new List<Session>();
+            _activeSessions = new Dictionary<Int32, Session>();
         }
 
 
@@ -63,7 +63,7 @@ namespace Aegis.Network
                         break;
 
 
-                    NetworkSession session = SessionGenerator();
+                    Session session = SessionGenerator();
                     session.SessionManager = this;
                     _inactiveSessions.Add(session);
                 }
@@ -75,7 +75,7 @@ namespace Aegis.Network
         {
             lock (this)
             {
-                foreach (NetworkSession session in _activeSessions.Select(v => v.Value))
+                foreach (Session session in _activeSessions.Select(v => v.Value))
                 {
                     session.SessionManager = null;
                     session.Close();
@@ -89,9 +89,9 @@ namespace Aegis.Network
         }
 
 
-        internal NetworkSession AttackSocket(Socket socket)
+        internal Session AttackSocket(Socket socket)
         {
-            NetworkSession session;
+            Session session;
 
 
             //  Inactive queue에서 Session 객체를 가져온다.
@@ -122,7 +122,7 @@ namespace Aegis.Network
         }
 
 
-        internal void ActivateSession(NetworkSession session)
+        internal void ActivateSession(Session session)
         {
             lock (this)
             {
@@ -134,7 +134,7 @@ namespace Aegis.Network
         }
 
 
-        internal void InactivateSession(NetworkSession session)
+        internal void InactivateSession(Session session)
         {
             lock (this)
             {

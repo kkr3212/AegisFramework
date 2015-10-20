@@ -11,7 +11,7 @@ using Aegis.Network;
 
 namespace EchoServer.Logic
 {
-    public class ClientSession : AsyncResultSession
+    public class ClientSession : Session
     {
         public static IntervalCounter Counter_ReceiveCount = new IntervalCounter(1000);
         public static IntervalCounter Counter_ReceiveBytes = new IntervalCounter(1000);
@@ -21,7 +21,6 @@ namespace EchoServer.Logic
 
 
         public ClientSession()
-            : base(1024 * 1024)
         {
             base.NetworkEvent_Accepted += OnAcceptd;
             base.NetworkEvent_Closed += OnClosed;
@@ -30,7 +29,7 @@ namespace EchoServer.Logic
         }
 
 
-        private Boolean IsValidPacket(NetworkSession session, StreamBuffer buffer, out int packetSize)
+        private Boolean IsValidPacket(Session session, StreamBuffer buffer, out int packetSize)
         {
             if (buffer.WrittenBytes < 4)
             {
@@ -44,7 +43,7 @@ namespace EchoServer.Logic
         }
 
 
-        private void OnAcceptd(NetworkSession session)
+        private void OnAcceptd(Session session)
         {
             Logger.Write(LogType.Info, 2, "[{0}] Accepted", SessionId);
 
@@ -55,13 +54,13 @@ namespace EchoServer.Logic
         }
 
 
-        private void OnClosed(NetworkSession session)
+        private void OnClosed(Session session)
         {
             Logger.Write(LogType.Info, 2, "[{0}] Closed", SessionId);
         }
 
 
-        private void OnReceived(NetworkSession session, StreamBuffer buffer)
+        private void OnReceived(Session session, StreamBuffer buffer)
         {
             Counter_ReceiveCount.Add(1);
             Counter_ReceiveBytes.Add(buffer.WrittenBytes);

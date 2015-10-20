@@ -86,7 +86,7 @@ namespace Aegis.Network
                     return;
 
 
-                NetworkSession acceptedSession = _networkChannel.SessionManager.AttackSocket(acceptedSocket);
+                Session acceptedSession = _networkChannel.SessionManager.AttackSocket(acceptedSocket);
                 if (acceptedSession == null)
                 {
                     acceptedSocket.Close();

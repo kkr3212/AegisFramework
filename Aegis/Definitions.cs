@@ -5,7 +5,7 @@ using System.Reflection;
 
 namespace Aegis
 {
-    public delegate Network.NetworkSession SessionGenerateDelegator();
+    public delegate Network.Session SessionGenerateDelegator();
 
 
     public class NetworkSendToken

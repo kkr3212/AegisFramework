@@ -2,7 +2,6 @@
 <Aegis id="21301" logLevel="2" mutexName="TestServer">
   <NetworkChannel name="NetworkClient"
                   sessionClass="EchoServer.Logic.ClientSession"
-                  receiveBufferSize="8192"
                   initSessionPoolCount="5"
                   maxSessionPoolCount="100"
                   listenIpAddress="192.168.0.100"

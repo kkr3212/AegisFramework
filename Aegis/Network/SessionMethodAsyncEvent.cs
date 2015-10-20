@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using System.Threading;
 using System.Threading.Tasks;
 using System.Net;
 using System.Net.Sockets;
@@ -13,86 +12,37 @@ using Aegis.Threading;
 
 namespace Aegis.Network
 {
-    /// <summary>
-    /// Async 계열의 Socket API를 사용하여 원격지의 호스트와 네트워킹을 할 수 있는 기능을 제공합니다.
-    /// </summary>
-    public class AsyncEventSession : NetworkSession
+    internal class SessionMethodAsyncEvent : ISessionMethod
     {
+        private Session _session;
         private StreamBuffer _receivedBuffer, _dispatchBuffer;
         private SocketAsyncEventArgs _saeaRecv;
-
-        public AwaitableMethod AwaitableMethod { get; private set; }
         private ResponseSelector _responseSelector;
 
 
-        public event EventHandler_Send NetworkEvent_Sent;
-        public event EventHandler_Receive NetworkEvent_Received;
-        public EventHandler_IsValidPacket PacketValidator;
 
 
 
-
-
-        /// <summary>
-        /// 수신버퍼의 크기는 StreamBuffer의 기본할당크기로 초기화됩니다.
-        /// </summary>
-        protected AsyncEventSession()
+        public SessionMethodAsyncEvent(Session session)
         {
-            _receivedBuffer = new StreamBuffer();
-            _dispatchBuffer = new StreamBuffer();
+            _session = session;
+            _receivedBuffer = new StreamBuffer(2048);
+            _dispatchBuffer = new StreamBuffer(2048);
 
             _saeaRecv = new SocketAsyncEventArgs();
             _saeaRecv.Completed += OnComplete_Receive;
-
-            AwaitableMethod = new AwaitableMethod(this);
-            _responseSelector = new ResponseSelector(this);
+            _responseSelector = new ResponseSelector(_session);
         }
 
 
-        /// <summary>
-        /// 수신버퍼의 크기를 지정하여 SessionAsync 객체를 생성합니다. 수신버퍼의 크기는 패킷 하나의 크기 이상으로 설정하는 것이 좋습니다.
-        /// </summary>
-        /// <param name="recvBufferSize">수신버퍼의 크기(Byte)</param>
-        protected AsyncEventSession(Int32 recvBufferSize)
+        public void Clear()
         {
-            _receivedBuffer = new StreamBuffer(recvBufferSize);
-            _dispatchBuffer = new StreamBuffer();
-
-            _saeaRecv = new SocketAsyncEventArgs();
-            _saeaRecv.Completed += OnComplete_Receive;
-
-            AwaitableMethod = new AwaitableMethod(this);
-            _responseSelector = new ResponseSelector(this);
-        }
-
-
-        /// <summary>
-        /// 수신버퍼의 크기를 변경합니다.
-        /// 새로운 버퍼의 크기는 기존 버퍼의 크기보다 커야합니다.
-        /// 버퍼 크기가 변경되더라도 기존의 데이터는 유지됩니다.
-        /// </summary>
-        /// <param name="recvBufferSize">변경할 수신버퍼의 크기(Byte)</param>
-        public override void SetReceiveBufferSize(Int32 recvBufferSize)
-        {
-            if (recvBufferSize <= _receivedBuffer.BufferSize)
-                return;
-
-            StreamBuffer oldBuffer = new StreamBuffer(_receivedBuffer, 0, _receivedBuffer.WrittenBytes);
-
-            _receivedBuffer = new StreamBuffer(recvBufferSize);
-            _receivedBuffer.Write(oldBuffer.Buffer, 0, oldBuffer.WrittenBytes);
-        }
-
-
-        public override void Close()
-        {
-            base.Close();
             _receivedBuffer.Clear();
             _dispatchBuffer.Clear();
         }
 
 
-        internal override void WaitForReceive()
+        public void WaitForReceive()
         {
             AegisTask.Run(() =>
             {
@@ -101,22 +51,22 @@ namespace Aegis.Network
 
                 try
                 {
-                    lock (this)
+                    lock (_session)
                     {
-                        if (Socket == null)
+                        if (_session.Socket == null)
                             return;
 
 
                         if (_receivedBuffer.WritableSize == 0)
                             _receivedBuffer.Resize(_receivedBuffer.BufferSize * 2);
 
-                        if (Socket.Connected)
+                        if (_session.Socket.Connected)
                         {
                             _saeaRecv.SetBuffer(_receivedBuffer.Buffer, _receivedBuffer.WrittenBytes, _receivedBuffer.WritableSize);
-                            ret = Socket.ReceiveAsync(_saeaRecv);
+                            ret = _session.Socket.ReceiveAsync(_saeaRecv);
                         }
                         else
-                            Close();
+                            _session.Close();
                     }
 
                     if (ret == false)
@@ -124,7 +74,7 @@ namespace Aegis.Network
                 }
                 catch (Exception)
                 {
-                    Close();
+                    _session.Close();
                 }
             });
         }
@@ -134,13 +84,13 @@ namespace Aegis.Network
         {
             try
             {
-                lock (this)
+                lock (_session)
                 {
                     //  transBytes가 0이면 원격지 혹은 네트워크에 의해 연결이 끊긴 상태
                     Int32 transBytes = saea.BytesTransferred;
                     if (transBytes == 0)
                     {
-                        Close();
+                        _session.Close();
                         return;
                     }
 
@@ -156,8 +106,8 @@ namespace Aegis.Network
                         Int32 packetSize;
 
                         _dispatchBuffer.ResetReadIndex();
-                        if (PacketValidator == null ||
-                            PacketValidator(this, _dispatchBuffer, out packetSize) == false)
+                        if (_session.PacketValidator == null ||
+                            _session.PacketValidator(_session, _dispatchBuffer, out packetSize) == false)
                             break;
 
                         try
@@ -166,11 +116,9 @@ namespace Aegis.Network
                             _receivedBuffer.Read(packetSize);
                             _dispatchBuffer.ResetReadIndex();
 
-                            if (_responseSelector.Dispatch(_dispatchBuffer) == false &&
-                                NetworkEvent_Received != null)
-                            {
-                                NetworkEvent_Received(this, _dispatchBuffer);
-                            }
+
+                            if (_responseSelector.Dispatch(_dispatchBuffer) == false)
+                                _session.OnReceived(_dispatchBuffer);
                         }
                         catch (Exception e)
                         {
@@ -188,7 +136,7 @@ namespace Aegis.Network
             }
             catch (SocketException)
             {
-                Close();
+                _session.Close();
             }
             catch (Exception e)
             {
@@ -197,20 +145,13 @@ namespace Aegis.Network
         }
 
 
-        /// <summary>
-        /// 패킷을 전송합니다.
-        /// </summary>
-        /// <param name="buffer">보낼 데이터가 담긴 버퍼</param>
-        /// <param name="offset">source에서 전송할 시작 위치</param>
-        /// <param name="size">source에서 전송할 크기(Byte)</param>
-        /// <param name="onSent">패킷 전송이 완료된 후 호출할 Action</param>
-        public override void SendPacket(byte[] buffer, Int32 offset, Int32 size, Action<StreamBuffer> onSent = null)
+        public void SendPacket(byte[] buffer, Int32 offset, Int32 size, Action<StreamBuffer> onSent = null)
         {
             try
             {
-                lock (this)
+                lock (_session)
                 {
-                    if (Socket == null)
+                    if (_session.Socket == null)
                         return;
 
 
@@ -220,8 +161,8 @@ namespace Aegis.Network
                     if (onSent != null)
                         saea.UserToken = new NetworkSendToken(new StreamBuffer(buffer, offset, size), onSent);
 
-                    if (Socket.SendAsync(saea) == false && NetworkEvent_Sent != null)
-                        NetworkEvent_Sent(this, saea.BytesTransferred);
+                    if (_session.Socket.SendAsync(saea) == false)
+                        _session.OnSent(saea.BytesTransferred);
                 }
             }
             catch (SocketException)
@@ -234,18 +175,13 @@ namespace Aegis.Network
         }
 
 
-        /// <summary>
-        /// 패킷을 전송합니다.
-        /// </summary>
-        /// <param name="buffer">전송할 데이터가 담긴 StreamBuffer</param>
-        /// <param name="onSent">패킷 전송이 완료된 후 호출할 Action</param>
-        public override void SendPacket(StreamBuffer buffer, Action<StreamBuffer> onSent = null)
+        public void SendPacket(StreamBuffer buffer, Action<StreamBuffer> onSent = null)
         {
             try
             {
-                lock (this)
+                lock (_session)
                 {
-                    if (Socket == null)
+                    if (_session.Socket == null)
                         return;
 
 
@@ -259,8 +195,8 @@ namespace Aegis.Network
                     if (onSent != null)
                         saea.UserToken = new NetworkSendToken(buffer, onSent);
 
-                    if (Socket.SendAsync(saea) == false && NetworkEvent_Sent != null)
-                        NetworkEvent_Sent(this, saea.BytesTransferred);
+                    if (_session.Socket.SendAsync(saea) == false)
+                        _session.OnSent(saea.BytesTransferred);
                 }
             }
             catch (SocketException)
@@ -273,15 +209,7 @@ namespace Aegis.Network
         }
 
 
-        /// <summary>
-        /// 패킷을 전송하고, 특정 패킷이 수신될 경우 dispatcher에 지정된 핸들러를 실행합니다.
-        /// 이 기능은 AwaitableMethod보다는 빠르지만, 동시에 많이 호출될 경우 성능이 저하될 수 있습니다.
-        /// </summary>
-        /// <param name="buffer">전송할 데이터가 담긴 StreamBuffer</param>
-        /// <param name="criterion">dispatcher에 지정된 핸들러를 호출할 것인지 여부를 판단하는 함수를 지정합니다.</param>
-        /// <param name="dispatcher">실행될 함수를 지정합니다.</param>
-        /// <param name="onSent">패킷 전송이 완료된 후 호출할 Action</param>
-        public override void SendPacket(StreamBuffer buffer, PacketCriterion criterion, EventHandler_Receive dispatcher, Action<StreamBuffer> onSent = null)
+        public void SendPacket(StreamBuffer buffer, PacketCriterion criterion, EventHandler_Receive dispatcher, Action<StreamBuffer> onSent = null)
         {
             if (criterion == null || dispatcher == null)
                 throw new AegisException(AegisResult.InvalidArgument, "The argument criterion and dispatcher cannot be null.");
@@ -289,9 +217,9 @@ namespace Aegis.Network
 
             try
             {
-                lock (this)
+                lock (_session)
                 {
-                    if (Socket == null)
+                    if (_session.Socket == null)
                         return;
 
                     //  ReadIndex가 OnSocket_Send에서 사용되므로 ReadIndex를 초기화해야 한다.
@@ -306,8 +234,8 @@ namespace Aegis.Network
 
                     _responseSelector.Add(criterion, dispatcher);
 
-                    if (Socket.SendAsync(saea) == false && NetworkEvent_Sent != null)
-                        NetworkEvent_Sent(this, saea.BytesTransferred);
+                    if (_session.Socket.SendAsync(saea) == false)
+                        _session.OnSent(saea.BytesTransferred);
                 }
             }
             catch (SocketException)
@@ -333,11 +261,7 @@ namespace Aegis.Network
                 }
 
 
-                if (NetworkEvent_Sent != null)
-                {
-                    Int32 transBytes = saea.BytesTransferred;
-                    NetworkEvent_Sent(this, transBytes);
-                }
+                _session.OnSent(saea.BytesTransferred);
             }
             catch (SocketException)
             {

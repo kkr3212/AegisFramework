@@ -13,7 +13,6 @@ namespace Aegis.Configuration
     {
         public String NetworkChannelName { get; internal set; }
         public String SessionClassName { get; internal set; }
-        public Int32 ReceiveBufferSize { get; internal set; }
         public Int32 InitSessionPoolCount { get; internal set; }
         public Int32 MaxSessionPoolCount { get; internal set; }
 

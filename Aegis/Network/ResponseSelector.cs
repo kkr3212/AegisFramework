@@ -27,11 +27,11 @@ namespace Aegis.Network
 
 
 
-        private readonly NetworkSession _session;
+        private readonly Session _session;
         private readonly List<Data> _listResponseAction;
 
 
-        public ResponseSelector(NetworkSession session)
+        public ResponseSelector(Session session)
         {
             _session = session;
             _listResponseAction = new List<Data>();

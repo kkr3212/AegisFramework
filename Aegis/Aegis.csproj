@@ -102,9 +102,11 @@
     <Compile Include="Data\MySql\MySqlDatabase.cs" />
     <Compile Include="IntervalCounter.cs" />
     <Compile Include="Network\AwaitableMethod.cs" />
+    <Compile Include="Network\ISessionMethod.cs" />
     <Compile Include="Network\ResponseSelector.cs" />
-    <Compile Include="Network\NetworkSession.cs" />
-    <Compile Include="Network\AsyncEventSession.cs" />
+    <Compile Include="Network\Session.cs" />
+    <Compile Include="Network\SessionMethodAsyncEvent.cs" />
+    <Compile Include="Network\SessionMethodAsyncResult.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="RandomizerT.cs" />
     <Compile Include="SequentialNumber.cs" />
@@ -117,7 +119,6 @@
     <Compile Include="Network\NetworkChannel.cs" />
     <Compile Include="Network\Packet.cs" />
     <Compile Include="Network\SecurePacket.cs" />
-    <Compile Include="Network\AsyncResultSession.cs" />
     <Compile Include="Network\SessionManager.cs" />
     <Compile Include="ObjectPool.cs" />
     <Compile Include="Randomizer.cs" />

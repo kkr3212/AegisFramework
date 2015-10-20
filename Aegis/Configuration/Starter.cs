@@ -66,13 +66,13 @@ namespace Aegis.Configuration
                 if (config.ListenPortNo == 0)
                 {
                     channel.StartNetwork(
-                        delegate { return GenerateSession(config.SessionClassName, config.ReceiveBufferSize); }
+                        delegate { return GenerateSession(config.SessionClassName); }
                         , config.InitSessionPoolCount, config.MaxSessionPoolCount);
                 }
                 else
                 {
                     channel.StartNetwork(
-                            delegate { return GenerateSession(config.SessionClassName, config.ReceiveBufferSize); },
+                            delegate { return GenerateSession(config.SessionClassName); },
                             config.InitSessionPoolCount, config.MaxSessionPoolCount)
                         .OpenListener(config.ListenIpAddress, config.ListenPortNo);
                 }
@@ -96,13 +96,13 @@ namespace Aegis.Configuration
             if (config.ListenIpAddress.Length == 0 || config.ListenPortNo == 0)
             {
                 channel.StartNetwork(
-                    delegate { return GenerateSession(config.SessionClassName, config.ReceiveBufferSize); }
+                    delegate { return GenerateSession(config.SessionClassName); }
                     , config.InitSessionPoolCount, config.MaxSessionPoolCount);
             }
             else
             {
                 channel.StartNetwork(
-                        delegate { return GenerateSession(config.SessionClassName, config.ReceiveBufferSize); },
+                        delegate { return GenerateSession(config.SessionClassName); },
                         config.InitSessionPoolCount, config.MaxSessionPoolCount)
                     .OpenListener(config.ListenIpAddress, config.ListenPortNo);
             }
@@ -116,7 +116,7 @@ namespace Aegis.Configuration
         /// sessionGenerator가 지정되기 때문에 config file에 정의된 sessionClass, receiveBufferSize는 무시됩니다.
         /// </summary>
         /// <param name="networkChannelName">시작할 NetworkChannel 이름</param>
-        /// <param name="sessionGenerator">NetworkSession 객체를 생성하는 Delegator</param>
+        /// <param name="sessionGenerator">Session 객체를 생성하는 Delegator</param>
         /// <returns>해당 NetworkChannel 객체</returns>
         public static NetworkChannel StartNetwork(String networkChannelName, SessionGenerateDelegator sessionGenerator)
         {
@@ -167,7 +167,7 @@ namespace Aegis.Configuration
         }
 
 
-        private static NetworkSession GenerateSession(String sessionClassName, Int32 receiveBufferSize)
+        private static Session GenerateSession(String sessionClassName)
         {
             Type type = Environment.ExecutingAssembly.GetType(sessionClassName);
             if (type == null)
@@ -178,9 +178,7 @@ namespace Aegis.Configuration
                 throw new AegisException(AegisResult.InvalidArgument, "'No matches constructor on '{0}'.", sessionClassName);
 
 
-            NetworkSession session = constructorInfo.Invoke(null) as NetworkSession;
-            session.SetReceiveBufferSize(receiveBufferSize);
-
+            Session session = constructorInfo.Invoke(null) as Session;
             return session;
         }
 
@@ -218,7 +216,6 @@ namespace Aegis.Configuration
                 channelConfig.NetworkChannelName = GetAttributeValue(node.Attributes, "name");
                 channelConfig.SessionClassName = GetAttributeValue(node.Attributes, "sessionClass");
 
-                channelConfig.ReceiveBufferSize = GetAttributeValue(node.Attributes, "receiveBufferSize", "0").ToInt32();
                 channelConfig.InitSessionPoolCount = GetAttributeValue(node.Attributes, "initSessionPoolCount", "0").ToInt32();
                 channelConfig.MaxSessionPoolCount = GetAttributeValue(node.Attributes, "maxSessionPoolCount", "0").ToInt32();
                 channelConfig.ListenIpAddress = GetAttributeValue(node.Attributes, "listenIpAddress", "");
