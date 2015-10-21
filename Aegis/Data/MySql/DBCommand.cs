@@ -102,59 +102,45 @@ namespace Aegis.Data.MySql
                 try
                 {
                     QueryNoReader();
-                }
-                catch (Exception e)
-                {
-                    Logger.Write(LogType.Err, 1, CommandText.ToString());
-                    Logger.Write(LogType.Err, 1, e.ToString());
-                }
 
-                _isAsync = false;
-                Dispose();
+                    _isAsync = false;
+                    Dispose();
+                }
+                catch (Exception)
+                {
+                    _isAsync = false;
+                    Dispose();
+                    throw;  //  상위 Exception Handler가 처리하도록 예외를 던진다.
+                }
             });
         }
 
 
         public void PostQueryNoReader(Action actionOnCompletion)
         {
-            Boolean hasError = false;
-
             _isAsync = true;
             SpinWorker.Work(() =>
             {
                 try
                 {
                     QueryNoReader();
-                }
-                catch (Exception e)
-                {
-                    hasError = true;
-                    Logger.Write(LogType.Err, 1, CommandText.ToString());
-                    Logger.Write(LogType.Err, 1, e.ToString());
-                }
 
-                _isAsync = false;
-                Dispose();
+                    _isAsync = false;
+                    Dispose();
+                }
+                catch (Exception)
+                {
+                    _isAsync = false;
+                    Dispose();
+                    throw;  //  actionOnCompletion이 실행되지 않도록 예외를 던져야 한다.
+                }
             },
-            () =>
-            {
-                try
-                {
-                    if (hasError == false)
-                        actionOnCompletion();
-                }
-                catch (Exception e)
-                {
-                    Logger.Write(LogType.Err, 1, e.ToString());
-                }
-            });
+            actionOnCompletion);
         }
 
 
         public void PostQuery(Action actionOnCompletion)
         {
-            Boolean hasError = false;
-
             _isAsync = true;
             SpinWorker.Work(() =>
             {
@@ -162,35 +148,34 @@ namespace Aegis.Data.MySql
                 {
                     Query();
                 }
-                catch (Exception e)
+                catch (Exception)
                 {
-                    hasError = true;
-                    Logger.Write(LogType.Err, 1, CommandText.ToString());
-                    Logger.Write(LogType.Err, 1, e.ToString());
+                    _isAsync = false;
+                    Dispose();
+                    throw;  //  상위 Exception Handler가 처리하도록 예외를 던진다.
                 }
             },
             () =>
             {
                 try
                 {
-                    if (hasError == false)
-                        actionOnCompletion();
-                }
-                catch (Exception e)
-                {
-                    Logger.Write(LogType.Err, 1, e.ToString());
-                }
+                    actionOnCompletion();
 
-                _isAsync = false;
-                Dispose();
+                    _isAsync = false;
+                    Dispose();
+                }
+                catch (Exception)
+                {
+                    _isAsync = false;
+                    Dispose();
+                    throw;  //  상위 Exception Handler가 처리하도록 예외를 던진다.
+                }
             });
         }
 
 
         public void PostQuery(Action<DBCommand> actionOnCompletion)
         {
-            Boolean hasError = false;
-
             _isAsync = true;
             SpinWorker.Work(() =>
             {
@@ -198,27 +183,28 @@ namespace Aegis.Data.MySql
                 {
                     Query();
                 }
-                catch (Exception e)
+                catch (Exception)
                 {
-                    hasError = true;
-                    Logger.Write(LogType.Err, 1, CommandText.ToString());
-                    Logger.Write(LogType.Err, 1, e.ToString());
+                    _isAsync = false;
+                    Dispose();
+                    throw;  //  actionOnCompletion이 실행되지 않도록 예외를 던져야 한다.
                 }
             },
             () =>
             {
                 try
                 {
-                    if (hasError == false)
-                        actionOnCompletion(this);
-                }
-                catch (Exception e)
-                {
-                    Logger.Write(LogType.Err, 1, e.ToString());
-                }
+                    actionOnCompletion(this);
 
-                _isAsync = false;
-                Dispose();
+                    _isAsync = false;
+                    Dispose();
+                }
+                catch (Exception)
+                {
+                    _isAsync = false;
+                    Dispose();
+                    throw;  //  상위 Exception Handler가 처리하도록 예외를 던진다.
+                }
             });
         }
 

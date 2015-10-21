@@ -45,6 +45,19 @@ namespace Aegis
         }
 
 
+        private static void SafeAction(Action action)
+        {
+            try
+            {
+                action();
+            }
+            catch (Exception e)
+            {
+                Logger.Write(LogType.Err, 1, e.ToString());
+            }
+        }
+
+
         /// <summary>
         /// actionWork 작업을 WorkerThread에서 실행합니다.
         /// </summary>
@@ -55,7 +68,7 @@ namespace Aegis
                 AegisTask.Run(actionWork);
 
             else if (WorkerThreadCount == 0)
-                actionWork();
+                SafeAction(actionWork);
 
             else
                 _workerThread.Post(actionWork);
@@ -66,6 +79,7 @@ namespace Aegis
         /// 비동기 백그라운드 작업과 결과처리 작업으로 이루어진 기능을 실행합니다.
         /// actionWork는 WorkerThread에 의해 비동기로 실행되고, actionWork 작업이 끝나면
         /// actionDispatch가 DispatchThread에서 실행됩니다.
+        /// actionWork에서 exception이 발생되면 actionDispatch 작업은 실행되지 않습니다.
         /// </summary>
         /// <param name="actionWork">비동기로 실행할 작업</param>
         /// <param name="actionDispatch">DispatchThread에서 실행할 작업</param>
@@ -89,7 +103,7 @@ namespace Aegis
                 AegisTask.Run(actionDispatch);
 
             else if (DispatchThreadCount == 0)
-                actionDispatch();
+                SafeAction(actionDispatch);
 
             else
                 _dispatchThread.Post(actionDispatch);
