@@ -471,14 +471,13 @@
             <param name="max">최대값</param>
             <returns>임의 값</returns>
         </member>
-        <member name="M:Aegis.SpinWorker.PostWork(System.Action)">
+        <member name="M:Aegis.SpinWorker.Work(System.Action)">
             <summary>
-            actionWork 기능을 비동기로 실행합니다.
-            이 작업은 WorkerThread에 의해 실행되므로, 객체의 동기화에 주의해야 합니다.
+            actionWork 작업을 WorkerThread에서 실행합니다.
             </summary>
-            <param name="actionWork">비동기로 실행할 작업</param>
+            <param name="actionWork">수행할 작업</param>
         </member>
-        <member name="M:Aegis.SpinWorker.PostWork(System.Action,System.Action)">
+        <member name="M:Aegis.SpinWorker.Work(System.Action,System.Action)">
             <summary>
             비동기 백그라운드 작업과 결과처리 작업으로 이루어진 기능을 실행합니다.
             actionWork는 WorkerThread에 의해 비동기로 실행되고, actionWork 작업이 끝나면
@@ -487,7 +486,7 @@
             <param name="actionWork">비동기로 실행할 작업</param>
             <param name="actionDispatch">DispatchThread에서 실행할 작업</param>
         </member>
-        <member name="M:Aegis.SpinWorker.PostDispatch(System.Action)">
+        <member name="M:Aegis.SpinWorker.Dispatch(System.Action)">
             <summary>
             actionDispatch 작업을 DispatchThread에서 실행합니다.
             </summary>
@@ -640,6 +639,13 @@
             반환되는 객체는 Queue에서 제거됩니다.
             </summary>
             <returns>Queue의 첫 번째에 위치한 객체</returns>
+        </member>
+        <member name="M:Aegis.BlockingQueue`1.DequeueOrDefault">
+            <summary>
+            Queue에서 객체 하나를 가져옵니다. 만약 Queue가 비어있는 상태라면 default(T)를 반환합니다.
+            반환되는 객체는 Queue에서 제거됩니다.
+            </summary>
+            <returns>Queue의 첫 번째에 위치한 객체 혹은 default 값</returns>
         </member>
         <member name="M:Aegis.BlockingQueue`1.Cancel">
             <summary>

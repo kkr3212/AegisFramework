@@ -90,8 +90,8 @@ namespace Aegis
                 if (config.ListenPortNo == 0)
                 {
                     channel.StartNetwork(
-                        delegate { return GenerateSession(config.SessionClassName); }
-                        , config.InitSessionPoolCount, config.MaxSessionPoolCount);
+                        delegate { return GenerateSession(config.SessionClassName); },
+                        config.InitSessionPoolCount, config.MaxSessionPoolCount);
                 }
                 else
                 {
@@ -120,8 +120,8 @@ namespace Aegis
             if (config.ListenIpAddress.Length == 0 || config.ListenPortNo == 0)
             {
                 channel.StartNetwork(
-                    delegate { return GenerateSession(config.SessionClassName); }
-                    , config.InitSessionPoolCount, config.MaxSessionPoolCount);
+                    delegate { return GenerateSession(config.SessionClassName); },
+                    config.InitSessionPoolCount, config.MaxSessionPoolCount);
             }
             else
             {

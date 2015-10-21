@@ -14,7 +14,6 @@ namespace EchoServer.Logic
     public class ServerMain
     {
         public static ServerMain Instance { get { return Singleton<ServerMain>.Instance; } }
-        public static MySqlDatabase MySql = new MySqlDatabase();
 
 
 
@@ -37,8 +36,6 @@ namespace EchoServer.Logic
 
                 Starter.Initialize("./Config.xml");
                 Starter.StartNetwork();
-
-                MySql.Initialize("192.168.0.10", 3306, "euckr", "pirates_world1_userdatadb_0", "root", "3382");
             }
             catch (Exception e)
             {
@@ -50,7 +47,6 @@ namespace EchoServer.Logic
         public void StopServer()
         {
             Starter.Release();
-            MySql.Release();
             Logger.Release();
         }
 

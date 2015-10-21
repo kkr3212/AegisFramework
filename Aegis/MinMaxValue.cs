@@ -14,7 +14,7 @@ namespace Aegis
     /// </summary>
     /// <typeparam name="T">값의 형식</typeparam>
     [DebuggerDisplay("Min={Min}, Max={Max}, Value={Value}")]
-    public class MinMaxValue<T> where T : struct, IComparable<T>
+    public sealed class MinMaxValue<T> where T : struct, IComparable<T>
     {
         private T? _value;
 

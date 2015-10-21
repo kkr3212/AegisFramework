@@ -27,7 +27,6 @@ namespace Aegis.Data.MySql
         public String CharSet { get; private set; }
         public String IpAddress { get; private set; }
         public Int32 PortNo { get; private set; }
-        public Boolean UseConnectionPool { get; set; }
         public Int32 PooledDBCCount { get { return _listPoolDBC.Count; } }
         public Int32 ActiveDBCCount { get { return _listActiveDBC.Count; } }
 
@@ -71,7 +70,6 @@ namespace Aegis.Data.MySql
             DBName = dbName;
             UserId = userId;
             UserPwd = userPwd;
-            UseConnectionPool = true;
 
 
             _cancelTasks = new CancellationTokenSource();
@@ -168,16 +166,11 @@ namespace Aegis.Data.MySql
 
         internal void ReturnDBC(DBConnector dbc)
         {
-            if (UseConnectionPool == true)
+            using (_lock.WriterLock)
             {
-                using (_lock.WriterLock)
-                {
-                    _listActiveDBC.Remove(dbc);
-                    _listPoolDBC.Add(dbc);
-                }
+                _listActiveDBC.Remove(dbc);
+                _listPoolDBC.Add(dbc);
             }
-            else
-                dbc.Close();
         }
 
 

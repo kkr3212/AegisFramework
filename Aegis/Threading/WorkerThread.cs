@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace Aegis.Threading
 {
-    public class WorkerThread
+    public sealed class WorkerThread
     {
         private BlockingQueue<Action> _works = new BlockingQueue<Action>();
         private Boolean _running;

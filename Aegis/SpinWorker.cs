@@ -24,16 +24,17 @@ namespace Aegis
 
         internal static void Initialize(Int32 workerThreadCount, Int32 dispatchThreadCount)
         {
-            if (workerThreadCount < -1 || dispatchThreadCount < 0)
+            if (workerThreadCount < -1 || dispatchThreadCount < -1)
                 throw new AegisException(AegisResult.InvalidArgument);
 
 
             WorkerThreadCount = workerThreadCount;
-            DispatchThreadCount = dispatchThreadCount;
-
-            if (workerThreadCount > 0)
+            if (WorkerThreadCount > 0)
                 _workerThread.Start(WorkerThreadCount);
-            _dispatchThread.Start(DispatchThreadCount);
+
+            DispatchThreadCount = dispatchThreadCount;
+            if (DispatchThreadCount > 0)
+                _dispatchThread.Start(DispatchThreadCount);
         }
 
 
@@ -45,11 +46,10 @@ namespace Aegis
 
 
         /// <summary>
-        /// actionWork 기능을 비동기로 실행합니다.
-        /// 이 작업은 WorkerThread에 의해 실행되므로, 객체의 동기화에 주의해야 합니다.
+        /// actionWork 작업을 WorkerThread에서 실행합니다.
         /// </summary>
-        /// <param name="actionWork">비동기로 실행할 작업</param>
-        public static void PostWork(Action actionWork)
+        /// <param name="actionWork">수행할 작업</param>
+        public static void Work(Action actionWork)
         {
             if (WorkerThreadCount == -1)
                 AegisTask.Run(actionWork);
@@ -69,29 +69,13 @@ namespace Aegis
         /// </summary>
         /// <param name="actionWork">비동기로 실행할 작업</param>
         /// <param name="actionDispatch">DispatchThread에서 실행할 작업</param>
-        public static void PostWork(Action actionWork, Action actionDispatch)
+        public static void Work(Action actionWork, Action actionDispatch)
         {
-            if (WorkerThreadCount == -1)
-            {
-                AegisTask.Run(() =>
-                {
-                    actionWork();
-                    actionDispatch();
-                });
-            }
-            else if (WorkerThreadCount == 0)
+            Work(() =>
             {
                 actionWork();
-                actionDispatch();
-            }
-            else
-            {
-                _workerThread.Post(() =>
-                {
-                    actionWork();
-                    _dispatchThread.Post(actionDispatch);
-                });
-            }
+                Dispatch(actionDispatch);
+            });
         }
 
 
@@ -99,16 +83,16 @@ namespace Aegis
         /// actionDispatch 작업을 DispatchThread에서 실행합니다.
         /// </summary>
         /// <param name="actionDispatch">수행할 작업</param>
-        public static void PostDispatch(Action actionDispatch)
+        public static void Dispatch(Action actionDispatch)
         {
-            if (WorkerThreadCount == -1)
+            if (DispatchThreadCount == -1)
                 AegisTask.Run(actionDispatch);
 
-            else if (WorkerThreadCount == 0)
+            else if (DispatchThreadCount == 0)
                 actionDispatch();
 
             else
-                _workerThread.Post(actionDispatch);
+                _dispatchThread.Post(actionDispatch);
         }
     }
 }

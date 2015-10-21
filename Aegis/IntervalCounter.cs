@@ -10,7 +10,7 @@ using System.Diagnostics;
 
 namespace Aegis
 {
-    public class IntervalCounter
+    public sealed class IntervalCounter
     {
         private Stopwatch _sw;
         private Int32 _interval;

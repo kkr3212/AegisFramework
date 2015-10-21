@@ -79,7 +79,7 @@ namespace Aegis
 
         public void CompletionAction()
         {
-            SpinWorker.PostDispatch(() =>
+            SpinWorker.Dispatch(() =>
             {
                 if (_actionOnCompletion != null)
                     _actionOnCompletion(Buffer);

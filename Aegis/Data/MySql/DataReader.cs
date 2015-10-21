@@ -10,7 +10,7 @@ using MySql.Data.MySqlClient;
 
 namespace Aegis.Data.MySql
 {
-    public class DataReader : DbDataReader, IDataReader, IDisposable, IDataRecord
+    public sealed class DataReader : DbDataReader, IDataReader, IDisposable, IDataRecord
     {
         private readonly MySqlDataReader _reader;
 

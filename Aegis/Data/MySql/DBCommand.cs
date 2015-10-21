@@ -97,7 +97,7 @@ namespace Aegis.Data.MySql
         public void PostQueryNoReader()
         {
             _isAsync = true;
-            SpinWorker.PostWork(() =>
+            SpinWorker.Work(() =>
             {
                 try
                 {
@@ -117,40 +117,46 @@ namespace Aegis.Data.MySql
 
         public void PostQueryNoReader(Action actionOnCompletion)
         {
+            Boolean hasError = false;
+
             _isAsync = true;
-            SpinWorker.PostWork(() =>
+            SpinWorker.Work(() =>
             {
                 try
                 {
-                    Query();
+                    QueryNoReader();
                 }
                 catch (Exception e)
                 {
+                    hasError = true;
                     Logger.Write(LogType.Err, 1, CommandText.ToString());
-                    Logger.Write(LogType.Err, 1, e.ToString());
-                }
-            },
-            () =>
-            {
-                try
-                {
-                    actionOnCompletion();
-                }
-                catch (Exception e)
-                {
                     Logger.Write(LogType.Err, 1, e.ToString());
                 }
 
                 _isAsync = false;
                 Dispose();
+            },
+            () =>
+            {
+                try
+                {
+                    if (hasError == false)
+                        actionOnCompletion();
+                }
+                catch (Exception e)
+                {
+                    Logger.Write(LogType.Err, 1, e.ToString());
+                }
             });
         }
 
 
         public void PostQuery(Action actionOnCompletion)
         {
+            Boolean hasError = false;
+
             _isAsync = true;
-            SpinWorker.PostWork(() =>
+            SpinWorker.Work(() =>
             {
                 try
                 {
@@ -158,6 +164,7 @@ namespace Aegis.Data.MySql
                 }
                 catch (Exception e)
                 {
+                    hasError = true;
                     Logger.Write(LogType.Err, 1, CommandText.ToString());
                     Logger.Write(LogType.Err, 1, e.ToString());
                 }
@@ -166,7 +173,8 @@ namespace Aegis.Data.MySql
             {
                 try
                 {
-                    actionOnCompletion();
+                    if (hasError == false)
+                        actionOnCompletion();
                 }
                 catch (Exception e)
                 {
@@ -181,8 +189,10 @@ namespace Aegis.Data.MySql
 
         public void PostQuery(Action<DBCommand> actionOnCompletion)
         {
+            Boolean hasError = false;
+
             _isAsync = true;
-            SpinWorker.PostWork(() =>
+            SpinWorker.Work(() =>
             {
                 try
                 {
@@ -190,6 +200,7 @@ namespace Aegis.Data.MySql
                 }
                 catch (Exception e)
                 {
+                    hasError = true;
                     Logger.Write(LogType.Err, 1, CommandText.ToString());
                     Logger.Write(LogType.Err, 1, e.ToString());
                 }
@@ -198,7 +209,8 @@ namespace Aegis.Data.MySql
             {
                 try
                 {
-                    actionOnCompletion(this);
+                    if (hasError == false)
+                        actionOnCompletion(this);
                 }
                 catch (Exception e)
                 {

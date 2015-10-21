@@ -25,6 +25,16 @@ namespace Aegis
 
 
 
+        public void ForEach(Action<T> action)
+        {
+            lock (_queue)
+            {
+                foreach (T item in _queue)
+                    action(item);
+            }
+        }
+
+
         /// <summary>
         /// Queue에 객체 하나를 추가하고 대기중인(Pop을 호출한) 쓰레드 하나가 깨어납니다.
         /// </summary>
@@ -60,6 +70,26 @@ namespace Aegis
                 T item = _queue.Dequeue();
                 _queuedCount = _queue.Count;
 
+                return item;
+            }
+        }
+
+
+        /// <summary>
+        /// Queue에서 객체 하나를 가져옵니다. 만약 Queue가 비어있는 상태라면 default(T)를 반환합니다.
+        /// 반환되는 객체는 Queue에서 제거됩니다.
+        /// </summary>
+        /// <returns>Queue의 첫 번째에 위치한 객체 혹은 default 값</returns>
+        public T DequeueOrDefault()
+        {
+            lock (_queue)
+            {
+                if (_queue.Count == 0)
+                    return default(T);
+
+
+                T item = _queue.Dequeue();
+                _queuedCount = _queue.Count;
                 return item;
             }
         }
