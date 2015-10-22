@@ -51,8 +51,8 @@ namespace Aegis.Client
             ReadBytes = 0;
             WrittenBytes = 0;
 
-            Capacity(source.BufferSize);
-            Write(source.Buffer);
+            Capacity(source.WrittenBytes);
+            Write(source.Buffer, 0, source.WrittenBytes);
         }
 
 
