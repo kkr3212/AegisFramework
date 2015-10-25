@@ -5,34 +5,19 @@ using System.Text;
 using System.Threading.Tasks;
 using Aegis;
 using Aegis.Network;
-using Aegis.Data.MySql;
 
 
 
 namespace EchoServer.Logic
 {
-    public class ServerMain
+    public static class ServerMain
     {
-        public static ServerMain Instance { get { return Singleton<ServerMain>.Instance; } }
-
-
-
-
-
-        private ServerMain()
+        public static void Start(System.Windows.Forms.TextBox ctrl)
         {
-        }
-
-
-        public void StartServer(System.Windows.Forms.TextBox ctrl)
-        {
-            //  Logger 설정
-            Logger.AddLogger(new LogTextBox(ctrl));
-
-
             try
             {
-                Logger.Write(LogType.Info, 2, "EchoServer (Aegis {0})", Aegis.Configuration.Environment.AegisVersion);
+                Logger.AddLogger(new LogTextBox(ctrl));
+                Logger.Write(LogType.Info, 2, "EchoServer (AegisNetwork {0})", Aegis.Configuration.Environment.AegisVersion);
 
                 Starter.Initialize("./Config.xml");
                 Starter.StartNetwork();
@@ -44,22 +29,20 @@ namespace EchoServer.Logic
         }
 
 
-        public void StopServer()
+        public static void Stop()
         {
+            Starter.StopNetwork();
             Starter.Release();
             Logger.Release();
         }
 
 
-        public Int32 GetActiveSessionCount()
+        public static Int32 GetActiveSessionCount()
         {
             lock (NetworkChannel.Channels)
             {
                 NetworkChannel channel = NetworkChannel.Channels.Find(v => v.Name == "NetworkClient");
-                if (channel == null)
-                    return 0;
-
-                return channel.SessionManager.ActiveSessionCount;
+                return channel?.SessionManager.ActiveSessionCount ?? 0;
             }
         }
     }

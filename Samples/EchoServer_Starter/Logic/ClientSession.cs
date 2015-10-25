@@ -22,14 +22,14 @@ namespace EchoServer.Logic
 
         public ClientSession()
         {
-            base.NetworkEvent_Accepted += OnAcceptd;
+            base.NetworkEvent_Accepted += OnAccepted;
             base.NetworkEvent_Closed += OnClosed;
             base.NetworkEvent_Received += OnReceived;
             base.PacketValidator += Packet.IsValidPacket;
         }
 
 
-        private void OnAcceptd(Session session)
+        private void OnAccepted(Session session)
         {
             Logger.Write(LogType.Info, 2, "[{0}] Accepted", SessionId);
 

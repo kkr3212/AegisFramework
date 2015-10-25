@@ -10,33 +10,19 @@ using Aegis.Network;
 
 namespace EchoServer.Logic
 {
-    public class ServerMain
+    public static class ServerMain
     {
-        public static ServerMain Instance { get { return Singleton<ServerMain>.Instance; } }
-        private NetworkChannel _networkClient = NetworkChannel.CreateChannel("ClientNetwork");
-
-
-
-
-
-        private ServerMain()
+        public static void StartServer(System.Windows.Forms.TextBox ctrl)
         {
-        }
-
-
-        public void StartServer(System.Windows.Forms.TextBox ctrl)
-        {
-            //  Logger 설정
-            Logger.AddLogger(new LogTextBox(ctrl));
-
-
             try
             {
-                Logger.Write(LogType.Info, 2, "EchoServer (Aegis {0})", Aegis.Configuration.Environment.AegisVersion);
+                Logger.AddLogger(new LogTextBox(ctrl));
+                Logger.Write(LogType.Info, 2, "EchoServer (AegisNetwork {0})", Aegis.Configuration.Environment.AegisVersion);
 
                 Starter.Initialize();
-                _networkClient.StartNetwork(delegate { return new ClientSession(); }, 1, 100)
-                              .OpenListener("192.168.0.100", 10100);
+                Starter.CreateNetworkChannel("ClientNetwork")
+                       .StartNetwork(delegate { return new ClientSession(); }, 1, 100)
+                       .OpenListener("192.168.0.100", 10100);
             }
             catch (Exception e)
             {
@@ -45,17 +31,18 @@ namespace EchoServer.Logic
         }
 
 
-        public void StopServer()
+        public static void StopServer()
         {
-            _networkClient.StopNetwork();
+            Starter.StopNetwork("ClientNetwork");
             Starter.Release();
             Logger.Release();
         }
 
 
-        public Int32 GetActiveSessionCount()
+        public static Int32 GetActiveSessionCount()
         {
-            return _networkClient.SessionManager.ActiveSessionCount;
+            NetworkChannel channel = NetworkChannel.Channels.Find(v => v.Name == "ClientNetwork");
+            return channel?.SessionManager.ActiveSessionCount ?? 0;
         }
     }
 }

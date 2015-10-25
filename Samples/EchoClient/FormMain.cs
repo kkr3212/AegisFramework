@@ -52,7 +52,7 @@ namespace EchoClient
 
             _tbLog.Text = "";
             BufferSize = bufferSize;
-            Logic.ClientMain.Instance.StartServer(count, _tbLog);
+            Logic.ClientMain.Start(count, _tbLog);
         }
 
 
@@ -62,13 +62,13 @@ namespace EchoClient
             _btnStop.Enabled = false;
             _tbClientCount.Enabled = true;
 
-            Logic.ClientMain.Instance.StopServer();
+            Logic.ClientMain.Stop();
         }
 
 
         private void OnFormClosed(object sender, FormClosedEventArgs e)
         {
-            Logic.ClientMain.Instance.StopServer();
+            Logic.ClientMain.Stop();
         }
     }
 }

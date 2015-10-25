@@ -10,32 +10,19 @@ using Aegis.Network;
 
 namespace EchoClient.Logic
 {
-    public class ClientMain
+    public static class ClientMain
     {
-        public static ClientMain Instance { get { return Singleton<ClientMain>.Instance; } }
-        private NetworkChannel _networkServer = NetworkChannel.CreateChannel("ServerNetwork");
-
-
-
-
-
-        private ClientMain()
+        public static void Start(Int32 clientCount, System.Windows.Forms.TextBox ctrl)
         {
-        }
-
-
-        public void StartServer(Int32 clientCount, System.Windows.Forms.TextBox ctrl)
-        {
-            Logger.AddLogger(new LogTextBox(ctrl));
-
-
             try
             {
-                Logger.Write(LogType.Info, 2, "EchoClient (Aegis {0})", Aegis.Configuration.Environment.AegisVersion);
+                Logger.AddLogger(new LogTextBox(ctrl));
+                Logger.Write(LogType.Info, 2, "EchoClient (AegisNetwork {0})", Aegis.Configuration.Environment.AegisVersion);
 
 
                 Starter.Initialize();
-                _networkServer.StartNetwork(delegate { return new TestSession(); }, clientCount, clientCount);
+                Starter.CreateNetworkChannel("ServerNetwork")
+                       .StartNetwork(delegate { return new TestSession(); }, clientCount, clientCount);
             }
             catch (Exception e)
             {
@@ -44,9 +31,9 @@ namespace EchoClient.Logic
         }
 
 
-        public void StopServer()
+        public static void Stop()
         {
-            _networkServer.StopNetwork();
+            Starter.StopNetwork("ServerNetwork");
             Starter.Release();
             Logger.Release();
         }

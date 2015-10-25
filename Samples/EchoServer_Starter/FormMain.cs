@@ -32,7 +32,7 @@ namespace EchoServer
 
             _tbLog.Text = "";
 
-            ServerMain.Instance.StartServer(_tbLog);
+            ServerMain.Start(_tbLog);
             Aegis.Threading.ThreadExtend.CallPeriodically(100, UpdateStatistics);
         }
 
@@ -42,7 +42,7 @@ namespace EchoServer
             _btnStart.Enabled = true;
             _btnStop.Enabled = false;
 
-            ServerMain.Instance.StopServer();
+            ServerMain.Stop();
         }
 
 
@@ -51,7 +51,7 @@ namespace EchoServer
             _btnStart.Enabled = true;
             _btnStop.Enabled = false;
 
-            ServerMain.Instance.StopServer();
+            ServerMain.Stop();
         }
 
 
@@ -61,7 +61,7 @@ namespace EchoServer
                 Invoke((MethodInvoker)delegate { UpdateStatistics(); });
             else
             {
-                Int32 sessionCount = ServerMain.Instance.GetActiveSessionCount();
+                Int32 sessionCount = ServerMain.GetActiveSessionCount();
                 Int32 receiveCount = ClientSession.Counter_ReceiveCount.Value;
                 Int32 receiveBytes = ClientSession.Counter_ReceiveBytes.Value;
 

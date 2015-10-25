@@ -54,6 +54,14 @@
             NetworkChannel을 생성하고 네트워킹을 시작합니다.
             </summary>
         </member>
+        <member name="M:Aegis.Starter.CreateNetworkChannel(System.String)">
+            <summary>
+            새로운 NetworkChannel을 생성합니다.
+            이 Method는 NetworkChannel.CreateChannel와 동일합니다.
+            </summary>
+            <param name="channelName">생성할 NetworkChannel의 고유이름</param>
+            <returns>생성된 NetworkChannel 객체</returns>
+        </member>
         <member name="M:Aegis.Starter.StartNetwork(System.String)">
             <summary>
             지정된 NetworkChannel만을 생성하고 네트워킹을 시작합니다.

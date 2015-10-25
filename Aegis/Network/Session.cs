@@ -194,7 +194,6 @@ namespace Aegis.Network
                     if (Socket == null)
                         return;
 
-                    //  #!  Linger Option은 Connection Stress Test 가 필요
                     Socket.LingerState = new LingerOption(true, 3);
                     Socket.Close();
                     Socket = null;

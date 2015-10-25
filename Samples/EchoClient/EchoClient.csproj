@@ -76,7 +76,7 @@
     </Compile>
     <Compile Include="Logic\ClientMain.cs" />
     <Compile Include="Logic\TestSession.cs" />
-    <Compile Include="LogMedia.cs" />
+    <Compile Include="Logic\LogMedia.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <EmbeddedResource Include="FormMain.resx">

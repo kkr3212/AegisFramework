@@ -63,7 +63,7 @@ namespace Aegis
 
     internal class NetworkSendToken
     {
-        public StreamBuffer Buffer { get; private set; }
+        public StreamBuffer Buffer { get; }
         private Action<StreamBuffer> _actionOnCompletion;
 
 

@@ -9,7 +9,7 @@ using Aegis;
 
 
 
-namespace EchoClient
+namespace EchoClient.Logic
 {
     public class LogTextFile : ILogMedia
     {
