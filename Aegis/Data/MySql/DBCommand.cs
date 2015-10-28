@@ -21,6 +21,7 @@ namespace Aegis.Data.MySql
         public DataReader Reader { get; private set; }
         public Int32 CommandTimeout { get { return _command.CommandTimeout; } set { _command.CommandTimeout = value; } }
         public Int64 LastInsertedId { get { return _command?.LastInsertedId ?? 0; } }
+        public Object Tag { get; set; }
 
 
 
@@ -62,7 +63,7 @@ namespace Aegis.Data.MySql
         }
 
 
-        public void Query()
+        public DataReader Query()
         {
             if (_dbConnector != null || Reader != null)
                 throw new AegisException(AegisResult.DataReaderNotClosed, "There is already an open DataReader associated with this Connection which must be closed first.");
@@ -75,6 +76,8 @@ namespace Aegis.Data.MySql
             Prepare();
             Reader = new DataReader(_command.ExecuteReader());
             _dbConnector.QPS.Add(1);
+
+            return Reader;
         }
 
 
@@ -86,11 +89,11 @@ namespace Aegis.Data.MySql
         }
 
 
-        public void Query(String query, params object[] args)
+        public DataReader Query(String query, params object[] args)
         {
             CommandText.Clear();
             CommandText.AppendFormat(query, args);
-            Query();
+            return Query();
         }
 
 
@@ -116,8 +119,10 @@ namespace Aegis.Data.MySql
         }
 
 
-        public void PostQueryNoReader(Action actionOnCompletion)
+        public void PostQueryNoReader(Action<Exception> actionOnCompletion)
         {
+            Exception exception = null;
+
             _isAsync = true;
             SpinWorker.Work(() =>
             {
@@ -128,84 +133,70 @@ namespace Aegis.Data.MySql
                     _isAsync = false;
                     Dispose();
                 }
-                catch (Exception)
+                catch (Exception e)
                 {
+                    exception = e;
                     _isAsync = false;
                     Dispose();
-                    throw;  //  actionOnCompletion이 실행되지 않도록 예외를 던져야 한다.
                 }
             },
-            actionOnCompletion);
+            () => { actionOnCompletion(exception); });
         }
 
 
-        public void PostQuery(Action actionOnCompletion)
+        public void PostQuery(Action actionOnRead, Action<Exception> actionOnCompletion)
         {
+            Exception exception = null;
+
             _isAsync = true;
             SpinWorker.Work(() =>
             {
                 try
                 {
                     Query();
+                    if (actionOnRead != null)
+                        actionOnRead();
+
+                    _isAsync = false;
+                    Dispose();
                 }
-                catch (Exception)
+                catch (Exception e)
                 {
+                    exception = e;
                     _isAsync = false;
                     Dispose();
                     throw;  //  상위 Exception Handler가 처리하도록 예외를 던진다.
                 }
             },
-            () =>
-            {
-                try
-                {
-                    actionOnCompletion();
-
-                    _isAsync = false;
-                    Dispose();
-                }
-                catch (Exception)
-                {
-                    _isAsync = false;
-                    Dispose();
-                    throw;  //  상위 Exception Handler가 처리하도록 예외를 던진다.
-                }
-            });
+            () => { actionOnCompletion(exception); });
         }
 
 
-        public void PostQuery(Action<DBCommand> actionOnCompletion)
+        public void PostQuery(Action<DBCommand> actionOnRead, Action<Exception> actionOnCompletion)
         {
+            Exception exception = null;
+
             _isAsync = true;
             SpinWorker.Work(() =>
             {
                 try
                 {
                     Query();
-                }
-                catch (Exception)
-                {
-                    _isAsync = false;
-                    Dispose();
-                    throw;  //  actionOnCompletion이 실행되지 않도록 예외를 던져야 한다.
-                }
-            },
-            () =>
-            {
-                try
-                {
-                    actionOnCompletion(this);
+                    if (actionOnRead != null)
+                        actionOnRead(this);
 
                     _isAsync = false;
                     Dispose();
                 }
-                catch (Exception)
+                catch (Exception e)
                 {
+                    exception = e;
                     _isAsync = false;
                     Dispose();
                     throw;  //  상위 Exception Handler가 처리하도록 예외를 던진다.
                 }
-            });
+            },
+            () => { actionOnCompletion(exception); });
         }
 
 

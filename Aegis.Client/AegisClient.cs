@@ -41,6 +41,7 @@ namespace Aegis.Client
         public bool IsConnected { get { return _connector.IsConnected; } }
         public int ConnectionAliveTime { get; set; }
         internal MessageQueue MQ;
+        private Thread _threadRun;
 
 
 
@@ -60,43 +61,53 @@ namespace Aegis.Client
         public void Initialize()
         {
             _isRunning = true;
-            (new Thread(Run)).Start();
+            _threadRun = new Thread(Run);
+            _threadRun.Start();
         }
 
 
         public void Release()
         {
+            ConnectionStatus = ConnectionStatus.Closed;
+
+            NetworkEvent_Connected = null;
+            NetworkEvent_Disconnected = null;
+            NetworkEvent_Received = null;
+            NetworkEvent_Sent = null;
+
             _isRunning = false;
+            if (_threadRun != null)
+                _threadRun.Join();
             _connector.Close();
             MQ.Clear();
         }
 
 
-        public void Connect()
+        public void Connect(Action actionOnConnected = null)
         {
             if (ConnectionStatus == ConnectionStatus.Connecting ||
                 ConnectionStatus == ConnectionStatus.Connected)
                 return;
 
             ConnectionStatus = ConnectionStatus.Connecting;
-            MQ.Add(MessageType.Connect, null, 0);
+            MQ.Add(MessageType.Connect, null, 0, actionOnConnected);
         }
 
 
-        public void Close()
+        public void Close(Action actionOnClosed = null)
         {
             if (ConnectionStatus == ConnectionStatus.Closing ||
                 ConnectionStatus == ConnectionStatus.Closed)
                 return;
 
             ConnectionStatus = ConnectionStatus.Closing;
-            MQ.Add(MessageType.Close, null, 0);
+            MQ.Add(MessageType.Close, null, 0, actionOnClosed);
         }
 
 
-        public void SendPacket(StreamBuffer buffer)
+        public void SendPacket(StreamBuffer buffer, Action actionOnSent = null)
         {
-            MQ.Add(MessageType.Send, buffer, buffer.WrittenBytes);
+            MQ.Add(MessageType.Send, buffer, buffer.WrittenBytes, actionOnSent);
         }
 
 
@@ -106,7 +117,7 @@ namespace Aegis.Client
             if (PacketValidator == null)
                 return false;
 
-            return PacketValidator(buffer, out packetSize);
+            return PacketValidator(this, buffer, out packetSize);
         }
 
 
@@ -144,7 +155,10 @@ namespace Aegis.Client
                         ConnectionStatus = ConnectionStatus.Closed;
 
                     if (NetworkEvent_Connected != null)
-                        NetworkEvent_Connected(_connector.IsConnected);
+                        NetworkEvent_Connected(this, _connector.IsConnected);
+
+                    if (data.ActionOnComplete != null)
+                        data.ActionOnComplete();
                     break;
 
 
@@ -154,7 +168,7 @@ namespace Aegis.Client
                     ConnectionStatus = ConnectionStatus.Closed;
 
                     if (NetworkEvent_Disconnected != null)
-                        NetworkEvent_Disconnected();
+                        NetworkEvent_Disconnected(this);
                     break;
 
 
@@ -163,7 +177,10 @@ namespace Aegis.Client
                     ConnectionStatus = ConnectionStatus.Closed;
 
                     if (NetworkEvent_Disconnected != null)
-                        NetworkEvent_Disconnected();
+                        NetworkEvent_Disconnected(this);
+
+                    if (data.ActionOnComplete != null)
+                        data.ActionOnComplete();
                     break;
 
 
@@ -188,7 +205,10 @@ namespace Aegis.Client
                         if (_connector.SendPacket(data.Buffer) == true)
                         {
                             if (NetworkEvent_Sent != null)
-                                NetworkEvent_Sent(data.Size);
+                                NetworkEvent_Sent(this, data.Size);
+
+                            if (data.ActionOnComplete != null)
+                                data.ActionOnComplete();
                         }
                         else
                             Close();
@@ -197,7 +217,7 @@ namespace Aegis.Client
 
 
                 case MessageType.Receive:
-                    NetworkEvent_Received(data.Buffer);
+                    NetworkEvent_Received(this, data.Buffer);
                     break;
             }
 

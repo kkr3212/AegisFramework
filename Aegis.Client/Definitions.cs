@@ -28,9 +28,9 @@ namespace Aegis.Client
 
 
 
-    public delegate void EventHandler_Connected(bool connected);
-    public delegate void EventHandler_Disconnected();
-    public delegate void EventHandler_Sent(int transBytes);
-    public delegate void EventHandler_Received(StreamBuffer buffer);
-    public delegate bool EventHandler_IsValidPacket(StreamBuffer buffer, out int packetSize);
+    public delegate void EventHandler_Connected(AegisClient ac, bool connected);
+    public delegate void EventHandler_Disconnected(AegisClient ac);
+    public delegate void EventHandler_Sent(AegisClient ac, int transBytes);
+    public delegate void EventHandler_Received(AegisClient ac, StreamBuffer buffer);
+    public delegate bool EventHandler_IsValidPacket(AegisClient ac, StreamBuffer buffer, out int packetSize);
 }

@@ -13,6 +13,7 @@ namespace Aegis.Client
         public MessageType Type;
         public StreamBuffer Buffer;
         public int Size;
+        public Action ActionOnComplete;
     }
 
 
@@ -60,7 +61,7 @@ namespace Aegis.Client
         }
 
 
-        public void Add(MessageType type, StreamBuffer buffer, int size)
+        public void Add(MessageType type, StreamBuffer buffer, int size, Action actionOnComplete = null)
         {
             lock (_queue)
             {
@@ -68,7 +69,7 @@ namespace Aegis.Client
                 data.Type = type;
                 data.Buffer = buffer;
                 data.Size = size;
-
+                data.ActionOnComplete = actionOnComplete;
 
                 _queue.Add(data);
                 Monitor.Pulse(_queue);

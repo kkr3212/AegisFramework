@@ -113,19 +113,15 @@ namespace Aegis
             foreach (RandomItem data in _items)
                 sumProb += data.Prob;
 
-            if (sumProb <= fraction)
-                sumProb = fraction;
-
+            if (fraction < sumProb)
+                fraction = sumProb;
 
 
             //  확률계산 & 아이템 선택
-            curProb = NextNumber(0, sumProb);
-            sumProb = 0;
-
+            curProb = NextNumber(0, fraction);
             foreach (RandomItem data in _items)
             {
                 sumProb += data.Prob;
-
                 if (sumProb >= curProb)
                 {
                     ret = data.Item;
