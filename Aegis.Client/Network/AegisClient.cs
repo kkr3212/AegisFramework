@@ -8,7 +8,7 @@ using System.Diagnostics;
 
 
 
-namespace Aegis.Client
+namespace Aegis.Client.Network
 {
     public partial class AegisClient
     {

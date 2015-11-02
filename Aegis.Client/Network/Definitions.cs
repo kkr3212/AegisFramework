@@ -5,7 +5,7 @@ using System.Text;
 
 
 
-namespace Aegis.Client
+namespace Aegis.Client.Network
 {
     public enum ConnectionStatus
     {

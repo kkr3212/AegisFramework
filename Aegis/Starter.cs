@@ -7,6 +7,7 @@ using System.Xml;
 using Aegis.Network;
 using Aegis.Converter;
 using Aegis.Configuration;
+using Aegis.Threading;
 
 
 
@@ -69,7 +70,6 @@ namespace Aegis
         {
             StopNetwork();
             SpinWorker.Release();
-            Threading.ThreadExtend.CancelAll();
 
             if (_mutex != null)
             {

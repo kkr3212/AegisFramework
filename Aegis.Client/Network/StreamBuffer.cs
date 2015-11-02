@@ -5,7 +5,7 @@ using System.Text;
 
 
 
-namespace Aegis.Client
+namespace Aegis.Client.Network
 {
     /// <summary>
     /// 데이터를 순차적으로 읽거나 쓸 수 있는 버퍼입니다.

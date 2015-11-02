@@ -6,7 +6,7 @@ using System.Threading;
 
 
 
-namespace Aegis.Client
+namespace Aegis.Client.Network
 {
     internal class MessageData
     {

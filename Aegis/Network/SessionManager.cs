@@ -100,7 +100,8 @@ namespace Aegis.Network
             {
                 if (_inactiveSessions.Count == 0)
                 {
-                    if (MaxSessionPoolSize > 0 && _activeSessions.Count() >= MaxSessionPoolSize)
+                    if (SessionGenerator == null ||
+                        (MaxSessionPoolSize > 0 && _activeSessions.Count() >= MaxSessionPoolSize))
                         return null;
 
 

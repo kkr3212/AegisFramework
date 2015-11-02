@@ -5,7 +5,7 @@ using System.Text;
 
 
 
-namespace Aegis.Client
+namespace Aegis.Client.Network
 {
     /// <summary>
     /// Size(2 bytes), PacketId(2 bytes)로 구성된 4바이트 헤더를 갖는 기본 패킷 구성입니다.

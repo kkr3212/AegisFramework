@@ -9,7 +9,7 @@ using System.Diagnostics;
 
 
 
-namespace Aegis.Client
+namespace Aegis.Client.Network
 {
     public class SecurePacket : StreamBuffer
     {

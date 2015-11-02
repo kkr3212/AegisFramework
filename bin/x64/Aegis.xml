@@ -479,13 +479,13 @@
             <param name="max">최대값</param>
             <returns>임의 값</returns>
         </member>
-        <member name="M:Aegis.SpinWorker.Work(System.Action)">
+        <member name="M:Aegis.Threading.SpinWorker.Work(System.Action)">
             <summary>
             actionWork 작업을 WorkerThread에서 실행합니다.
             </summary>
             <param name="actionWork">수행할 작업</param>
         </member>
-        <member name="M:Aegis.SpinWorker.Work(System.Action,System.Action)">
+        <member name="M:Aegis.Threading.SpinWorker.Work(System.Action,System.Action)">
             <summary>
             비동기 백그라운드 작업과 결과처리 작업으로 이루어진 기능을 실행합니다.
             actionWork는 WorkerThread에 의해 비동기로 실행되고, actionWork 작업이 끝나면
@@ -495,7 +495,7 @@
             <param name="actionWork">비동기로 실행할 작업</param>
             <param name="actionDispatch">DispatchThread에서 실행할 작업</param>
         </member>
-        <member name="M:Aegis.SpinWorker.Dispatch(System.Action)">
+        <member name="M:Aegis.Threading.SpinWorker.Dispatch(System.Action)">
             <summary>
             actionDispatch 작업을 DispatchThread에서 실행합니다.
             </summary>
@@ -566,35 +566,6 @@
             <summary>
             Async 계열의 Socket API를 사용하여 원격지의 호스트와 네트워킹을 할 수 있는 기능을 제공합니다.
             </summary>
-        </member>
-        <member name="M:Aegis.Logger.AddLogger(Aegis.ILogMedia)">
-            <summary>
-            사용할 LogMedia를 추가합니다.
-            이미 추가된 인스턴스인 경우 무시됩니다.
-            </summary>
-            <param name="media">추가할 LogMedia 인스턴스</param>
-        </member>
-        <member name="M:Aegis.Logger.RemoveLogger(Aegis.ILogMedia)">
-            <summary>
-            LogMedia 목록에서 지정한 LogMedia를 제거합니다.
-            정상적으로 제거된 경우 해당 LogMedia의 Release가 호출됩니다.
-            </summary>
-            <param name="media">제거할 LogMedia 인스턴스</param>
-        </member>
-        <member name="M:Aegis.Logger.Release">
-            <summary>
-            전체 LogMedia를 제거하고 사용중인 리소스를 반환합니다.
-            사용중인 LogMedia의 Release가 호출됩니다.
-            </summary>
-        </member>
-        <member name="M:Aegis.Logger.Write(Aegis.LogType,System.Int32,System.String,System.Object[])">
-            <summary>
-            추가된 ILogMedia 전체에 로그 문자열을 전달합니다.
-            </summary>
-            <param name="type">로그의 종류. EnabledType에 정의되지 않으면 무시됩니다.</param>
-            <param name="level">로그의 레벨. EnabledLevel보다 큰 경우 무시됩니다.</param>
-            <param name="format">로그 문자열</param>
-            <param name="args">로그 문자열의 인자</param>
         </member>
         <member name="T:Aegis.MinMaxValue`1">
             <summary>
