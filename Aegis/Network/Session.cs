@@ -15,7 +15,6 @@ namespace Aegis.Network
     {
         private static Int32 NextSessionId = 0;
 
-        internal SessionManager SessionManager { get; set; }
         /// <summary>
         /// 이 Session 객체의 고유번호입니다.
         /// </summary>
@@ -40,6 +39,9 @@ namespace Aegis.Network
         public event EventHandler_Close NetworkEvent_Closed;
         public event EventHandler_Receive NetworkEvent_Received;
         public EventHandler_IsValidPacket PacketValidator;
+
+
+        internal event Action<Session> Activated, Inactivated;
 
 
 
@@ -84,8 +86,8 @@ namespace Aegis.Network
         {
             try
             {
-                if (SessionManager != null)
-                    SessionManager.ActivateSession(this);
+                if (Activated != null)
+                    Activated(this);
 
                 SpinWorker.Dispatch(() =>
                 {
@@ -149,8 +151,9 @@ namespace Aegis.Network
 
                     if (Socket.Connected == true)
                     {
-                        if (SessionManager != null)
-                            SessionManager.ActivateSession(this);
+                        if (Activated != null)
+                            Activated(this);
+
 
                         SpinWorker.Dispatch(() =>
                         {
@@ -199,6 +202,10 @@ namespace Aegis.Network
                     Socket = null;
 
 
+                    if (Inactivated != null)
+                        Inactivated(this);
+
+
                     SpinWorker.Dispatch(() =>
                     {
                         if (NetworkEvent_Closed != null)
@@ -213,10 +220,6 @@ namespace Aegis.Network
             {
                 Logger.Write(LogType.Err, 1, e.ToString());
             }
-
-
-            if (SessionManager != null)
-                SessionManager.InactivateSession(this);
         }
 
 

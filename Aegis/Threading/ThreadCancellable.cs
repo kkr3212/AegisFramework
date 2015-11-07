@@ -9,36 +9,43 @@ using System.Threading.Tasks;
 
 namespace Aegis.Threading
 {
-    public class ThreadCancellable
+    public class ThreadCancellable : IDisposable
     {
         public Thread Thread { get; private set; }
-        private readonly CancellationTokenSource CTS = new CancellationTokenSource();
+        private readonly CancellationTokenSource _cts = new CancellationTokenSource();
 
 
 
 
 
-        public ThreadCancellable()
-        {
-        }
-
-
-        public void Start(ParameterizedThreadStart start)
+        public ThreadCancellable(ParameterizedThreadStart start)
         {
             Thread = new Thread(start);
-            Thread.Start(CTS.Token);
         }
 
 
-        public void CallPeriodically(Int32 periodByMillisecond, Func<Boolean> func)
+        public void Start()
         {
-            Thread = new Thread(() =>
+            Thread.Start(_cts.Token);
+        }
+
+
+        public void Dispose()
+        {
+            _cts.Dispose();
+        }
+
+
+        public static ThreadCancellable CallPeriodically(Int32 periodByMillisecond, Func<Boolean> func)
+        {
+            ThreadCancellable thread = new ThreadCancellable((obj) =>
             {
-                while (CTS.Token.IsCancellationRequested == false)
+                CancellationToken cancelToken = (CancellationToken)obj;
+                while (cancelToken.IsCancellationRequested == false)
                 {
                     try
                     {
-                        if (CTS.Token.WaitHandle.WaitOne(periodByMillisecond) == true ||
+                        if (cancelToken.WaitHandle.WaitOne(periodByMillisecond) == true ||
                             func() == false)
                             break;
                     }
@@ -47,26 +54,28 @@ namespace Aegis.Threading
                         Logger.Write(LogType.Err, 1, e.ToString());
                     }
                 }
-
-                lock (this)
-                {
-                    CTS.Dispose();
-                }
             });
-            Thread.Start();
+            thread.Start();
+
+            return thread;
         }
 
 
-        public async void Cancel()
+        public async void Cancel(Int32 millisecondsTimeout = 1000)
         {
             await Task.Run(() =>
             {
-                lock (this)
+                try
                 {
-                    CTS.Cancel();
-                    if (Thread.Join(1000) == false)
+                    _cts.Cancel();
+                    if (Thread.Join(millisecondsTimeout) == false)
                         Thread.Abort();
                 }
+                catch (Exception)
+                {
+                }
+
+                Dispose();
             });
         }
     }

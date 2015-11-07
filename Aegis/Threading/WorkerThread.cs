@@ -17,7 +17,7 @@ namespace Aegis.Threading
 
         public String Name { get; private set; }
         public Int32 QueuedCount { get { return _works.Count; } }
-        public Int32 ThreadCount { get { return (_threads == null ? 0 : _threads.Count()); } }
+        public Int32 ThreadCount { get { return _threads?.Count() ?? 0; } }
 
 
 

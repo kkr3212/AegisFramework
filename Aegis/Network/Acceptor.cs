@@ -86,7 +86,7 @@ namespace Aegis.Network
                     return;
 
 
-                Session acceptedSession = _networkChannel.SessionManager.AttackSocket(acceptedSocket);
+                Session acceptedSession = _networkChannel.GenerateSession();
                 if (acceptedSession == null)
                 {
                     acceptedSocket.Close();
@@ -95,6 +95,7 @@ namespace Aegis.Network
                 }
 
 
+                acceptedSession.AttachSocket(acceptedSocket);
                 acceptedSession.OnSocket_Accepted();
 
 

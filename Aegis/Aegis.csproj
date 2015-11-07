@@ -120,7 +120,6 @@
     <Compile Include="Network\NetworkChannel.cs" />
     <Compile Include="Network\Packet.cs" />
     <Compile Include="Network\SecurePacket.cs" />
-    <Compile Include="Network\SessionManager.cs" />
     <Compile Include="ObjectPool.cs" />
     <Compile Include="Randomizer.cs" />
     <Compile Include="Threading\ThreadCancellable.cs" />

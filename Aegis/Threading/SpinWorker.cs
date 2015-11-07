@@ -101,7 +101,7 @@ namespace Aegis.Threading
             if (DispatchThreadCount == -1)
                 AegisTask.Run(actionDispatch);
 
-            else if (DispatchThreadCount == 0)
+            else if (DispatchThreadCount == 0 || _dispatchThread.ThreadCount == 0)
                 SafeAction(actionDispatch);
 
             else

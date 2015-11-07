@@ -162,7 +162,7 @@
             이 NetworkChannel 객체의 고유한 이름입니다.
             </summary>
         </member>
-        <member name="P:Aegis.Network.NetworkChannel.SessionManager">
+        <member name="P:Aegis.Network.NetworkChannel.Acceptor">
             <summary>
             이 NetworkChannel에서 사용하는 Session 객체를 관리합니다.
             </summary>
@@ -193,8 +193,8 @@
             네트워크 작업을 시작합니다.
             </summary>
             <param name="generator">Session 객체를 생성하는 Delegator를 설정합니다. SessionManager에서는 내부적으로 Session Pool을 관리하는데, Pool에 객체가 부족할 때 이 Delegator가 호출됩니다. 그러므로 이 Delegator에서는 ObjectPool 대신 new를 사용해 인스턴스를 생성하는 것이 좋습니다.</param>
-            <param name="initPoolSize">최초에 생성할 Session의 개수를 지정합니다.</param>
-            <param name="maxPoolSize">Session 객체의 최대개수를 지정합니다. 0이 입력되면 Session 생성시 최대개수를 무시합니다.</param>
+            <param name="initPoolCount">처음 생성할 Session의 개수를 지정합니다.</param>
+            <param name="maxPoolCount">생성할 수 있는 Session의 최대개수를 지정합니다. 0이 입력되면 최대개수를 무시합니다.</param>
             <returns>현재 NetworkChannel 객체를 반환합니다.</returns>
         </member>
         <member name="M:Aegis.Network.NetworkChannel.StopNetwork">
@@ -416,22 +416,6 @@
             <summary>
             패킷의 헤더 위치를 건너띄어 본문 데이터를 읽을 수 있도록 읽기위치를 조절합니다.
             이 함수가 호출되면 ReadIndex는 4에 위치하지만, WriteIndex는 변하지 않습니다.
-            </summary>
-        </member>
-        <member name="P:Aegis.Network.SessionManager.MaxSessionPoolSize">
-            <summary>
-            최대 값으로 지정된 Session의 개수를 가져옵니다.
-            이 값은 NetworkChannel을 Start할 때 지정한 값입니다.
-            </summary>
-        </member>
-        <member name="P:Aegis.Network.SessionManager.ActiveSessionCount">
-            <summary>
-            현재 활성화 상태인 Session 개수를 가져옵니다.
-            </summary>
-        </member>
-        <member name="P:Aegis.Network.SessionManager.ActiveSessions">
-            <summary>
-            현재 활성화 상태인 Session 목록을 가져옵니다.
             </summary>
         </member>
         <member name="M:Aegis.Randomizer`1.Next">

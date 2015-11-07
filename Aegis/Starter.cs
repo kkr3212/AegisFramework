@@ -68,8 +68,8 @@ namespace Aegis
         /// </summary>
         public static void Release()
         {
-            StopNetwork();
             SpinWorker.Release();
+            StopNetwork();
 
             if (_mutex != null)
             {
@@ -181,9 +181,6 @@ namespace Aegis
         /// </summary>
         public static void StopNetwork()
         {
-            foreach (NetworkChannel channel in NetworkChannel.Channels)
-                channel.StopNetwork();
-
             NetworkChannel.Release();
         }
 

@@ -20,9 +20,12 @@ namespace Aegis.Network
         /// <summary>
         /// 이 NetworkChannel에서 사용하는 Session 객체를 관리합니다.
         /// </summary>
-        public SessionManager SessionManager { get; private set; }
         internal Acceptor Acceptor { get; private set; }
         public static List<NetworkChannel> Channels = new List<NetworkChannel>();
+        public List<Session> ActiveSessions { get; } = new List<Session>();
+        internal List<Session> InactiveSessions { get; } = new List<Session>();
+        public Int32 MaxSessionCount { get; set; }
+        private SessionGenerateDelegator _sessionGenerator;
 
 
 
@@ -84,9 +87,50 @@ namespace Aegis.Network
         private NetworkChannel(String name)
         {
             Name = name;
-
-            SessionManager = new SessionManager(this);
             Acceptor = new Acceptor(this);
+        }
+
+
+        internal Session GenerateSession()
+        {
+            lock (this)
+            {
+                if (InactiveSessions.Count == 0)
+                {
+                    if (MaxSessionCount == 0)
+                    {
+                        Session session = _sessionGenerator();
+                        session.Activated += OnSessionActivated;
+                        session.Inactivated += OnSessionInactivated;
+
+                        InactiveSessions.Add(session);
+                    }
+                    else
+                        return null;
+                }
+
+                return InactiveSessions[0];
+            }
+        }
+
+
+        private void OnSessionActivated(Session session)
+        {
+            lock (this)
+            {
+                InactiveSessions.Remove(session);
+                ActiveSessions.Add(session);
+            }
+        }
+
+
+        private void OnSessionInactivated(Session session)
+        {
+            lock (this)
+            {
+                ActiveSessions.Remove(session);
+                InactiveSessions.Add(session);
+            }
         }
 
 
@@ -94,17 +138,31 @@ namespace Aegis.Network
         /// 네트워크 작업을 시작합니다.
         /// </summary>
         /// <param name="generator">Session 객체를 생성하는 Delegator를 설정합니다. SessionManager에서는 내부적으로 Session Pool을 관리하는데, Pool에 객체가 부족할 때 이 Delegator가 호출됩니다. 그러므로 이 Delegator에서는 ObjectPool 대신 new를 사용해 인스턴스를 생성하는 것이 좋습니다.</param>
-        /// <param name="initPoolSize">최초에 생성할 Session의 개수를 지정합니다.</param>
-        /// <param name="maxPoolSize">Session 객체의 최대개수를 지정합니다. 0이 입력되면 Session 생성시 최대개수를 무시합니다.</param>
+        /// <param name="initPoolCount">처음 생성할 Session의 개수를 지정합니다.</param>
+        /// <param name="maxPoolCount">생성할 수 있는 Session의 최대개수를 지정합니다. 0이 입력되면 최대개수를 무시합니다.</param>
         /// <returns>현재 NetworkChannel 객체를 반환합니다.</returns>
-        public NetworkChannel StartNetwork(SessionGenerateDelegator generator, Int32 initPoolSize, Int32 maxPoolSize)
+        public NetworkChannel StartNetwork(SessionGenerateDelegator generator, Int32 initPoolCount, Int32 maxPoolCount)
         {
             if (generator == null)
-                throw new AegisException(AegisResult.InvalidArgument, "Argument 'generator' cannot be null.");
+                throw new AegisException(AegisResult.InvalidArgument, $"Argument '{nameof(generator)}' could not be null.");
 
-            SessionManager.SessionGenerator = generator;
-            SessionManager.MaxSessionPoolSize = maxPoolSize;
-            SessionManager.CreatePool(initPoolSize);
+            _sessionGenerator = generator;
+            MaxSessionCount = maxPoolCount;
+
+
+            lock (this)
+            {
+                while (initPoolCount <= maxPoolCount && initPoolCount-- > 0)
+                {
+                    Session session = _sessionGenerator();
+                    session.Activated += OnSessionActivated;
+                    session.Inactivated += OnSessionInactivated;
+
+                    InactiveSessions.Add(session);
+                }
+            }
+
+
             return this;
         }
 
@@ -116,7 +174,14 @@ namespace Aegis.Network
         public void StopNetwork()
         {
             Acceptor.Close();
-            SessionManager.Release();
+
+
+            List<Session> targets;
+            lock (this)
+            {
+                targets = ActiveSessions.Concat(InactiveSessions).ToList();
+            }
+            targets.ForEach(v => v.Close());
         }
 
 
