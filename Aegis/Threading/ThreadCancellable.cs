@@ -61,7 +61,23 @@ namespace Aegis.Threading
         }
 
 
-        public async void Cancel(Int32 millisecondsTimeout = 1000)
+        public void Cancel(Int32 millisecondsTimeout = 1000)
+        {
+            try
+            {
+                _cts.Cancel();
+                if (Thread.Join(millisecondsTimeout) == false)
+                    Thread.Abort();
+            }
+            catch (Exception)
+            {
+            }
+
+            Dispose();
+        }
+
+
+        public async void CancelAsync(Int32 millisecondsTimeout = 1000)
         {
             await Task.Run(() =>
             {
