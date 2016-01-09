@@ -9,7 +9,7 @@ using MySql.Data.MySqlClient;
 
 
 
-namespace Aegis.Data.MySql
+namespace Aegis.Data.MySQL
 {
     internal sealed class DBConnector
     {

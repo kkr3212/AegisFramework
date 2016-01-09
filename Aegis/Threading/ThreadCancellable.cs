@@ -36,7 +36,7 @@ namespace Aegis.Threading
         }
 
 
-        public static ThreadCancellable CallPeriodically(Int32 periodByMillisecond, Func<Boolean> func)
+        public static ThreadCancellable CallInterval(Int32 millisecondsInterval, Func<Boolean> func)
         {
             ThreadCancellable thread = new ThreadCancellable((obj) =>
             {
@@ -45,7 +45,7 @@ namespace Aegis.Threading
                 {
                     try
                     {
-                        if (cancelToken.WaitHandle.WaitOne(periodByMillisecond) == true ||
+                        if (cancelToken.WaitHandle.WaitOne(millisecondsInterval) == true ||
                             func() == false)
                             break;
                     }

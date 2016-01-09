@@ -93,13 +93,16 @@
   <ItemGroup>
     <Compile Include="Configuration\ConfigData.cs" />
     <Compile Include="Configuration\Environment.cs" />
+    <Compile Include="Data\MSSQL\ConnectionPool.cs" />
+    <Compile Include="Data\MSSQL\DBCommand.cs" />
+    <Compile Include="Data\MSSQL\DBConnector.cs" />
+    <Compile Include="IntervalTimer.cs" />
     <Compile Include="Starter.cs" />
     <Compile Include="Converter\DateTimeConverter.cs" />
     <Compile Include="Converter\StringConverter.cs" />
-    <Compile Include="Data\MySql\DataReader.cs" />
-    <Compile Include="Data\MySql\DBCommand.cs" />
-    <Compile Include="Data\MySql\DBConnector.cs" />
-    <Compile Include="Data\MySql\MySqlDatabase.cs" />
+    <Compile Include="Data\MySQL\DBCommand.cs" />
+    <Compile Include="Data\MySQL\DBConnector.cs" />
+    <Compile Include="Data\MySQL\ConnectionPool.cs" />
     <Compile Include="IntervalCounter.cs" />
     <Compile Include="Network\AwaitableMethod.cs" />
     <Compile Include="Network\ISessionMethod.cs" />
@@ -129,10 +132,14 @@
     <Compile Include="Singleton.cs" />
     <Compile Include="StreamBuffer.cs" />
     <Compile Include="Threading\WorkerThread.cs" />
+    <Content Include="Web\Example.txt" />
+    <Compile Include="Web\WebAPIRequest.cs" />
+    <Compile Include="Web\WebAPIServer.cs" />
   </ItemGroup>
   <ItemGroup>
     <Service Include="{508349B6-6B84-4DF5-91F0-309BEEBAD82D}" />
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
     <PostBuildEvent>if $(PlatformName) == x86 (

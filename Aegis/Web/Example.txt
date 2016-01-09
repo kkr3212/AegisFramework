@@ -1,0 +1,52 @@
+﻿/* Server
+
+WebAPIServer http = new WebAPIServer();
+
+http.AddPrefix("http://*:8080/");
+http.Route("/", OnTest);
+http.Route("/Test/T.do/", OnTest);
+http.Start();
+
+
+while (true)
+{
+    String ln = Console.ReadLine();
+    if (ln == "q")
+        http.Stop();
+}
+
+*/
+
+/* Client
+
+//  GET
+var uri = new Uri("http://localhost:8080/Test?v=10&c=asdf");
+HttpWebRequest request = (HttpWebRequest)WebRequest.Create(uri);
+request.Method = "GET";
+request.ServicePoint.Expect100Continue = false;
+
+
+//  POST  http://j07051.tistory.com/556
+var uri = new Uri("http://localhost:8080/Test/T.do");
+String postData = "v=10&c=asdf";
+
+
+HttpWebRequest request = (HttpWebRequest)WebRequest.Create(uri);
+request.Method = "POST";
+request.ServicePoint.Expect100Continue = false;
+//request.ContentLength = 0;
+
+byte[] byteArray = Encoding.UTF8.GetBytes(postData);
+Stream dataStream = request.GetRequestStream();
+dataStream.Write(byteArray, 0, byteArray.Length);
+dataStream.Close();
+
+
+
+using (var response = (HttpWebResponse)request.GetResponse())
+using (var reader = new StreamReader(response.GetResponseStream(), Encoding.GetEncoding("UTF-8"), true))
+{
+    String result = reader.ReadToEnd();
+}
+
+*/

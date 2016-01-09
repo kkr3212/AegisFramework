@@ -2,25 +2,26 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using MySql.Data.MySqlClient;
+using System.Threading.Tasks;
+using System.Data.SqlClient;
 using Aegis.Threading;
 
 
 
-namespace Aegis.Data.MySQL
+namespace Aegis.Data.MSSQL
 {
     public sealed class DBCommand : IDisposable
     {
         private readonly ConnectionPool _pool;
-        private readonly MySqlCommand _command = new MySqlCommand();
+        private readonly SqlCommand _command = new SqlCommand();
         private DBConnector _dbConnector;
         private Boolean _isAsync;
         private List<Tuple<String, Object>> _prepareBindings = new List<Tuple<String, Object>>();
 
         public StringBuilder CommandText { get; } = new StringBuilder(256);
-        public MySqlDataReader Reader { get; private set; }
+        public SqlDataReader Reader { get; private set; }
         public Int32 CommandTimeout { get { return _command.CommandTimeout; } set { _command.CommandTimeout = value; } }
-        public Int64 LastInsertedId { get { return _command?.LastInsertedId ?? 0; } }
+        public Int64 LastInsertedId { get { return (Int64)_command.ExecuteScalar(); } }
         public Object Tag { get; set; }
 
 
@@ -63,7 +64,7 @@ namespace Aegis.Data.MySQL
         }
 
 
-        public MySqlDataReader Query()
+        public SqlDataReader Query()
         {
             if (_dbConnector != null || Reader != null)
                 throw new AegisException(AegisResult.DataReaderNotClosed, "There is already an open DataReader associated with this Connection which must be closed first.");
@@ -89,7 +90,7 @@ namespace Aegis.Data.MySQL
         }
 
 
-        public MySqlDataReader Query(String query, params object[] args)
+        public SqlDataReader Query(String query, params object[] args)
         {
             CommandText.Clear();
             CommandText.AppendFormat(query, args);

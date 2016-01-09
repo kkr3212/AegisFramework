@@ -624,5 +624,14 @@
             데이터 읽기의 경우, 쓰기된 크기 이상으로 읽어들일 수 없습니다.
             </summary>
         </member>
+        <member name="M:Aegis.Web.WebAPIServer.AddPrefix(System.String)">
+            <summary>
+            WebAPIServer가 사용할 URL 및 포트정보를 지정합니다.
+            http:// 혹은 https:// 로 시작되어야 하며, /로 끝나는 URI로 지정해야 합니다.
+            (ex. http://*:8080/)
+            Start를 호출하기 전에 먼저 호출되어야 합니다.
+            </summary>
+            <param name="prefix"></param>
+        </member>
     </members>
 </doc>

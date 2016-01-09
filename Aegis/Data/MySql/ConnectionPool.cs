@@ -6,14 +6,13 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Diagnostics;
 using Aegis.Threading;
-using Aegis.Network;
 
 
 
-namespace Aegis.Data.MySql
+namespace Aegis.Data.MySQL
 {
-    [DebuggerDisplay("Name={DBName}, Host={IpAddress},{PortNo}")]
-    public sealed class MySqlDatabase
+    [DebuggerDisplay("Name={DBName}, Host={IpAddress}, {PortNo}")]
+    public sealed class ConnectionPool
     {
         private List<DBConnector> _listPoolDBC = new List<DBConnector>();
         private List<DBConnector> _listActiveDBC = new List<DBConnector>();
@@ -34,12 +33,12 @@ namespace Aegis.Data.MySql
 
 
 
-        public MySqlDatabase()
+        public ConnectionPool()
         {
         }
 
 
-        public MySqlDatabase(String ipAddress, Int32 portNo, String charSet, String dbName, String userId, String userPwd)
+        public ConnectionPool(String ipAddress, Int32 portNo, String charSet, String dbName, String userId, String userPwd)
         {
             Initialize(ipAddress, portNo, charSet, dbName, userId, userPwd);
         }
@@ -118,7 +117,7 @@ namespace Aegis.Data.MySql
                 }
                 catch (Exception e)
                 {
-                    Logger.Write(LogType.Warn, 0, e.Message);
+                    Logger.Write(LogType.Warn, 1, e.Message);
                 }
             }
         }

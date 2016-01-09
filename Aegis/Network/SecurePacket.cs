@@ -279,7 +279,7 @@ namespace Aegis.Network
         }
 
 
-        private static UInt32 GetCRC32(byte[] data, Int32 startOffset, Int32 length)
+        protected static UInt32 GetCRC32(byte[] data, Int32 startOffset, Int32 length)
         {
             UInt32 crc = 0xffffffff;
             for (Int32 i = 0; i < length; i++)
@@ -289,7 +289,7 @@ namespace Aegis.Network
         }
 
 
-        public void Encrypt(String iv, String key)
+        public virtual void Encrypt(String iv, String key)
         {
             //  Padding
             {
@@ -343,7 +343,7 @@ namespace Aegis.Network
 
 
 
-        public Boolean Decrypt(String iv, String key)
+        public virtual Boolean Decrypt(String iv, String key)
         {
             UInt16 packetSize = Size;
 
