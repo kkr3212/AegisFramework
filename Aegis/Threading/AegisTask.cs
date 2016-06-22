@@ -27,43 +27,82 @@ namespace Aegis.Threading
 
 
 
+        public static void SafeAction(Action action, Func<Exception, Boolean> actionOnFail = null)
+        {
+            try
+            {
+                action();
+            }
+            catch (Exception e)
+            {
+                if (actionOnFail != null)
+                {
+                    SafeAction(() =>
+                    {
+                        //  로그출력 여부는 Delegator의 리턴값으로 결정한다.
+                        if (actionOnFail(e) == false)
+                            Logger.Write(LogType.Err, 1, e.ToString());
+                    }, null);
+                }
+                //  actionOnFail이 정의되지 않은 경우 항상 로그를 출력한다.
+                else
+                    Logger.Write(LogType.Err, 1, e.ToString());
+            }
+        }
+
+
+        public static TResult SafeAction<TResult>(Func<TResult> action, Func<Exception, Boolean> actionOnFail = null)
+        {
+            try
+            {
+                return action();
+            }
+            catch (Exception e)
+            {
+                if (actionOnFail != null)
+                {
+                    SafeAction(() =>
+                    {
+                        //  로그출력 여부는 Delegator의 리턴값으로 결정한다.
+                        if (actionOnFail(e) == false)
+                            Logger.Write(LogType.Err, 1, e.ToString());
+                    }, null);
+                }
+                //  actionOnFail이 정의되지 않은 경우 항상 로그를 출력한다.
+                else
+                    Logger.Write(LogType.Err, 1, e.ToString());
+            }
+
+            return default(TResult);
+        }
+
+
         public static Task Run(Action action)
         {
             return Task.Run(() =>
             {
                 Interlocked.Increment(ref _taskCount);
-                try
+                SafeAction(action, (e) =>
                 {
-                    action();
-                }
-                catch (TaskCanceledException)
-                {
-                }
-                catch (Exception e)
-                {
-                    Logger.Write(LogType.Err, 1, e.ToString());
-                }
+                    return (e is TaskCanceledException) == true;
+                });
                 Interlocked.Decrement(ref _taskCount);
             });
         }
 
 
-        public static Task<TResult> Run<TResult>(Func<Task<TResult>> function)
+        public static Task<TResult> Run<TResult>(Func<Task<TResult>> action)
         {
             return Task<TResult>.Run<TResult>(() =>
             {
                 Interlocked.Increment(ref _taskCount);
-                try
+                SafeAction<Task<TResult>>(() =>
                 {
-                    return function();
-                }
-                catch (TaskCanceledException)
+                    return action();
+                }, (e) =>
                 {
-                }
-                catch (Exception e)
-                {
-                    Logger.Write(LogType.Err, 1, e.ToString());
-                }
+                    return (e is TaskCanceledException) == true;
+                });
                 Interlocked.Decrement(ref _taskCount);
                 return null;
             });
@@ -75,38 +114,27 @@ namespace Aegis.Threading
             return Task.Run(() =>
             {
                 Interlocked.Increment(ref _taskCount);
-                try
+                SafeAction(action, (e) =>
                 {
-                    action();
-                }
-                catch (TaskCanceledException)
-                {
-                }
-                catch (Exception e)
-                {
-                    Logger.Write(LogType.Err, 1, e.ToString());
-                }
+                    return (e is TaskCanceledException) == true;
+                });
                 Interlocked.Decrement(ref _taskCount);
             }, cancellationToken);
         }
 
 
-        public static Task<TResult> Run<TResult>(Func<Task<TResult>> function, CancellationToken cancellationToken)
+        public static Task<TResult> Run<TResult>(Func<Task<TResult>> action, CancellationToken cancellationToken)
         {
             return Task<TResult>.Run<TResult>(() =>
             {
                 Interlocked.Increment(ref _taskCount);
-                try
+                SafeAction<Task<TResult>>(() =>
                 {
-                    return function();
-                }
-                catch (TaskCanceledException)
+                    return action();
+                }, (e) =>
                 {
-                }
-                catch (Exception e)
-                {
-                    Logger.Write(LogType.Err, 1, e.ToString());
-                }
+                    return (e is TaskCanceledException) == true;
+                });
                 Interlocked.Decrement(ref _taskCount);
                 return null;
             }, cancellationToken);
