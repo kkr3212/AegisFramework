@@ -16,18 +16,18 @@ namespace Aegis.Threading
     /// </summary>
     public static class AegisTask
     {
-        private static Int32 _taskCount = 0;
+        private static int _taskCount = 0;
 
         /// <summary>
         /// 현재 실행중인 Task의 갯수를 가져옵니다.
         /// </summary>
-        public static Int32 TaskCount { get { return _taskCount; } }
+        public static int TaskCount { get { return _taskCount; } }
 
 
 
 
 
-        public static void SafeAction(Action action, Func<Exception, Boolean> actionOnFail = null)
+        public static void SafeAction(Action action, Func<Exception, bool> actionOnFail = null)
         {
             try
             {
@@ -41,17 +41,17 @@ namespace Aegis.Threading
                     {
                         //  로그출력 여부는 Delegator의 리턴값으로 결정한다.
                         if (actionOnFail(e) == false)
-                            Logger.Write(LogType.Err, 1, e.ToString());
+                            Logger.Write(LogType.Err, LogLevel.Core, e.ToString());
                     }, null);
                 }
                 //  actionOnFail이 정의되지 않은 경우 항상 로그를 출력한다.
                 else
-                    Logger.Write(LogType.Err, 1, e.ToString());
+                    Logger.Write(LogType.Err, LogLevel.Core, e.ToString());
             }
         }
 
 
-        public static TResult SafeAction<TResult>(Func<TResult> action, Func<Exception, Boolean> actionOnFail = null)
+        public static TResult SafeAction<TResult>(Func<TResult> action, Func<Exception, bool> actionOnFail = null)
         {
             try
             {
@@ -65,12 +65,12 @@ namespace Aegis.Threading
                     {
                         //  로그출력 여부는 Delegator의 리턴값으로 결정한다.
                         if (actionOnFail(e) == false)
-                            Logger.Write(LogType.Err, 1, e.ToString());
+                            Logger.Write(LogType.Err, LogLevel.Core, e.ToString());
                     }, null);
                 }
                 //  actionOnFail이 정의되지 않은 경우 항상 로그를 출력한다.
                 else
-                    Logger.Write(LogType.Err, 1, e.ToString());
+                    Logger.Write(LogType.Err, LogLevel.Core, e.ToString());
             }
 
             return default(TResult);

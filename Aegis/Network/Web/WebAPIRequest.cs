@@ -7,21 +7,21 @@ using System.Net;
 
 
 
-namespace Aegis.Web
+namespace Aegis.Network.Web
 {
     public sealed class WebAPIRequest
     {
         public readonly WebMethodType MethodType;
-        public readonly String RawUrl, Path, MessageBody;
+        public readonly string RawUrl, Path, MessageBody;
 
-        public Dictionary<String, String> Arguments { get; } = new Dictionary<String, String>();
-        public String this[String key] { get { return Arguments[key]; } }
-
-
+        public Dictionary<string, string> Arguments { get; } = new Dictionary<string, string>();
+        public string this[string key] { get { return Arguments[key]; } }
 
 
 
-        internal WebAPIRequest(WebMethodType methodType, String url, String path, String messageBody)
+
+
+        internal WebAPIRequest(WebMethodType methodType, string url, string path, string messageBody)
         {
             MethodType = methodType;
             RawUrl = url;
@@ -34,13 +34,13 @@ namespace Aegis.Web
         {
             Arguments.Clear();
 
-            foreach (String arg in MessageBody.Split('&'))
+            foreach (string arg in MessageBody.Split('&'))
             {
                 if (arg.Length == 0)
                     continue;
 
 
-                String[] keyValue = arg.Split('=');
+                string[] keyValue = arg.Split('=');
                 if (keyValue.Length != 2)
                     throw new AegisException(AegisResult.InvalidArgument);
 

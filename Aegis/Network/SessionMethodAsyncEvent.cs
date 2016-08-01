@@ -5,8 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Net;
 using System.Net.Sockets;
-using Aegis;
-using Aegis.Threading;
+using Aegis.IO;
 
 
 
@@ -79,7 +78,7 @@ namespace Aegis.Network
                 lock (_session)
                 {
                     //  transBytes가 0이면 원격지 혹은 네트워크에 의해 연결이 끊긴 상태
-                    Int32 transBytes = saea.BytesTransferred;
+                    int transBytes = saea.BytesTransferred;
                     if (transBytes == 0)
                     {
                         _session.Close();
@@ -95,7 +94,7 @@ namespace Aegis.Network
 
 
                         //  패킷 하나가 정상적으로 수신되었는지 확인
-                        Int32 packetSize;
+                        int packetSize;
 
                         _dispatchBuffer.ResetReadIndex();
                         if (_session.PacketValidator == null ||
@@ -114,7 +113,7 @@ namespace Aegis.Network
                         }
                         catch (Exception e)
                         {
-                            Logger.Write(LogType.Err, 1, e.ToString());
+                            Logger.Write(LogType.Err, LogLevel.Core, e.ToString());
                         }
                     }
 
@@ -132,12 +131,12 @@ namespace Aegis.Network
             }
             catch (Exception e)
             {
-                Logger.Write(LogType.Err, 1, e.ToString());
+                Logger.Write(LogType.Err, LogLevel.Core, e.ToString());
             }
         }
 
 
-        public void SendPacket(byte[] buffer, Int32 offset, Int32 size, Action<StreamBuffer> onSent = null)
+        public void SendPacket(byte[] buffer, int offset, int size, Action<StreamBuffer> onSent = null)
         {
             try
             {
@@ -162,7 +161,7 @@ namespace Aegis.Network
             }
             catch (Exception e)
             {
-                Logger.Write(LogType.Err, 1, e.ToString());
+                Logger.Write(LogType.Err, LogLevel.Core, e.ToString());
             }
         }
 
@@ -196,15 +195,15 @@ namespace Aegis.Network
             }
             catch (Exception e)
             {
-                Logger.Write(LogType.Err, 1, e.ToString());
+                Logger.Write(LogType.Err, LogLevel.Core, e.ToString());
             }
         }
 
 
-        public void SendPacket(StreamBuffer buffer, PacketCriterion criterion, EventHandler_Receive dispatcher, Action<StreamBuffer> onSent = null)
+        public void SendPacket(StreamBuffer buffer, PacketPredicate predicate, IOEventHandler dispatcher, Action<StreamBuffer> onSent = null)
         {
-            if (criterion == null || dispatcher == null)
-                throw new AegisException(AegisResult.InvalidArgument, "The argument criterion and dispatcher cannot be null.");
+            if (predicate == null || dispatcher == null)
+                throw new AegisException(AegisResult.InvalidArgument, "The argument predicate and dispatcher cannot be null.");
 
 
             try
@@ -224,7 +223,7 @@ namespace Aegis.Network
                     if (onSent != null)
                         saea.UserToken = new NetworkSendToken(buffer, onSent);
 
-                    _responseSelector.Add(criterion, dispatcher);
+                    _responseSelector.Add(predicate, dispatcher);
 
                     if (_session.Socket.SendAsync(saea) == false)
                         OnComplete_Receive(null, saea);
@@ -235,7 +234,7 @@ namespace Aegis.Network
             }
             catch (Exception e)
             {
-                Logger.Write(LogType.Err, 1, e.ToString());
+                Logger.Write(LogType.Err, LogLevel.Core, e.ToString());
             }
         }
 
@@ -257,7 +256,7 @@ namespace Aegis.Network
             }
             catch (Exception e)
             {
-                Logger.Write(LogType.Err, 1, e.ToString());
+                Logger.Write(LogType.Err, LogLevel.Core, e.ToString());
             }
         }
     }

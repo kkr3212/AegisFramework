@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Data.SqlClient;
+using Aegis.Calculate;
 
 
 
@@ -12,7 +13,7 @@ namespace Aegis.Data.MSSQL
     internal sealed class DBConnector
     {
         public SqlConnection Connection { get; private set; }
-        public String ConnectionString { get { return Connection.ConnectionString; } }
+        public string ConnectionString { get { return Connection.ConnectionString; } }
         public IntervalCounter QPS { get; private set; }
 
 
@@ -24,14 +25,14 @@ namespace Aegis.Data.MSSQL
         }
 
 
-        public void Connect(String host, String userId, String userPwd, String dbName)
+        public void Connect(string host, string userId, string userPwd, string dbName)
         {
             if (Connection != null)
                 return;
 
 
-            QPS = new IntervalCounter(1000);
-            Connection = new SqlConnection(String.Format("server={0};uid={1};pwd={2};database={3};", host, userId, userPwd, dbName));
+            QPS = new IntervalCounter("", 1000);
+            Connection = new SqlConnection(string.Format("server={0};uid={1};pwd={2};database={3};", host, userId, userPwd, dbName));
             Connection.Open();
         }
 

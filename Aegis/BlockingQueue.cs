@@ -15,11 +15,11 @@ namespace Aegis
     public class BlockingQueue<T>
     {
         private Queue<T> _queue = new Queue<T>();
-        private Int32 _queuedCount = 0;
-        private Boolean _canceled = false;
+        private int _queuedCount = 0;
+        private bool _canceled = false;
 
         public List<T> Items { get { return _queue.ToList(); } }
-        public Int32 Count { get { return _queuedCount; } }
+        public int Count { get { return _queuedCount; } }
 
 
 

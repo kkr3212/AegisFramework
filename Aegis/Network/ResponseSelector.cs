@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Aegis.IO;
 
 
 
@@ -12,13 +13,13 @@ namespace Aegis.Network
     {
         private struct Data
         {
-            public PacketCriterion Criterion;
-            public EventHandler_Receive Dispatcher;
+            public PacketPredicate Predicate;
+            public IOEventHandler Dispatcher;
 
 
-            public Data(PacketCriterion criterion, EventHandler_Receive dispatcher)
+            public Data(PacketPredicate predicate, IOEventHandler dispatcher)
             {
-                Criterion = criterion;
+                Predicate = predicate;
                 Dispatcher = dispatcher;
             }
         }
@@ -38,26 +39,26 @@ namespace Aegis.Network
         }
 
 
-        public void Add(PacketCriterion criterion, EventHandler_Receive dispatcher)
+        public void Add(PacketPredicate predicate, IOEventHandler dispatcher)
         {
-            _listResponseAction.Add(new Data(criterion, dispatcher));
+            _listResponseAction.Add(new Data(predicate, dispatcher));
         }
 
 
-        public Boolean Dispatch(StreamBuffer buffer)
+        public bool Dispatch(StreamBuffer buffer)
         {
             foreach (var data in _listResponseAction)
             {
-                if (data.Criterion(buffer) == true)
+                if (data.Predicate(buffer) == true)
                 {
                     try
                     {
                         _listResponseAction.Remove(data);
-                        data.Dispatcher(_session, buffer);
+                        data.Dispatcher(new IOEventResult(_session, IOEventType.Read, buffer.Buffer, AegisResult.Ok));
                     }
                     catch (Exception e)
                     {
-                        Logger.Write(LogType.Err, 1, e.ToString());
+                        Logger.Write(LogType.Err, LogLevel.Core, e.ToString());
                     }
                     return true;
                 }

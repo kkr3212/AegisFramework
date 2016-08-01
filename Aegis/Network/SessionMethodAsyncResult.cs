@@ -5,8 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Net;
 using System.Net.Sockets;
-using Aegis;
-using Aegis.Threading;
+using Aegis.IO;
 
 
 
@@ -74,7 +73,7 @@ namespace Aegis.Network
                         return;
 
                     //  transBytes가 0이면 원격지 혹은 네트워크에 의해 연결이 끊긴 상태
-                    Int32 transBytes = _session.Socket.EndReceive(ar);
+                    int transBytes = _session.Socket.EndReceive(ar);
                     if (transBytes == 0)
                     {
                         _session.Close();
@@ -90,7 +89,7 @@ namespace Aegis.Network
 
 
                         //  패킷 하나가 정상적으로 수신되었는지 확인
-                        Int32 packetSize;
+                        int packetSize;
 
                         _dispatchBuffer.ResetReadIndex();
                         if (_session.PacketValidator == null ||
@@ -114,7 +113,7 @@ namespace Aegis.Network
                         }
                         catch (Exception e)
                         {
-                            Logger.Write(LogType.Err, 1, e.ToString());
+                            Logger.Write(LogType.Err, LogLevel.Core, e.ToString());
                         }
                     }
 
@@ -132,12 +131,12 @@ namespace Aegis.Network
             }
             catch (Exception e)
             {
-                Logger.Write(LogType.Err, 1, e.ToString());
+                Logger.Write(LogType.Err, LogLevel.Core, e.ToString());
             }
         }
 
 
-        public void SendPacket(byte[] buffer, Int32 offset, Int32 size, Action<StreamBuffer> onSent = null)
+        public void SendPacket(byte[] buffer, int offset, int size, Action<StreamBuffer> onSent = null)
         {
             try
             {
@@ -158,7 +157,7 @@ namespace Aegis.Network
             }
             catch (Exception e)
             {
-                Logger.Write(LogType.Err, 1, e.ToString());
+                Logger.Write(LogType.Err, LogLevel.Core, e.ToString());
             }
         }
 
@@ -187,21 +186,21 @@ namespace Aegis.Network
             }
             catch (Exception e)
             {
-                Logger.Write(LogType.Err, 1, e.ToString());
+                Logger.Write(LogType.Err, LogLevel.Core, e.ToString());
             }
         }
 
 
-        public void SendPacket(StreamBuffer buffer, PacketCriterion criterion, EventHandler_Receive dispatcher, Action<StreamBuffer> onSent = null)
+        public void SendPacket(StreamBuffer buffer, PacketPredicate predicate, IOEventHandler dispatcher, Action<StreamBuffer> onSent = null)
         {
-            if (criterion == null || dispatcher == null)
-                throw new AegisException(AegisResult.InvalidArgument, "The argument criterion and dispatcher cannot be null.");
+            if (predicate == null || dispatcher == null)
+                throw new AegisException(AegisResult.InvalidArgument, "The argument predicate and dispatcher cannot be null.");
 
             try
             {
                 lock (_session)
                 {
-                    _responseSelector.Add(criterion, dispatcher);
+                    _responseSelector.Add(predicate, dispatcher);
                     if (_session.Socket != null)
                     {
                         //  ReadIndex가 OnSocket_Send에서 사용되므로 ReadIndex를 초기화해야 한다.
@@ -220,7 +219,7 @@ namespace Aegis.Network
             }
             catch (Exception e)
             {
-                Logger.Write(LogType.Err, 1, e.ToString());
+                Logger.Write(LogType.Err, LogLevel.Core, e.ToString());
             }
         }
 
@@ -235,7 +234,7 @@ namespace Aegis.Network
                         return;
 
 
-                    Int32 transBytes = _session.Socket.EndSend(ar);
+                    int transBytes = _session.Socket.EndSend(ar);
                     NetworkSendToken token = (NetworkSendToken)ar.AsyncState;
 
                     if (token != null)
@@ -251,7 +250,7 @@ namespace Aegis.Network
             }
             catch (Exception e)
             {
-                Logger.Write(LogType.Err, 1, e.ToString());
+                Logger.Write(LogType.Err, LogLevel.Core, e.ToString());
             }
         }
     }

@@ -10,7 +10,7 @@ namespace Aegis.Converter
 {
     public static class StringConverter
     {
-        public static Boolean ToBoolean(this String src)
+        public static bool ToBoolean(this string src)
         {
             if (ToInt16(src) == 0)
                 return false;
@@ -19,70 +19,70 @@ namespace Aegis.Converter
         }
 
 
-        public static Int16 ToInt16(this String src)
+        public static short ToInt16(this string src)
         {
-            Int16 val;
-            if (Int16.TryParse(src, out val) == false)
+            short val;
+            if (short.TryParse(src, out val) == false)
                 return 0;
 
             return val;
         }
 
 
-        public static Int16 ToUInt16(this String src)
+        public static short ToUInt16(this string src)
         {
-            Int16 val;
-            if (Int16.TryParse(src, out val) == false)
+            short val;
+            if (short.TryParse(src, out val) == false)
                 return 0;
 
             return val;
         }
 
 
-        public static Int32 ToInt32(this String src)
+        public static int ToInt32(this string src)
         {
-            Int32 val;
-            if (Int32.TryParse(src, out val) == false)
+            int val;
+            if (int.TryParse(src, out val) == false)
                 return 0;
 
             return val;
         }
 
 
-        public static Int32 ToUInt32(this String src)
+        public static int ToUInt32(this string src)
         {
-            Int32 val;
-            if (Int32.TryParse(src, out val) == false)
+            int val;
+            if (int.TryParse(src, out val) == false)
                 return 0;
 
             return val;
         }
 
 
-        public static Int64 ToInt64(this String src)
+        public static long ToInt64(this string src)
         {
-            Int64 val;
-            if (Int64.TryParse(src, out val) == false)
+            long val;
+            if (long.TryParse(src, out val) == false)
                 return 0;
 
             return val;
         }
 
 
-        public static UInt64 ToUInt64(this String src)
+        public static ulong ToUInt64(this string src)
         {
-            UInt64 val;
-            if (UInt64.TryParse(src, out val) == false)
+            ulong val;
+            if (ulong.TryParse(src, out val) == false)
                 return 0;
 
             return val;
         }
 
 
-        public static Double ToDouble(this String src)
+        public static double ToDouble(this string src)
         {
-            Double val;
-            if (Double.TryParse(src, out val) == false)
+            double val;
+            if (double.TryParse(src, out val) == false)
                 return 0;
 
             return val;

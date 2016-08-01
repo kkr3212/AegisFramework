@@ -10,7 +10,7 @@ namespace Aegis
 {
     public class AegisException : Exception
     {
-        public Int32 ResultCodeNo { get; private set; }
+        public int ResultCodeNo { get; private set; }
 
 
 
@@ -19,66 +19,66 @@ namespace Aegis
         }
 
 
-        public AegisException(String message)
+        public AegisException(string message)
             : base(message)
         {
         }
 
 
-        public AegisException(Int32 resultCode)
+        public AegisException(int resultCode)
         {
             ResultCodeNo = resultCode;
         }
 
 
-        public AegisException(Int32 resultCode, String message)
+        public AegisException(int resultCode, string message)
             : base(message)
         {
             ResultCodeNo = resultCode;
         }
 
 
-        public AegisException(Exception innerException, String message)
+        public AegisException(Exception innerException, string message)
             : base(message, innerException)
         {
         }
 
 
-        public AegisException(Exception innerException, Int32 resultCode)
+        public AegisException(Exception innerException, int resultCode)
             : base("", innerException)
         {
             ResultCodeNo = resultCode;
         }
 
 
-        public AegisException(Int32 resultCode, Exception innerException, String message)
+        public AegisException(int resultCode, Exception innerException, string message)
             : base(message, innerException)
         {
             ResultCodeNo = resultCode;
         }
 
 
-        public AegisException(String message, params object[] args)
-            : base(String.Format(message, args))
+        public AegisException(string message, params object[] args)
+            : base(string.Format(message, args))
         {
         }
 
 
-        public AegisException(Int32 resultCode, String message, params object[] args)
-            : base(String.Format(message, args))
+        public AegisException(int resultCode, string message, params object[] args)
+            : base(string.Format(message, args))
         {
             ResultCodeNo = resultCode;
         }
 
 
-        public AegisException(Exception innerException, String message, params object[] args)
-            : base(String.Format(message, args), innerException)
+        public AegisException(Exception innerException, string message, params object[] args)
+            : base(string.Format(message, args), innerException)
         {
         }
 
 
-        public AegisException(Int32 resultCode, Exception innerException, String message, params object[] args)
-            : base(String.Format(message, args), innerException)
+        public AegisException(int resultCode, Exception innerException, string message, params object[] args)
+            : base(string.Format(message, args), innerException)
         {
             ResultCodeNo = resultCode;
         }
@@ -87,7 +87,7 @@ namespace Aegis
 
     public class WaitResponseTimeoutException : AegisException
     {
-        public WaitResponseTimeoutException(String message, params object[] args)
+        public WaitResponseTimeoutException(string message, params object[] args)
             : base(message, args)
         {
         }
@@ -96,7 +96,7 @@ namespace Aegis
 
     public class JobCanceledException : AegisException
     {
-        public JobCanceledException(String message, params object[] args)
+        public JobCanceledException(string message, params object[] args)
             : base(message, args)
         {
         }

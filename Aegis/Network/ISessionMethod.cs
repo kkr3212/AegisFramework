@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Aegis.IO;
 
 
 
@@ -12,8 +13,8 @@ namespace Aegis.Network
     {
         void Clear();
         void WaitForReceive();
-        void SendPacket(byte[] buffer, Int32 offset, Int32 size, Action<StreamBuffer> onSent = null);
+        void SendPacket(byte[] buffer, int offset, int size, Action<StreamBuffer> onSent = null);
         void SendPacket(StreamBuffer buffer, Action<StreamBuffer> onSent = null);
-        void SendPacket(StreamBuffer buffer, PacketCriterion criterion, EventHandler_Receive dispatcher, Action<StreamBuffer> onSent = null);
+        void SendPacket(StreamBuffer buffer, PacketPredicate predicate, IOEventHandler dispatcher, Action<StreamBuffer> onSent = null);
     }
 }

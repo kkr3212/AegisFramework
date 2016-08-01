@@ -15,20 +15,20 @@ namespace Aegis.Data.MSSQL
         private readonly ConnectionPool _pool;
         private readonly SqlCommand _command = new SqlCommand();
         private DBConnector _dbConnector;
-        private Boolean _isAsync;
-        private List<Tuple<String, Object>> _prepareBindings = new List<Tuple<String, Object>>();
+        private bool _isAsync;
+        private List<Tuple<string, object>> _prepareBindings = new List<Tuple<string, object>>();
 
         public StringBuilder CommandText { get; } = new StringBuilder(256);
         public SqlDataReader Reader { get; private set; }
-        public Int32 CommandTimeout { get { return _command.CommandTimeout; } set { _command.CommandTimeout = value; } }
-        public Int64 LastInsertedId { get { return (Int64)_command.ExecuteScalar(); } }
-        public Object Tag { get; set; }
+        public int CommandTimeout { get { return _command.CommandTimeout; } set { _command.CommandTimeout = value; } }
+        public long LastInsertedId { get { return (long)_command.ExecuteScalar(); } }
+        public object Tag { get; set; }
 
 
 
 
 
-        public DBCommand(ConnectionPool pool, Int32 timeoutSec = 60)
+        public DBCommand(ConnectionPool pool, int timeoutSec = 60)
         {
             _pool = pool;
             _isAsync = false;
@@ -82,7 +82,7 @@ namespace Aegis.Data.MSSQL
         }
 
 
-        public void QueryNoReader(String query, params object[] args)
+        public void QueryNoReader(string query, params object[] args)
         {
             CommandText.Clear();
             CommandText.AppendFormat(query, args);
@@ -90,7 +90,7 @@ namespace Aegis.Data.MSSQL
         }
 
 
-        public SqlDataReader Query(String query, params object[] args)
+        public SqlDataReader Query(string query, params object[] args)
         {
             CommandText.Clear();
             CommandText.AppendFormat(query, args);
@@ -155,8 +155,7 @@ namespace Aegis.Data.MSSQL
                 try
                 {
                     Query();
-                    if (actionOnRead != null)
-                        actionOnRead();
+                    actionOnRead?.Invoke();
 
                     _isAsync = false;
                     Dispose();
@@ -183,8 +182,7 @@ namespace Aegis.Data.MSSQL
                 try
                 {
                     Query();
-                    if (actionOnRead != null)
-                        actionOnRead(this);
+                    actionOnRead?.Invoke(this);
 
                     _isAsync = false;
                     Dispose();
@@ -207,14 +205,14 @@ namespace Aegis.Data.MSSQL
                 return;
 
             _command.Prepare();
-            foreach (Tuple<String, Object> param in _prepareBindings)
+            foreach (Tuple<string, object> param in _prepareBindings)
                 _command.Parameters.AddWithValue(param.Item1, param.Item2);
         }
 
 
-        public void BindParameter(String parameterName, object value)
+        public void BindParameter(string parameterName, object value)
         {
-            _prepareBindings.Add(new Tuple<String, Object>(parameterName, value));
+            _prepareBindings.Add(new Tuple<string, object>(parameterName, value));
         }
 
 

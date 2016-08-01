@@ -13,47 +13,44 @@ namespace Aegis.Threading
         private static WorkerThread _workerThread = new WorkerThread("WorkerQueue");
         private static WorkerThread _dispatchThread = new WorkerThread("Dispatch");
 
-        public static Int32 QueuedCount { get { return _workerThread.QueuedCount; } }
-        public static Int32 WorkerThreadCount { get; private set; }
-        public static Int32 DispatchThreadCount { get; private set; }
-
-
-
-
-
-        internal static void Initialize(Int32 workerThreadCount, Int32 dispatchThreadCount)
+        public static int QueuedCount { get { return _workerThread.QueuedCount; } }
+        public static int WorkerThreadCount
         {
-            if (workerThreadCount < -1 || dispatchThreadCount < -1)
-                throw new AegisException(AegisResult.InvalidArgument);
-
-
-            WorkerThreadCount = workerThreadCount;
-            if (WorkerThreadCount > 0)
-                _workerThread.Start(WorkerThreadCount);
-
-            DispatchThreadCount = dispatchThreadCount;
-            if (DispatchThreadCount > 0)
-                _dispatchThread.Start(DispatchThreadCount);
+            get { return _workerThread.ThreadCount; }
+            set { IncreaseThread(_workerThread, value); }
+        }
+        public static int DispatchThreadCount
+        {
+            get { return _dispatchThread.ThreadCount; }
+            set { IncreaseThread(_dispatchThread, value); }
         }
 
 
-        internal static void Release()
+
+
+
+        public static void Initialize()
+        {
+            IncreaseThread(_dispatchThread, 1);
+            IncreaseThread(_workerThread, 4);
+        }
+
+
+        public static void Release()
         {
             _dispatchThread.Stop();
             _workerThread.Stop();
         }
 
 
-        private static void SafeAction(Action action)
+        internal static void IncreaseThread(WorkerThread target, int threadCount)
         {
-            try
-            {
-                action();
-            }
-            catch (Exception e)
-            {
-                Logger.Write(LogType.Err, 1, e.ToString());
-            }
+            int increaseCount = threadCount - target.ThreadCount;
+            if (increaseCount < 1)
+                return;
+
+            target.Increase(increaseCount);
+            target.Start();
         }
 
 
@@ -63,11 +60,8 @@ namespace Aegis.Threading
         /// <param name="actionWork">수행할 작업</param>
         public static void Work(Action actionWork)
         {
-            if (WorkerThreadCount == -1)
+            if (WorkerThreadCount == 0)
                 AegisTask.Run(actionWork);
-
-            else if (WorkerThreadCount == 0)
-                SafeAction(actionWork);
 
             else
                 _workerThread.Post(actionWork);
@@ -98,11 +92,8 @@ namespace Aegis.Threading
         /// <param name="actionDispatch">수행할 작업</param>
         public static void Dispatch(Action actionDispatch)
         {
-            if (DispatchThreadCount == -1)
+            if (DispatchThreadCount == 0)
                 AegisTask.Run(actionDispatch);
-
-            else if (DispatchThreadCount == 0 || _dispatchThread.ThreadCount == 0)
-                SafeAction(actionDispatch);
 
             else
                 _dispatchThread.Post(actionDispatch);

@@ -5,7 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.IO;
 using System.Security.Cryptography;
-using System.Runtime.InteropServices;
+using Aegis.IO;
 
 
 
@@ -72,7 +72,7 @@ namespace Aegis.Network
         /// <summary>
         /// 현재 패킷의 크기를 가져옵니다. 패킷의 크기값은 임의로 변경할 수 없습니다.
         /// </summary>
-        public UInt16 Size
+        public ushort Size
         {
             get { return GetUInt16(0); }
             private set { OverwriteUInt16(0, value); }
@@ -80,7 +80,7 @@ namespace Aegis.Network
         /// <summary>
         /// 패킷의 고유번호를 지정하거나 가져옵니다.
         /// </summary>
-        public UInt16 PacketId
+        public ushort PacketId
         {
             get { return GetUInt16(2); }
             set { OverwriteUInt16(2, value); }
@@ -88,7 +88,7 @@ namespace Aegis.Network
         /// <summary>
         /// 패킷의 Sequence number를 가져옵니다.
         /// </summary>
-        public Int32 SeqNo
+        public int SeqNo
         {
             get { return base.GetInt32(4); }
             set { base.OverwriteInt32(4, value); }
@@ -96,7 +96,7 @@ namespace Aegis.Network
         /// <summary>
         /// 패킷의 해더 크기(Byte)
         /// </summary>
-        public const Int32 HeaderSize = 8;
+        public const int HeaderSize = 8;
 
 
 
@@ -114,7 +114,7 @@ namespace Aegis.Network
         /// 고유번호를 지정하여 패킷을 생성합니다.
         /// </summary>
         /// <param name="packetId">패킷의 고유번호</param>
-        public SecurePacket(UInt16 packetId)
+        public SecurePacket(ushort packetId)
             : base(packetId)
         {
             PutUInt16(0);           //  Size
@@ -128,7 +128,7 @@ namespace Aegis.Network
         /// </summary>
         /// <param name="packetId">패킷의 고유번호</param>
         /// <param name="capacity">패킷 버퍼의 크기</param>
-        public SecurePacket(UInt16 packetId, UInt16 capacity)
+        public SecurePacket(ushort packetId, ushort capacity)
         {
             Capacity(capacity);
             PutUInt16(0);           //  Size
@@ -151,9 +151,19 @@ namespace Aegis.Network
         /// byte 배열의 데이터를 복사하여 패킷을 생성합니다.
         /// </summary>
         /// <param name="source">복사할 데이터가 담긴 byte 배열</param>
+        public SecurePacket(byte[] source)
+        {
+            Write(source, 0, source.Length);
+        }
+
+
+        /// <summary>
+        /// byte 배열의 데이터를 복사하여 패킷을 생성합니다.
+        /// </summary>
+        /// <param name="source">복사할 데이터가 담긴 byte 배열</param>
         /// <param name="startIndex">source에서 복사할 시작 위치</param>
         /// <param name="size">복사할 크기(Byte)</param>
-        public SecurePacket(byte[] source, Int32 startIndex, Int32 size)
+        public SecurePacket(byte[] source, int startIndex, int size)
         {
             Write(source, startIndex, size);
         }
@@ -178,7 +188,7 @@ namespace Aegis.Network
         /// </summary>
         /// <param name="buffer">패킷 데이터가 담긴 버퍼</param>
         /// <returns>패킷의 PacketId를 반환합니다.</returns>
-        public static UInt16 GetPacketId(byte[] buffer)
+        public static ushort GetPacketId(byte[] buffer)
         {
             if (buffer.Length < 4)
                 return 0;
@@ -194,7 +204,7 @@ namespace Aegis.Network
         /// <param name="buffer">수신된 데이터가 담긴 버퍼</param>
         /// <param name="packetSize">유효한 패킷의 크기</param>
         /// <returns>true를 반환하면 OnReceive를 통해 수신된 데이터가 전달됩니다.</returns>
-        public static Boolean IsValidPacket(StreamBuffer buffer, out Int32 packetSize)
+        public static bool IsValidPacket(StreamBuffer buffer, out int packetSize)
         {
             if (buffer.WrittenBytes < HeaderSize)
             {
@@ -213,7 +223,7 @@ namespace Aegis.Network
         /// </summary>
         public override void Clear()
         {
-            UInt16 packetId = PacketId;
+            ushort packetId = PacketId;
 
 
             base.Clear();
@@ -244,7 +254,7 @@ namespace Aegis.Network
         /// <param name="source">저장할 데이터</param>
         /// <param name="index">저장할 데이터의 시작위치</param>
         /// <param name="size">저장할 데이터 크기(Byte)</param>
-        public virtual void Clear(byte[] source, Int32 index, Int32 size)
+        public virtual void Clear(byte[] source, int index, int size)
         {
             if (size < 4)
                 throw new AegisException(AegisResult.InvalidArgument, "The source size must be at lest 4 bytes.");
@@ -261,7 +271,7 @@ namespace Aegis.Network
         /// </summary>
         protected override void OnWritten()
         {
-            Size = (UInt16)WrittenBytes;
+            Size = (ushort)WrittenBytes;
         }
 
 
@@ -279,21 +289,21 @@ namespace Aegis.Network
         }
 
 
-        protected static UInt32 GetCRC32(byte[] data, Int32 startOffset, Int32 length)
+        protected static UInt32 GetCRC32(byte[] data, int startOffset, int length)
         {
             UInt32 crc = 0xffffffff;
-            for (Int32 i = 0; i < length; i++)
+            for (int i = 0; i < length; i++)
                 crc = _crcTable[(crc ^ data[startOffset + i]) & 0xff] ^ (crc >> 8);
 
             return crc ^ 0xffffffff;
         }
 
 
-        public virtual void Encrypt(String iv, String key)
+        public virtual void Encrypt(string iv, string key)
         {
             //  Padding
             {
-                Int32 paddingByte, blockSizeInByte = 16;
+                int paddingByte, blockSizeInByte = 16;
 
 
                 //  (Size - 2) = Encrypt data size
@@ -328,7 +338,7 @@ namespace Aegis.Network
 
                 using (CryptoStream cryptoStream = new CryptoStream(memoryStream, aes.CreateEncryptor(), CryptoStreamMode.Write))
                 {
-                    UInt16 packetSize = Size;
+                    ushort packetSize = Size;
 
                     cryptoStream.Write(Buffer, 2, packetSize - 2);
                     byte[] encrypted = memoryStream.ToArray();
@@ -343,15 +353,15 @@ namespace Aegis.Network
 
 
 
-        public virtual Boolean Decrypt(String iv, String key)
+        public virtual bool Decrypt(string iv, string key)
         {
-            UInt16 packetSize = Size;
+            ushort packetSize = Size;
 
 
             //  Block Size가 일치하지 않으면 복호화를 할 수 없다.
             if ((packetSize - 2) % 16 != 0)
             {
-                Logger.Write(LogType.Err, 1, "BlockSize is not match(packetsize={0}).", packetSize);
+                Logger.Write(LogType.Err, LogLevel.Core, "BlockSize is not match(packetsize={0}).", packetSize);
                 return false;
             }
 
@@ -390,7 +400,7 @@ namespace Aegis.Network
 
                 if (crc != packetCRC)
                 {
-                    Logger.Write(LogType.Err, 1, "Invalid CRC.");
+                    Logger.Write(LogType.Err, LogLevel.Core, "Invalid CRC.");
                     return false;
                 }
             }

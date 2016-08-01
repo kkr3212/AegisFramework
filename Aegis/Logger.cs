@@ -16,53 +16,72 @@ namespace Aegis
         Debug = 0x08
     }
 
+    public static class LogLevel
+    {
+        public const int Core = 0;
+        public const int Info = 1;
+        public const int Debug = 2;
+        public const int LowData = 3;
+    }
 
 
 
 
-    public delegate void LogWriteHandler(LogType type, Int32 level, String log);
+
+    public delegate void LogWriteHandler(LogType type, int level, string log);
     public static class Logger
     {
-        public static Int32 EnabledLevel { get; set; } = 0xFFFF;
+        public static int EnabledLogLevel { get; set; } = LogLevel.Debug;
         public static LogType EnabledType { get; set; } = LogType.Info | LogType.Warn | LogType.Err;
         public static event LogWriteHandler Written;
-        public static Int32 DefaultLogLevel { get; set; } = 1;
+        public static int DefaultLogLevel { get; set; } = LogLevel.Info;
 
 
 
 
 
-        public static void Write(LogType type, Int32 level, String format, params object[] args)
+        public static void Write(LogType type, int level, string format, params object[] args)
         {
-            if ((EnabledType & type) != type || level > EnabledLevel)
+            if ((EnabledType & type) != type || level > EnabledLogLevel)
                 return;
 
-            if (Written != null)
-                Written(type, level, String.Format(format, args));
+            Written?.Invoke(type, level, string.Format(format, args));
         }
 
 
-        public static void WriteInfo(String format, params object[] args)
+        public static void Info(string format, params object[] args)
         {
             Write(LogType.Info, DefaultLogLevel, format, args);
         }
 
 
-        public static void WriteWarn(String format, params object[] args)
+        public static void Warn(string format, params object[] args)
         {
             Write(LogType.Warn, DefaultLogLevel, format, args);
         }
 
 
-        public static void WriteErr(String format, params object[] args)
+        public static void Err(string format, params object[] args)
         {
             Write(LogType.Err, DefaultLogLevel, format, args);
         }
 
 
-        public static void WriteDebug(String format, params object[] args)
+        public static void Debug(string format, params object[] args)
         {
             Write(LogType.Debug, DefaultLogLevel, format, args);
+        }
+
+
+        internal static void RemoveAll()
+        {
+            if (Written != null)
+            {
+                foreach (Delegate d in Written.GetInvocationList())
+                    Written -= (LogWriteHandler)d;
+
+                Written = null;
+            }
         }
     }
 }

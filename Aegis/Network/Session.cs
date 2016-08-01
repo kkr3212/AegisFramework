@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading;
 using System.Net;
 using System.Net.Sockets;
+using Aegis.IO;
 using Aegis.Threading;
 
 
@@ -13,12 +14,12 @@ namespace Aegis.Network
 {
     public class Session
     {
-        private static Int32 NextSessionId = 0;
+        private static int NextSessionId = 0;
 
         /// <summary>
         /// 이 Session 객체의 고유번호입니다.
         /// </summary>
-        public Int32 SessionId { get; private set; }
+        public int SessionId { get; private set; }
         /// <summary>
         /// 이 Session에서 현재 사용중인 Socket 객체입니다. null일 경우, 네트워킹이 활성화되지 않은 상태입니다.
         /// </summary>
@@ -26,7 +27,7 @@ namespace Aegis.Network
         /// <summary>
         /// 원격지의 호스트와 통신이 가능한 상태인지 여부를 확인합니다.
         /// </summary>
-        public Boolean Connected { get { return (Socket == null ? false : Socket.Connected); } }
+        public bool Connected { get { return (Socket == null ? false : Socket.Connected); } }
 
 
         private ISessionMethod _method;
@@ -34,10 +35,7 @@ namespace Aegis.Network
         public AwaitableMethod AwaitableMethod { get; private set; }
 
 
-        public event EventHandler_Accept NetworkEvent_Accepted;
-        public event EventHandler_Connect NetworkEvent_Connected;
-        public event EventHandler_Close NetworkEvent_Closed;
-        public event EventHandler_Receive NetworkEvent_Received;
+        public event IOEventHandler EventAccept, EventConnect, EventClose, EventReceive;
         public EventHandler_IsValidPacket PacketValidator;
 
 
@@ -86,15 +84,13 @@ namespace Aegis.Network
         {
             try
             {
-                if (Activated != null)
-                    Activated(this);
+                Activated?.Invoke(this);
 
                 SpinWorker.Dispatch(() =>
                 {
                     lock (this)
                     {
-                        if (NetworkEvent_Accepted != null)
-                            NetworkEvent_Accepted(this);
+                        EventAccept?.Invoke(new IOEventResult(this, IOEventType.Accept, AegisResult.Ok));
 
                         _method.WaitForReceive();
                     }
@@ -102,7 +98,7 @@ namespace Aegis.Network
             }
             catch (Exception e)
             {
-                Logger.Write(LogType.Err, 1, e.ToString());
+                Logger.Write(LogType.Err, LogLevel.Core, e.ToString());
             }
         }
 
@@ -113,7 +109,7 @@ namespace Aegis.Network
         /// </summary>
         /// <param name="ipAddress">접속할 서버의 Ip Address</param>
         /// <param name="portNo">접속할 서버의 PortNo</param>
-        public virtual void Connect(String ipAddress, Int32 portNo)
+        public virtual void Connect(string ipAddress, int portNo)
         {
             lock (this)
             {
@@ -124,12 +120,12 @@ namespace Aegis.Network
                 //  연결 시도
                 IPEndPoint ipEndPoint = new IPEndPoint(IPAddress.Parse(ipAddress), portNo);
                 Socket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
-                Socket.BeginConnect(ipEndPoint, OnSocket_Connect, null);
+                Socket.BeginConnect(ipEndPoint, Socket_Connect, null);
             }
         }
 
 
-        private void OnSocket_Connect(IAsyncResult ar)
+        private void Socket_Connect(IAsyncResult ar)
         {
             try
             {
@@ -151,14 +147,12 @@ namespace Aegis.Network
 
                     if (Socket.Connected == true)
                     {
-                        if (Activated != null)
-                            Activated(this);
+                        Activated?.Invoke(this);
 
 
                         SpinWorker.Dispatch(() =>
                         {
-                            if (NetworkEvent_Connected != null)
-                                NetworkEvent_Connected(this, true);
+                            EventConnect?.Invoke(new IOEventResult(this, IOEventType.Connect, AegisResult.Ok));
                         });
 
                         _method.WaitForReceive();
@@ -170,15 +164,14 @@ namespace Aegis.Network
 
                         SpinWorker.Dispatch(() =>
                         {
-                            if (NetworkEvent_Connected != null)
-                                NetworkEvent_Connected(this, false);
+                            EventConnect?.Invoke(new IOEventResult(this, IOEventType.Accept, AegisResult.ConnectionFailed));
                         });
                     }
                 }
             }
             catch (Exception e)
             {
-                Logger.Write(LogType.Err, 1, e.ToString());
+                Logger.Write(LogType.Err, LogLevel.Core, e.ToString());
             }
         }
 
@@ -202,14 +195,12 @@ namespace Aegis.Network
                     Socket = null;
 
 
-                    if (Inactivated != null)
-                        Inactivated(this);
+                    Inactivated?.Invoke(this);
 
 
                     SpinWorker.Dispatch(() =>
                     {
-                        if (NetworkEvent_Closed != null)
-                            NetworkEvent_Closed(this);
+                        EventClose?.Invoke(new IOEventResult(this, IOEventType.Close, AegisResult.Ok));
                     });
 
 
@@ -218,7 +209,7 @@ namespace Aegis.Network
             }
             catch (Exception e)
             {
-                Logger.Write(LogType.Err, 1, e.ToString());
+                Logger.Write(LogType.Err, LogLevel.Core, e.ToString());
             }
         }
 
@@ -230,7 +221,7 @@ namespace Aegis.Network
         /// <param name="offset">source에서 전송할 시작 위치</param>
         /// <param name="size">source에서 전송할 크기(Byte)</param>
         /// <param name="onSent">패킷 전송이 완료된 후 호출할 Action</param>
-        public virtual void SendPacket(byte[] buffer, Int32 offset, Int32 size, Action<StreamBuffer> onSent = null)
+        public virtual void SendPacket(byte[] buffer, int offset, int size, Action<StreamBuffer> onSent = null)
         {
             _method.SendPacket(buffer, offset, size, onSent);
         }
@@ -252,22 +243,21 @@ namespace Aegis.Network
         /// 이 기능은 AwaitableMethod보다는 빠르지만, 동시에 많이 호출될 경우 성능이 저하될 수 있습니다.
         /// </summary>
         /// <param name="buffer">전송할 데이터가 담긴 StreamBuffer</param>
-        /// <param name="criterion">dispatcher에 지정된 핸들러를 호출할 것인지 여부를 판단하는 함수를 지정합니다.</param>
+        /// <param name="predicate">dispatcher에 지정된 핸들러를 호출할 것인지 여부를 판단하는 함수를 지정합니다.</param>
         /// <param name="dispatcher">실행될 함수를 지정합니다.</param>
         /// <param name="onSent">패킷 전송이 완료된 후 호출할 Action</param>
-        public virtual void SendPacket(StreamBuffer buffer, PacketCriterion criterion, EventHandler_Receive dispatcher, Action<StreamBuffer> onSent = null)
+        public virtual void SendPacket(StreamBuffer buffer, PacketPredicate predicate, IOEventHandler dispatcher, Action<StreamBuffer> onSent = null)
         {
-            _method.SendPacket(buffer, criterion, dispatcher, onSent);
+            _method.SendPacket(buffer, predicate, dispatcher, onSent);
         }
 
 
         internal void OnReceived(StreamBuffer buffer)
         {
-            StreamBuffer buf = new StreamBuffer(buffer);
+            StreamBuffer dispatchBuffer = new StreamBuffer(buffer);
             SpinWorker.Dispatch(() =>
             {
-                if (NetworkEvent_Received != null)
-                    NetworkEvent_Received(this, buf);
+                EventReceive?.Invoke(new IOEventResult(this, IOEventType.Read, dispatchBuffer.Buffer, AegisResult.Ok));
             });
         }
     }

@@ -20,14 +20,14 @@ namespace Aegis.Data.MySQL
         private CancellationTokenSource _cancelTasks;
 
 
-        public String DBName { get; private set; }
-        public String UserId { get; private set; }
-        public String UserPwd { get; private set; }
-        public String CharSet { get; private set; }
-        public String IpAddress { get; private set; }
-        public Int32 PortNo { get; private set; }
-        public Int32 PooledDBCCount { get { return _listPoolDBC.Count; } }
-        public Int32 ActiveDBCCount { get { return _listActiveDBC.Count; } }
+        public string DBName { get; private set; }
+        public string UserId { get; private set; }
+        public string UserPwd { get; private set; }
+        public string CharSet { get; private set; }
+        public string IpAddress { get; private set; }
+        public int PortNo { get; private set; }
+        public int PooledDBCCount { get { return _listPoolDBC.Count; } }
+        public int ActiveDBCCount { get { return _listActiveDBC.Count; } }
 
 
 
@@ -38,13 +38,13 @@ namespace Aegis.Data.MySQL
         }
 
 
-        public ConnectionPool(String ipAddress, Int32 portNo, String charSet, String dbName, String userId, String userPwd)
+        public ConnectionPool(string ipAddress, int portNo, string charSet, string dbName, string userId, string userPwd)
         {
             Initialize(ipAddress, portNo, charSet, dbName, userId, userPwd);
         }
 
 
-        public void Initialize(String ipAddress, Int32 portNo, String charSet, String dbName, String userId, String userPwd)
+        public void Initialize(string ipAddress, int portNo, string charSet, string dbName, string userId, string userPwd)
         {
             if (_cancelTasks != null)
                 throw new AegisException(AegisResult.AlreadyInitialized);
@@ -104,7 +104,7 @@ namespace Aegis.Data.MySQL
 
 
                     //  연결유지를 위해 동작중이 아닌 DBConnector의 Ping을 한번씩 호출한다.
-                    Int32 cnt = _listPoolDBC.Count;
+                    int cnt = _listPoolDBC.Count;
                     while (cnt-- > 0)
                     {
                         DBConnector dbc = GetDBC();
@@ -117,13 +117,13 @@ namespace Aegis.Data.MySQL
                 }
                 catch (Exception e)
                 {
-                    Logger.Write(LogType.Warn, 1, e.Message);
+                    Logger.Write(LogType.Warn, LogLevel.Core, e.Message);
                 }
             }
         }
 
 
-        public void IncreasePool(Int32 count)
+        public void IncreasePool(int count)
         {
             while (count-- > 0)
             {
@@ -173,9 +173,9 @@ namespace Aegis.Data.MySQL
         }
 
 
-        public Int32 GetTotalQPS()
+        public int GetTotalQPS()
         {
-            Int32 qps = 0;
+            int qps = 0;
 
 
             using (_lock.ReaderLock)

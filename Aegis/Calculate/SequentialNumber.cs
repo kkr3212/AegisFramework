@@ -7,14 +7,14 @@ using System.Diagnostics;
 
 
 
-namespace Aegis
+namespace Aegis.Calculate
 {
     [DebuggerDisplay("Current={_value}, Max={MaxValue}, Start={StartValue}")]
     public sealed class SequentialNumber
     {
-        private Int32 _value = -1;
-        public Int32 StartValue { get; private set; }
-        public Int32 MaxValue { get; private set; }
+        private int _value = -1;
+        public int StartValue { get; private set; }
+        public int MaxValue { get; private set; }
 
 
 
@@ -23,11 +23,11 @@ namespace Aegis
         public SequentialNumber()
         {
             StartValue = 0;
-            MaxValue = Int32.MaxValue;
+            MaxValue = int.MaxValue;
         }
 
 
-        public SequentialNumber(Int32 startValue, Int32 maxValue)
+        public SequentialNumber(int startValue, int maxValue)
         {
             StartValue = startValue;
             MaxValue = maxValue;
@@ -36,7 +36,7 @@ namespace Aegis
         }
 
 
-        public Int32 NextNumber()
+        public int NextNumber()
         {
             lock (this)
             {

@@ -12,24 +12,24 @@ namespace Aegis.Threading
     public sealed class WorkerThread
     {
         private BlockingQueue<Action> _works = new BlockingQueue<Action>();
-        private Boolean _running;
+        private bool _running;
         private Thread[] _threads;
 
-        public String Name { get; private set; }
-        public Int32 QueuedCount { get { return _works.Count; } }
-        public Int32 ThreadCount { get { return _threads?.Count() ?? 0; } }
+        public string Name { get; private set; }
+        public int QueuedCount { get { return _works.Count; } }
+        public int ThreadCount { get { return _threads?.Count() ?? 0; } }
 
 
 
 
 
-        public WorkerThread(String name)
+        public WorkerThread(string name)
         {
             Name = name;
         }
 
 
-        public void Start(Int32 threadCount)
+        public void Increase(int threadCount)
         {
             if (threadCount < 1)
                 return;
@@ -37,15 +37,42 @@ namespace Aegis.Threading
 
             lock (this)
             {
-                _works.Clear();
+                int index = 0;
+                if (_threads == null)
+                {
+                    index = 0;
+                    _threads = new Thread[threadCount];
+                }
+                else
+                {
+                    index = _threads.Count();
 
-                _running = true;
-                _threads = new Thread[threadCount];
-                for (Int32 i = 0; i < threadCount; ++i)
+                    //  기존 Thread 객체를 새 배열로 복사
+                    Thread[] temp = new Thread[_threads.Count() + threadCount];
+                    for (int i = 0; i < _threads.Count(); ++i)
+                        temp[i] = _threads[i];
+
+                    _threads = temp;
+                }
+
+                for (int i = index; i < index + threadCount; ++i)
                 {
                     _threads[i] = new Thread(Run);
-                    _threads[i].Name = String.Format("{0} {1}", Name, i);
-                    _threads[i].Start();
+                    _threads[i].Name = string.Format("{0} {1}", Name, i);
+                }
+            }
+        }
+
+
+        public void Start()
+        {
+            lock (this)
+            {
+                _running = true;
+                foreach (var thread in _threads)
+                {
+                    if (thread.ThreadState != ThreadState.Running)
+                        thread.Start();
                 }
             }
         }
@@ -64,6 +91,8 @@ namespace Aegis.Threading
 
                 foreach (Thread th in _threads)
                     th.Join();
+
+                _works.Clear();
                 _threads = null;
             }
         }
@@ -93,7 +122,7 @@ namespace Aegis.Threading
                 }
                 catch (Exception e)
                 {
-                    Logger.Write(LogType.Err, 1, e.ToString());
+                    Logger.Write(LogType.Err, LogLevel.Core, e.ToString());
                 }
             }
         }

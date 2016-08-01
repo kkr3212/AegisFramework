@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Aegis.IO;
 
 
 
@@ -16,7 +17,7 @@ namespace Aegis.Network
         /// <summary>
         /// 현재 패킷의 크기를 가져옵니다. 패킷의 크기값은 임의로 변경할 수 없습니다.
         /// </summary>
-        public UInt16 Size
+        public ushort Size
         {
             get { return GetUInt16(0); }
             private set { OverwriteUInt16(0, value); }
@@ -24,7 +25,7 @@ namespace Aegis.Network
         /// <summary>
         /// 패킷의 고유번호를 지정하거나 가져옵니다.
         /// </summary>
-        public UInt16 PacketId
+        public ushort PacketId
         {
             get { return GetUInt16(2); }
             set { OverwriteUInt16(2, value); }
@@ -32,7 +33,7 @@ namespace Aegis.Network
         /// <summary>
         /// 패킷의 해더 크기(Byte)
         /// </summary>
-        public const Int32 HeaderSize = 4;
+        public const int HeaderSize = 4;
 
 
 
@@ -49,7 +50,7 @@ namespace Aegis.Network
         /// 고유번호를 지정하여 패킷을 생성합니다.
         /// </summary>
         /// <param name="packetId">패킷의 고유번호</param>
-        public Packet(UInt16 packetId)
+        public Packet(ushort packetId)
         {
             PutUInt16(0);           //  Size
             PutUInt16(packetId);    //  PacketId
@@ -61,7 +62,7 @@ namespace Aegis.Network
         /// </summary>
         /// <param name="packetId">패킷의 고유번호</param>
         /// <param name="capacity">패킷 버퍼의 크기</param>
-        public Packet(UInt16 packetId, UInt16 capacity)
+        public Packet(ushort packetId, ushort capacity)
         {
             Capacity(capacity);
             PutUInt16(0);           //  Size
@@ -83,9 +84,19 @@ namespace Aegis.Network
         /// byte 배열의 데이터를 복사하여 패킷을 생성합니다.
         /// </summary>
         /// <param name="source">복사할 데이터가 담긴 byte 배열</param>
+        public Packet(byte[] source)
+        {
+            Write(source, 0, source.Length);
+        }
+
+
+        /// <summary>
+        /// byte 배열의 데이터를 복사하여 패킷을 생성합니다.
+        /// </summary>
+        /// <param name="source">복사할 데이터가 담긴 byte 배열</param>
         /// <param name="startIndex">source에서 복사할 시작 위치</param>
         /// <param name="size">복사할 크기(Byte)</param>
-        public Packet(byte[] source, Int32 startIndex, Int32 size)
+        public Packet(byte[] source, int startIndex, int size)
         {
             Write(source, startIndex, size);
         }
@@ -110,7 +121,7 @@ namespace Aegis.Network
         /// </summary>
         /// <param name="buffer">패킷 데이터가 담긴 버퍼</param>
         /// <returns>패킷의 PacketId를 반환합니다.</returns>
-        public static UInt16 GetPacketId(byte[] buffer)
+        public static ushort GetPacketId(byte[] buffer)
         {
             if (buffer.Length < 4)
                 return 0;
@@ -126,7 +137,7 @@ namespace Aegis.Network
         /// <param name="buffer">수신된 데이터가 담긴 버퍼</param>
         /// <param name="packetSize">유효한 패킷의 크기</param>
         /// <returns>true를 반환하면 OnReceive를 통해 수신된 데이터가 전달됩니다.</returns>
-        public static Boolean IsValidPacket(StreamBuffer buffer, out Int32 packetSize)
+        public static bool IsValidPacket(StreamBuffer buffer, out int packetSize)
         {
             if (buffer.WrittenBytes < HeaderSize)
             {
@@ -141,11 +152,35 @@ namespace Aegis.Network
 
 
         /// <summary>
+        /// 수신된 데이터가 유효한 패킷인지 여부를 확인합니다.
+        /// 유효한 패킷으로 판단되면 packetSize에 이 패킷의 정확한 크기를 입력하고 true를 반환해야 합니다.
+        /// </summary>
+        /// <param name="buffer">수신된 데이터가 담긴 버퍼</param>
+        /// <param name="startIndex">버퍼에서 데이터의 시작지점</param>
+        /// <param name="length">데이터의 길이</param>
+        /// <param name="packetSize">유효한 패킷의 크기</param>
+        /// <returns>true를 반환하면 OnReceive를 통해 수신된 데이터가 전달됩니다.</returns>
+        public static bool IsValidPacket(byte[] buffer, int startIndex, int length, out int packetSize)
+        {
+            if (startIndex + length > buffer.Length ||
+                length < HeaderSize)
+            {
+                packetSize = 0;
+                return false;
+            }
+
+            //  최초 2바이트를 수신할 패킷의 크기로 처리
+            packetSize = BitConverter.ToUInt16(buffer, startIndex);
+            return (packetSize > 0 && length >= packetSize);
+        }
+
+
+        /// <summary>
         /// 패킷 버퍼를 초기화합니다. 기존의 PacketId 값은 유지됩니다.
         /// </summary>
         public override void Clear()
         {
-            UInt16 packetId = PacketId;
+            ushort packetId = PacketId;
 
 
             base.Clear();
@@ -175,7 +210,7 @@ namespace Aegis.Network
         /// <param name="source">저장할 데이터</param>
         /// <param name="index">저장할 데이터의 시작위치</param>
         /// <param name="size">저장할 데이터 크기(Byte)</param>
-        public virtual void Clear(byte[] source, Int32 index, Int32 size)
+        public virtual void Clear(byte[] source, int index, int size)
         {
             if (size < 4)
                 throw new AegisException(AegisResult.InvalidArgument, "The source size must be at lest 4 bytes.");
@@ -192,7 +227,7 @@ namespace Aegis.Network
         /// </summary>
         protected override void OnWritten()
         {
-            Size = (UInt16)WrittenBytes;
+            Size = (ushort)WrittenBytes;
         }
 
 

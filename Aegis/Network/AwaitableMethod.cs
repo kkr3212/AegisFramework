@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Reflection;
+using Aegis.IO;
 
 
 
@@ -14,12 +14,12 @@ namespace Aegis.Network
     {
         private struct TCSData
         {
-            public UInt16 packetId;
-            public Func<Packet, Boolean> predicate;
+            public ushort packetId;
+            public Func<Packet, bool> predicate;
             public TaskCompletionSource<Packet> tcs;
         }
         private List<TCSData> _listTCS = new List<TCSData>();
-        private TaskCompletionSource<Boolean> _tcsConnect;
+        private TaskCompletionSource<bool> _tcsConnect;
         private Session _session;
 
 
@@ -29,22 +29,22 @@ namespace Aegis.Network
         internal AwaitableMethod(Session session)
         {
             _session = session;
-            _session.NetworkEvent_Connected += OnConnected;
-            _session.NetworkEvent_Closed += OnClosed;
+            _session.EventConnect += NetworkConnected;
+            _session.EventClose += NetworkClosed;
         }
 
 
-        private void OnConnected(Session session, bool connected)
+        private void NetworkConnected(IOEventResult result)
         {
             if (_tcsConnect != null)
             {
-                _tcsConnect.SetResult(connected);
+                _tcsConnect.SetResult(result.Result == AegisResult.Ok);
                 _tcsConnect = null;
             }
         }
 
 
-        private void OnClosed(Session session)
+        private void NetworkClosed(IOEventResult result)
         {
             lock (_listTCS)
             {
@@ -63,11 +63,11 @@ namespace Aegis.Network
         }
 
 
-        public async Task<Boolean> Connect(String ipAddress, Int32 portNo)
+        public async Task<bool> Connect(string ipAddress, int portNo)
         {
-            Boolean ret = false;
+            bool ret = false;
 
-            _tcsConnect = new TaskCompletionSource<Boolean>();
+            _tcsConnect = new TaskCompletionSource<bool>();
             _session.Connect(ipAddress, portNo);
             await Task.Run(() => ret = _tcsConnect.Task.Result);
 
@@ -75,7 +75,7 @@ namespace Aegis.Network
         }
 
 
-        public Boolean ProcessResponseWaitPacket(Packet packet)
+        public bool ProcessResponseWaitPacket(Packet packet)
         {
             lock (_listTCS)
             {
@@ -96,7 +96,7 @@ namespace Aegis.Network
         }
 
 
-        public virtual async Task<Packet> SendAndWaitResponse(Packet packet, UInt16 responsePacketId)
+        public virtual async Task<Packet> SendAndWaitResponse(Packet packet, ushort responsePacketId)
         {
             TaskCompletionSource<Packet> tcs = new TaskCompletionSource<Packet>();
             TCSData data = new TCSData() { packetId = responsePacketId, tcs = tcs, predicate = null };
@@ -126,7 +126,7 @@ namespace Aegis.Network
         }
 
 
-        public virtual async Task<Packet> SendAndWaitResponse(Packet packet, UInt16 responsePacketId, Int32 timeout)
+        public virtual async Task<Packet> SendAndWaitResponse(Packet packet, ushort responsePacketId, int timeout)
         {
             TaskCompletionSource<Packet> tcs = new TaskCompletionSource<Packet>();
             CancellationTokenSource cancel = new CancellationTokenSource();
@@ -180,7 +180,7 @@ namespace Aegis.Network
         }
 
 
-        public virtual async Task<Packet> SendAndWaitResponse(Packet packet, UInt16 responsePacketId, Func<Packet, Boolean> predicate)
+        public virtual async Task<Packet> SendAndWaitResponse(Packet packet, ushort responsePacketId, Func<Packet, bool> predicate)
         {
             TaskCompletionSource<Packet> tcs = new TaskCompletionSource<Packet>();
             TCSData data = new TCSData() { packetId = responsePacketId, tcs = tcs, predicate = predicate };
@@ -210,7 +210,7 @@ namespace Aegis.Network
         }
 
 
-        public virtual async Task<Packet> SendAndWaitResponse(Packet packet, UInt16 responsePacketId, Func<Packet, Boolean> predicate, Int32 timeout)
+        public virtual async Task<Packet> SendAndWaitResponse(Packet packet, ushort responsePacketId, Func<Packet, bool> predicate, int timeout)
         {
             TaskCompletionSource<Packet> tcs = new TaskCompletionSource<Packet>();
             CancellationTokenSource cancel = new CancellationTokenSource();

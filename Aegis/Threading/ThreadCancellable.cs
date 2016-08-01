@@ -36,32 +36,7 @@ namespace Aegis.Threading
         }
 
 
-        public static ThreadCancellable CallInterval(Int32 millisecondsInterval, Func<Boolean> func)
-        {
-            ThreadCancellable thread = new ThreadCancellable((obj) =>
-            {
-                CancellationToken cancelToken = (CancellationToken)obj;
-                while (cancelToken.IsCancellationRequested == false)
-                {
-                    try
-                    {
-                        if (cancelToken.WaitHandle.WaitOne(millisecondsInterval) == true ||
-                            func() == false)
-                            break;
-                    }
-                    catch (Exception e)
-                    {
-                        Logger.Write(LogType.Err, 1, e.ToString());
-                    }
-                }
-            });
-            thread.Start();
-
-            return thread;
-        }
-
-
-        public void Cancel(Int32 millisecondsTimeout = 1000)
+        public void Cancel(int millisecondsTimeout = 1000)
         {
             try
             {
@@ -77,7 +52,7 @@ namespace Aegis.Threading
         }
 
 
-        public async void CancelAsync(Int32 millisecondsTimeout = 1000)
+        public async void CancelAsync(int millisecondsTimeout = 1000)
         {
             await Task.Run(() =>
             {

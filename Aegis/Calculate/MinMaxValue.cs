@@ -7,7 +7,7 @@ using System.Diagnostics;
 
 
 
-namespace Aegis
+namespace Aegis.Calculate
 {
     /// <summary>
     /// 값의 변경내역 가운데서 최대/최소값을 확인할 수 있습니다.
@@ -16,7 +16,7 @@ namespace Aegis
     [DebuggerDisplay("Min={Min}, Max={Max}, Value={Value}")]
     public sealed class MinMaxValue<T> where T : struct, IComparable<T>
     {
-        private T? _value;
+        private T? _value = default(T);
 
         public T Min { get; private set; }
         public T Max { get; private set; }

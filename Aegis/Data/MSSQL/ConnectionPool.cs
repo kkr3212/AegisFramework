@@ -20,12 +20,12 @@ namespace Aegis.Data.MSSQL
         private CancellationTokenSource _cancelTasks;
 
 
-        public String HostAddress { get; private set; }
-        public String UserId { get; private set; }
-        public String UserPwd { get; private set; }
-        public String DBName { get; private set; }
-        public Int32 PooledDBCCount { get { return _listPoolDBC.Count; } }
-        public Int32 ActiveDBCCount { get { return _listActiveDBC.Count; } }
+        public string HostAddress { get; private set; }
+        public string UserId { get; private set; }
+        public string UserPwd { get; private set; }
+        public string DBName { get; private set; }
+        public int PooledDBCCount { get { return _listPoolDBC.Count; } }
+        public int ActiveDBCCount { get { return _listActiveDBC.Count; } }
 
 
 
@@ -36,13 +36,13 @@ namespace Aegis.Data.MSSQL
         }
 
 
-        public ConnectionPool(String host, String userId, String userPwd, String dbName)
+        public ConnectionPool(string host, string userId, string userPwd, string dbName)
         {
             Initialize(host, userId, userPwd, dbName);
         }
 
 
-        public void Initialize(String host, String userId, String userPwd, String dbName)
+        public void Initialize(string host, string userId, string userPwd, string dbName)
         {
             if (_cancelTasks != null)
                 throw new AegisException(AegisResult.AlreadyInitialized);
@@ -89,7 +89,7 @@ namespace Aegis.Data.MSSQL
         }
 
 
-        public void IncreasePool(Int32 count)
+        public void IncreasePool(int count)
         {
             while (count-- > 0)
             {
@@ -139,9 +139,9 @@ namespace Aegis.Data.MSSQL
         }
 
 
-        public Int32 GetTotalQPS()
+        public int GetTotalQPS()
         {
-            Int32 qps = 0;
+            int qps = 0;
 
 
             using (_lock.ReaderLock)

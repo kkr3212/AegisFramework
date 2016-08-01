@@ -4,28 +4,29 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Diagnostics;
-using Aegis;
+using System.Reflection;
+using Aegis.Data;
+using Aegis.Converter;
 
 
 
 namespace Aegis.Network
 {
-    [DebuggerDisplay("Name={Name}")]
+    [DebuggerDisplay("Name={Name} ActiveSession={ActiveSessions.Count}")]
     public class NetworkChannel
     {
         /// <summary>
         /// 이 NetworkChannel 객체의 고유한 이름입니다.
         /// </summary>
-        public String Name { get; private set; }
-        /// <summary>
-        /// 이 NetworkChannel에서 사용하는 Session 객체를 관리합니다.
-        /// </summary>
-        internal Acceptor Acceptor { get; private set; }
-        public static List<NetworkChannel> Channels = new List<NetworkChannel>();
+        public readonly string Name;
+        public static NamedObjectIndexer<NetworkChannel> Channels = new NamedObjectIndexer<NetworkChannel>();
         public List<Session> ActiveSessions { get; } = new List<Session>();
-        internal List<Session> InactiveSessions { get; } = new List<Session>();
-        public Int32 MaxSessionCount { get; set; }
-        private SessionGenerateDelegator _sessionGenerator;
+        public List<Session> InactiveSessions { get; } = new List<Session>();
+        public int MaxSessionCount { get; set; }
+        public SessionGenerateDelegator SessionGenerator { get; set; }
+
+        internal Acceptor Acceptor { get; private set; }
+        private TreeNode _configNode;
 
 
 
@@ -37,17 +38,44 @@ namespace Aegis.Network
         /// </summary>
         /// <param name="name">생성할 NetworkChannel의 고유한 이름.</param>
         /// <returns>생성된 NetworkChannel 객체</returns>
-        public static NetworkChannel CreateChannel(String name)
+        public static NetworkChannel CreateChannel(string name)
         {
             lock (Channels)
             {
-                NetworkChannel channel = Channels.Find(v => v.Name == name);
-                if (channel != null)
-                    throw new AegisException(AegisResult.AlreadyExistName, "Already exists same name.");
+                if (Channels.Exists(name))
+                    throw new AegisException(AegisResult.AlreadyExistName, "'{0}' is already exists channel name.", name);
 
 
-                channel = new NetworkChannel(name);
-                Channels.Add(channel);
+                NetworkChannel channel = new NetworkChannel(name);
+                Channels.Add(name, channel);
+
+                return channel;
+            }
+        }
+
+
+        /// <summary>
+        /// TreeNode에 정의된 데이터를 기준으로 NetworkChannel 객체를 생성합니다.
+        /// TreeNode에는 name, sessionClass, maxSessionPoolCount, listenIpAddress, listenPortNo가 정의되어있어야 합니다.
+        /// </summary>
+        /// <param name="node">생성할 NetworkChannel의 데이터가 정의된 TreeNode</param>
+        /// <returns>생성된 NetworkChannel 객체</returns>
+        public static NetworkChannel CreateChannelFromNode(TreeNode node)
+        {
+            lock (Channels)
+            {
+                string channelName = node.GetValue("name");
+                if (Channels.Exists(channelName))
+                    throw new AegisException(AegisResult.AlreadyExistName, "'{0}' is already exists channel name.", node.Name);
+
+
+                NetworkChannel channel = new NetworkChannel(channelName);
+                channel._configNode = node;
+                channel.SessionGenerator = delegate { return GenerateSession(node.GetValue("sessionClass")); };
+                channel.MaxSessionCount = node.GetValue("maxSessionPoolCount").ToInt32();
+                channel.Acceptor.ListenIpAddress = node.GetValue("listenIpAddress");
+                channel.Acceptor.ListenPortNo = node.GetValue("listenPortNo").ToInt32();
+                Channels.Add(channelName, channel);
 
                 return channel;
             }
@@ -56,57 +84,59 @@ namespace Aegis.Network
 
         /// <summary>
         /// 생성된 모든 NetworkChannel을 종료하고 사용중인 리소스를 반환합니다.
-        /// 활성화된 Acceptor, Session 등 모든 네트워크 작업이 종료됩니다.
         /// </summary>
         public static void Release()
         {
             lock (Channels)
             {
-                foreach (NetworkChannel networkChannel in Channels)
-                    networkChannel.StopNetwork();
+                foreach (var channel in Channels.Values)
+                {
+                    channel.Acceptor.Close();
+
+                    List<Session> sessions = new List<Session>();
+                    foreach (var session in channel.ActiveSessions)
+                        sessions.Add(session);
+
+                    foreach (var session in sessions)
+                        session.Close();
+                }
 
                 Channels.Clear();
             }
         }
 
 
-        /// <summary>
-        /// name을 사용하여 NetworkChannel을 가져옵니다.
-        /// </summary>
-        /// <param name="name">검색할 NetworkChannel의 이름</param>
-        /// <returns>검색된 NetworkChannel 객체</returns>
-        public static NetworkChannel FindChannel(String name)
-        {
-            lock (Channels)
-            {
-                return Channels.Find(v => v.Name == name);
-            }
-        }
-
-
-        private NetworkChannel(String name)
+        private NetworkChannel(string name)
         {
             Name = name;
             Acceptor = new Acceptor(this);
         }
 
 
-        internal Session GenerateSession()
+        public void Close()
+        {
+            Acceptor.Close();
+            foreach (var session in ActiveSessions)
+                session.Close();
+        }
+
+
+        internal Session PopInactiveSession()
         {
             lock (this)
             {
+                if (MaxSessionCount > 0 &&
+                    ActiveSessions.Count + InactiveSessions.Count >= MaxSessionCount)
+                    return null;
+
+
                 if (InactiveSessions.Count == 0)
                 {
-                    if (MaxSessionCount == 0)
-                    {
-                        Session session = _sessionGenerator();
-                        session.Activated += OnSessionActivated;
-                        session.Inactivated += OnSessionInactivated;
+                    Session session = SessionGenerator();
+                    session.Activated += SessionActivated;
+                    session.Inactivated += SessionInactivated;
 
-                        InactiveSessions.Add(session);
-                    }
-                    else
-                        return null;
+                    InactiveSessions.Add(session);
                 }
 
                 return InactiveSessions[0];
@@ -114,7 +144,23 @@ namespace Aegis.Network
         }
 
 
-        private void OnSessionActivated(Session session)
+        private static Session GenerateSession(string sessionClassName)
+        {
+            Type type = Framework.ExecutingAssembly.GetType(sessionClassName);
+            if (type == null)
+                throw new AegisException(AegisResult.InvalidArgument, "'{0}' session class is not exists.", sessionClassName);
+
+            ConstructorInfo constructorInfo = type.GetConstructor(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic, null, new Type[0], null);
+            if (constructorInfo == null)
+                throw new AegisException(AegisResult.InvalidArgument, "'No matches constructor in '{0}'.", sessionClassName);
+
+
+            Session session = constructorInfo.Invoke(null) as Session;
+            return session;
+        }
+
+
+        private void SessionActivated(Session session)
         {
             lock (this)
             {
@@ -124,7 +170,7 @@ namespace Aegis.Network
         }
 
 
-        private void OnSessionInactivated(Session session)
+        private void SessionInactivated(Session session)
         {
             lock (this)
             {
@@ -135,66 +181,11 @@ namespace Aegis.Network
 
 
         /// <summary>
-        /// 네트워크 작업을 시작합니다.
-        /// </summary>
-        /// <param name="generator">Session 객체를 생성하는 Delegator를 설정합니다. SessionManager에서는 내부적으로 Session Pool을 관리하는데, Pool에 객체가 부족할 때 이 Delegator가 호출됩니다. 그러므로 이 Delegator에서는 ObjectPool 대신 new를 사용해 인스턴스를 생성하는 것이 좋습니다.</param>
-        /// <param name="initPoolCount">처음 생성할 Session의 개수를 지정합니다.</param>
-        /// <param name="maxPoolCount">생성할 수 있는 Session의 최대개수를 지정합니다. 0이 입력되면 최대개수를 무시합니다.</param>
-        /// <returns>현재 NetworkChannel 객체를 반환합니다.</returns>
-        public NetworkChannel StartNetwork(SessionGenerateDelegator generator, Int32 initPoolCount, Int32 maxPoolCount)
-        {
-            if (generator == null)
-                throw new AegisException(AegisResult.InvalidArgument, $"Argument '{nameof(generator)}' could not be null.");
-
-            _sessionGenerator = generator;
-            MaxSessionCount = maxPoolCount;
-
-
-            lock (this)
-            {
-                while (initPoolCount <= maxPoolCount && initPoolCount-- > 0)
-                {
-                    Session session = _sessionGenerator();
-                    session.Activated += OnSessionActivated;
-                    session.Inactivated += OnSessionInactivated;
-
-                    InactiveSessions.Add(session);
-                }
-            }
-
-
-            return this;
-        }
-
-
-        /// <summary>
-        /// 네트워크 작업을 종료하고 사용중인 리소스를 반환합니다.
-        /// Acceptor와 활성화된 Session의 네트워크 작업이 중단됩니다.
-        /// </summary>
-        public void StopNetwork()
-        {
-            Acceptor.Close();
-
-
-            List<Session> targets;
-            lock (this)
-            {
-                targets = ActiveSessions.Concat(InactiveSessions).ToList();
-            }
-            targets.ForEach(v => v.Close());
-        }
-
-
-        /// <summary>
         /// 클라이언트의 연결요청을 받을 수 있도록 Listener를 오픈합니다.
         /// </summary>
-        /// <param name="ipAddress">접속요청 받을 Ip Address</param>
-        /// <param name="portNo">접속요청 받을 PortNo</param>
-        /// <returns>현재 NetworkChannel 객체를 반환합니다.</returns>
-        public NetworkChannel OpenListener(String ipAddress, Int32 portNo)
+        public void OpenListener()
         {
-            Acceptor.Listen(ipAddress, portNo);
-            return this;
+            Acceptor.Listen();
         }
 
 

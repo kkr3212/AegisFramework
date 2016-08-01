@@ -6,6 +6,7 @@ using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
 using MySql.Data.MySqlClient;
+using Aegis.Calculate;
 
 
 
@@ -14,7 +15,7 @@ namespace Aegis.Data.MySQL
     internal sealed class DBConnector
     {
         public MySqlConnection Connection { get; private set; }
-        public String ConnectionString { get { return Connection.ConnectionString; } }
+        public string ConnectionString { get { return Connection.ConnectionString; } }
         public IntervalCounter QPS { get; private set; }
 
 
@@ -26,14 +27,14 @@ namespace Aegis.Data.MySQL
         }
 
 
-        public void Connect(String hostIp, Int32 hostPortNo, String charSet, String dbName, String user, String pwd, Int32 commandTimeoutSec = 60)
+        public void Connect(string hostIp, int hostPortNo, string charSet, string dbName, string user, string pwd, int commandTimeoutSec = 60)
         {
             if (Connection != null)
                 return;
 
 
             QPS = new IntervalCounter(1000);
-            Connection = new MySqlConnection(String.Format("Server={0};Port={1};CharSet={2};Database={3};Uid={4};Pwd={5};"
+            Connection = new MySqlConnection(string.Format("Server={0};Port={1};CharSet={2};Database={3};Uid={4};Pwd={5};"
                                             , hostIp, hostPortNo, charSet, dbName, user, pwd));
             Connection.Open();
 

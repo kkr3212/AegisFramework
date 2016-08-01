@@ -6,11 +6,11 @@ using System.Threading.Tasks;
 
 
 
-namespace Aegis
+namespace Aegis.Calculate
 {
     public sealed class Randomizer
     {
-        private static Random _staticRand = new Random((Int32)DateTime.Now.Ticks);
+        private static Random _staticRand = new Random((int)DateTime.Now.Ticks);
         private Random _rand;
 
 
@@ -23,13 +23,13 @@ namespace Aegis
         }
 
 
-        public Randomizer(Int32 seed)
+        public Randomizer(int seed)
         {
             _rand = new Random(seed);
         }
 
 
-        public void Seed(Int32 seed)
+        public void Seed(int seed)
         {
             _rand = new Random(seed);
         }
@@ -39,7 +39,7 @@ namespace Aegis
         /// 지정되지 않은 범위 내에서 임의 값을 반환합니다.
         /// </summary>
         /// <returns>임의 값</returns>
-        public Int32 Next()
+        public int Next()
         {
             return _rand.Next();
         }
@@ -51,7 +51,7 @@ namespace Aegis
         /// <param name="min">최소값</param>
         /// <param name="max">최대값</param>
         /// <returns>임의 값</returns>
-        public Int32 Next(Int32 min, Int32 max)
+        public int Next(int min, int max)
         {
             return _rand.Next(min, max);
         }
@@ -61,7 +61,7 @@ namespace Aegis
         /// 지정되지 않은 범위 내에서 임의 값을 반환합니다.
         /// </summary>
         /// <returns>임의 값</returns>
-        public static Int32 NextNumber()
+        public static int NextNumber()
         {
             return _staticRand.Next();
         }
@@ -73,7 +73,7 @@ namespace Aegis
         /// <param name="min">최소값</param>
         /// <param name="max">최대값</param>
         /// <returns>임의 값</returns>
-        public static Int32 NextNumber(Int32 min, Int32 max)
+        public static int NextNumber(int min, int max)
         {
             return _staticRand.Next(min, max);
         }

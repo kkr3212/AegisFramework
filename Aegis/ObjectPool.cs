@@ -22,8 +22,8 @@ namespace Aegis
     {
         private static List<IObjectPoolInstance> _list = new List<IObjectPoolInstance>();
 
-        public delegate void PopObjectDelegator(object instance, Int32 pooledCount);
-        public delegate void PushObjectDelegator(object instance, Int32 pooledCount);
+        public delegate void PopObjectDelegator(object instance, int pooledCount);
+        public delegate void PushObjectDelegator(object instance, int pooledCount);
         public static event PopObjectDelegator OnPopObject;
         public static event PopObjectDelegator OnPushObject;
 
@@ -51,17 +51,15 @@ namespace Aegis
         }
 
 
-        internal static void CallPopObject(object instance, Int32 pooledCount)
+        internal static void CallPopObject(object instance, int pooledCount)
         {
-            if (OnPopObject != null)
-                OnPopObject(instance, pooledCount);
+            OnPopObject?.Invoke(instance, pooledCount);
         }
 
 
-        internal static void CallPushObject(object instance, Int32 pooledCount)
+        internal static void CallPushObject(object instance, int pooledCount)
         {
-            if (OnPushObject != null)
-                OnPushObject(instance, pooledCount);
+            OnPushObject?.Invoke(instance, pooledCount);
         }
     }
 
@@ -85,13 +83,13 @@ namespace Aegis
         }
 
 
-        public static void Allocate(Func<T> generator, Int32 initPoolSize)
+        public static void Allocate(Func<T> generator, int initPoolSize)
         {
             lock (_instance)
             {
                 _instance._generator = generator;
 
-                for (Int32 i = 0; i < initPoolSize; ++i)
+                for (int i = 0; i < initPoolSize; ++i)
                     _instance._queue.Enqueue(_instance._generator());
             }
         }
@@ -158,11 +156,11 @@ namespace Aegis
         }
 
 
-        public static Int32 PooledCount()
+        public static int PooledCount()
         {
             lock (_instance)
             {
-                return (Int32)_instance._queue.Count();
+                return (int)_instance._queue.Count();
             }
         }
     }

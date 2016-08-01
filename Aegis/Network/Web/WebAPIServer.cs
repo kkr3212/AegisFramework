@@ -9,7 +9,7 @@ using Aegis.Threading;
 
 
 
-namespace Aegis.Web
+namespace Aegis.Network.Web
 {
     public delegate void RequestHandler(WebAPIRequest request, HttpListenerResponse response);
 
@@ -27,7 +27,7 @@ namespace Aegis.Web
     {
         private Thread _thread;
         private HttpListener _listener = new HttpListener();
-        private Dictionary<String, RequestHandler> _routes = new Dictionary<String, RequestHandler>();
+        private Dictionary<string, RequestHandler> _routes = new Dictionary<string, RequestHandler>();
         private RWLock _lock = new RWLock();
 
 
@@ -46,7 +46,7 @@ namespace Aegis.Web
         /// Start를 호출하기 전에 먼저 호출되어야 합니다.
         /// </summary>
         /// <param name="prefix"></param>
-        public void AddPrefix(String prefix)
+        public void AddPrefix(string prefix)
         {
             _listener.Prefixes.Add(prefix);
         }
@@ -84,7 +84,7 @@ namespace Aegis.Web
         }
 
 
-        public void Route(String path, RequestHandler handler)
+        public void Route(string path, RequestHandler handler)
         {
             if (path[0] != '/')
                 throw new AegisException(AegisResult.InvalidArgument, "The path must be a string that starts with '/'.");
@@ -120,12 +120,12 @@ namespace Aegis.Web
                 }
                 catch (Exception e) when ((UInt32)e.HResult == 0x80131509)
                 {
-                    Logger.Write(LogType.Err, 1, e.ToString());
+                    Logger.Write(LogType.Err, LogLevel.Core, e.ToString());
                     break;
                 }
                 catch (Exception e)
                 {
-                    Logger.Write(LogType.Err, 1, e.ToString());
+                    Logger.Write(LogType.Err, LogLevel.Core, e.ToString());
                 }
             }
         }
@@ -133,13 +133,13 @@ namespace Aegis.Web
 
         private void ProcessContext(HttpListenerContext context)
         {
-            String path, rawUrl = context.Request.RawUrl;
+            string path, rawUrl = context.Request.RawUrl;
             if (rawUrl == "")
                 return;
 
 
-            String[] splitUrl = rawUrl.Split('?');
-            String rawMessage;
+            string[] splitUrl = rawUrl.Split('?');
+            string rawMessage;
             WebAPIRequest request = null;
 
 

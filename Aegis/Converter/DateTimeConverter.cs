@@ -14,7 +14,7 @@ namespace Aegis.Converter
         /// DateTime을 UnixTimeStamp 값으로 변환합니다.
         /// </summary>
         /// <returns>UnixTimeStamp</returns>
-        public static Double UnixTimeStamp(this DateTime dt)
+        public static double UnixTimeStamp(this DateTime dt)
         {
             DateTime dt1970 = new DateTime(1970, 1, 1);
             return dt.Subtract(dt1970).TotalSeconds;
@@ -25,7 +25,7 @@ namespace Aegis.Converter
         /// UnixTimeStamp 값을 DateTime으로 변환합니다.
         /// </summary>
         /// <returns>UnixTimeStamp를 변환한 DateTime값</returns>
-        public static DateTime ToDateTime(this Double unixTimeStamp)
+        public static DateTime ToDateTime(this double unixTimeStamp)
         {
             DateTime dt1970 = new DateTime(1970, 1, 1);
             return dt1970.AddSeconds(TimeSpan.FromSeconds(unixTimeStamp).TotalSeconds);
