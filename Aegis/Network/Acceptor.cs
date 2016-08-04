@@ -52,7 +52,7 @@ namespace Aegis.Network
                 _listenSocket.Bind(_listenEndPoint);
                 _listenSocket.Listen(100);
 
-                Logger.Write(LogType.Info, LogLevel.Core, "Listening on {0}, {1}", _listenEndPoint.Address, _listenEndPoint.Port);
+                Logger.Info(LogMask.Aegis, "Listening on {0}, {1}", _listenEndPoint.Address, _listenEndPoint.Port);
                 _listenSocket.AcceptAsync(_eventAccept);
             }
             catch (AegisException)
@@ -72,7 +72,7 @@ namespace Aegis.Network
                 return;
 
             _listenSocket.Close();
-            Logger.Write(LogType.Info, LogLevel.Core, "Listening stopped({0}, {1})", _listenEndPoint.Address, _listenEndPoint.Port);
+            Logger.Info(LogMask.Aegis, "Listening stopped({0}, {1})", _listenEndPoint.Address, _listenEndPoint.Port);
 
 
             _listenSocket = null;
@@ -93,7 +93,7 @@ namespace Aegis.Network
                 if (acceptedSession == null)
                 {
                     acceptedSocket.Close();
-                    Logger.Write(LogType.Warn, LogLevel.Core, "Cannot activate any more sessions. Please check MaxSessionPoolSize.");
+                    Logger.Err(LogMask.Aegis, "Cannot activate any more sessions. Please check MaxSessionPoolSize.");
                     return;
                 }
 
@@ -108,11 +108,11 @@ namespace Aegis.Network
             catch (SocketException e)
             {
                 if (e.SocketErrorCode != SocketError.Interrupted)
-                    Logger.Write(LogType.Err, LogLevel.Core, e.ToString());
+                    Logger.Err(LogMask.Aegis, e.ToString());
             }
             catch (Exception e)
             {
-                Logger.Write(LogType.Err, LogLevel.Core, e.ToString());
+                Logger.Err(LogMask.Aegis, e.ToString());
             }
         }
     }

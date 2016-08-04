@@ -10,7 +10,7 @@ using System.Management;
 
 namespace Aegis.IO
 {
-    public class SerialPort : IDisposable
+    public class SerialPort
     {
         public event IOEventHandler EventClose, EventRead, EventWrite;
 
@@ -37,56 +37,24 @@ namespace Aegis.IO
         }
 
 
-        public void Dispose()
-        {
-            _serialPort?.Dispose();
-
-            if (_watcherPortOpen != null)
-            {
-                _watcherPortOpen.Stop();
-                _watcherPortOpen.Dispose();
-                _watcherPortOpen = null;
-            }
-
-            if (_watcherPortClose != null)
-            {
-                _watcherPortClose.Stop();
-                _watcherPortClose.Dispose();
-                _watcherPortClose = null;
-            }
-        }
-
-
-        public bool Open()
+        public void Open()
         {
             if (_serialPort != null && _serialPort.IsOpen == true)
-                return false;
+                throw new AegisException(AegisResult.AlreadyInitialized, "{0} port already opened.", _serialPort.PortName);
 
 
-            bool ret = true;
+            _serialPort = new System.IO.Ports.SerialPort();
+            _serialPort.PortName = PortName;
+            _serialPort.BaudRate = BaudRate;
+            _serialPort.DataBits = DataBit;
+            _serialPort.Parity = Parity;
+            _serialPort.StopBits = StopBits;
+            _serialPort.ReadTimeout = ReadTimeout;
+            _serialPort.WriteTimeout = WriteTimeout;
+            _serialPort.Open();
 
-            try
-            {
-                _serialPort = new System.IO.Ports.SerialPort();
-                _serialPort.PortName = PortName;
-                _serialPort.BaudRate = BaudRate;
-                _serialPort.DataBits = DataBit;
-                _serialPort.Parity = Parity;
-                _serialPort.StopBits = StopBits;
-                _serialPort.ReadTimeout = ReadTimeout;
-                _serialPort.WriteTimeout = WriteTimeout;
-                _serialPort.Open();
-
-                _receiveThread = new Thread(ReceiveThread);
-                _receiveThread.Start();
-
-                Logger.Write(LogType.Info, LogLevel.Core, "{0} port opened.", PortName);
-            }
-            catch (Exception e)
-            {
-                Logger.Write(LogType.Err, LogLevel.Core, e.Message);
-                ret = false;
-            }
+            _receiveThread = new Thread(ReceiveThread);
+            _receiveThread.Start();
 
 
 
@@ -117,13 +85,27 @@ namespace Aegis.IO
                     _watcherPortClose.Start();
                 }
             }
-
-            return ret;
         }
 
 
         public void Close()
         {
+            _serialPort?.Dispose();
+
+            if (_watcherPortOpen != null)
+            {
+                _watcherPortOpen.Stop();
+                _watcherPortOpen.Dispose();
+                _watcherPortOpen = null;
+            }
+
+            if (_watcherPortClose != null)
+            {
+                _watcherPortClose.Stop();
+                _watcherPortClose.Dispose();
+                _watcherPortClose = null;
+            }
+
             Close(AegisResult.Ok);
         }
 
@@ -142,7 +124,7 @@ namespace Aegis.IO
 
             _serialPort = null;
             _receiveThread = null;
-            Logger.Write(LogType.Info, LogLevel.Core, "SerialPort({0}) closed.", PortName);
+            Logger.Info(LogMask.Aegis, "SerialPort({0}) closed.", PortName);
         }
 
 
@@ -183,7 +165,7 @@ namespace Aegis.IO
                 }
                 catch (Exception e)
                 {
-                    Logger.Write(LogType.Err, LogLevel.Core, e.Message);
+                    Logger.Err(LogMask.Aegis, e.Message);
                 }
             }
         }

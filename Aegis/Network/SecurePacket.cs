@@ -361,7 +361,7 @@ namespace Aegis.Network
             //  Block Size가 일치하지 않으면 복호화를 할 수 없다.
             if ((packetSize - 2) % 16 != 0)
             {
-                Logger.Write(LogType.Err, LogLevel.Core, "BlockSize is not match(packetsize={0}).", packetSize);
+                Logger.Err(LogMask.Aegis, "BlockSize is not match(packetsize={0}).", packetSize);
                 return false;
             }
 
@@ -400,7 +400,7 @@ namespace Aegis.Network
 
                 if (crc != packetCRC)
                 {
-                    Logger.Write(LogType.Err, LogLevel.Core, "Invalid CRC.");
+                    Logger.Err(LogMask.Aegis, "Invalid CRC.");
                     return false;
                 }
             }

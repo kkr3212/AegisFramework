@@ -122,7 +122,7 @@ namespace Aegis.Threading
                 }
                 catch (Exception e)
                 {
-                    Logger.Write(LogType.Err, LogLevel.Core, e.ToString());
+                    Logger.Err(LogMask.Aegis, e.ToString());
                 }
             }
         }

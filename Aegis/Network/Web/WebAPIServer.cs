@@ -120,12 +120,12 @@ namespace Aegis.Network.Web
                 }
                 catch (Exception e) when ((UInt32)e.HResult == 0x80131509)
                 {
-                    Logger.Write(LogType.Err, LogLevel.Core, e.ToString());
+                    Logger.Err(LogMask.Aegis, e.ToString());
                     break;
                 }
                 catch (Exception e)
                 {
-                    Logger.Write(LogType.Err, LogLevel.Core, e.ToString());
+                    Logger.Err(LogMask.Aegis, e.ToString());
                 }
             }
         }

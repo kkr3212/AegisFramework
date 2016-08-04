@@ -8,68 +8,86 @@ using System.Threading.Tasks;
 
 namespace Aegis
 {
-    public enum LogType
+    public static class LogMask
     {
-        Info = 0x01,
-        Warn = 0x02,
-        Err = 0x04,
-        Debug = 0x08
-    }
+        public const int Info = 0x01000000;
+        public const int Warn = 0x02000000;
+        public const int Err = 0x04000000;
+        public const int Debug = 0x08000000;
 
-    public static class LogLevel
-    {
-        public const int Core = 0;
-        public const int Info = 1;
-        public const int Debug = 2;
-        public const int LowData = 3;
+        public const int Aegis = 0x00010000;
     }
 
 
 
 
 
-    public delegate void LogWriteHandler(LogType type, int level, string log);
+    public delegate void LogWriteHandler(int mask, string log);
     public static class Logger
     {
-        public static int EnabledLogLevel { get; set; } = LogLevel.Debug;
-        public static LogType EnabledType { get; set; } = LogType.Info | LogType.Warn | LogType.Err;
+        public static int EnableMask { get; set; }
+            = LogMask.Info | LogMask.Warn | LogMask.Err | LogMask.Debug | LogMask.Aegis;
+        public static int DefaultMask { get; set; } = LogMask.Info | LogMask.Aegis;
         public static event LogWriteHandler Written;
-        public static int DefaultLogLevel { get; set; } = LogLevel.Info;
 
 
 
 
 
-        public static void Write(LogType type, int level, string format, params object[] args)
+        public static void Write(int mask, string format, params object[] args)
         {
-            if ((EnabledType & type) != type || level > EnabledLogLevel)
+            if ((EnableMask & mask) != mask)
                 return;
 
-            Written?.Invoke(type, level, string.Format(format, args));
+            Written?.Invoke(mask, string.Format(format, args));
         }
 
 
         public static void Info(string format, params object[] args)
         {
-            Write(LogType.Info, DefaultLogLevel, format, args);
+            Write(DefaultMask, format, args);
         }
 
 
         public static void Warn(string format, params object[] args)
         {
-            Write(LogType.Warn, DefaultLogLevel, format, args);
+            Write(DefaultMask, format, args);
         }
 
 
         public static void Err(string format, params object[] args)
         {
-            Write(LogType.Err, DefaultLogLevel, format, args);
+            Write(DefaultMask, format, args);
         }
 
 
         public static void Debug(string format, params object[] args)
         {
-            Write(LogType.Debug, DefaultLogLevel, format, args);
+            Write(DefaultMask, format, args);
+        }
+
+
+        public static void Info(int mask, string format, params object[] args)
+        {
+            Write(LogMask.Info | mask, format, args);
+        }
+
+
+        public static void Warn(int mask, string format, params object[] args)
+        {
+            Write(LogMask.Warn | mask, format, args);
+        }
+
+
+        public static void Err(int mask, string format, params object[] args)
+        {
+            Write(LogMask.Err | mask, format, args);
+        }
+
+
+        public static void Debug(int mask, string format, params object[] args)
+        {
+            Write(LogMask.Debug | mask, format, args);
         }
 
 

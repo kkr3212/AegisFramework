@@ -117,7 +117,7 @@ namespace Aegis.Data.MySQL
                 }
                 catch (Exception e)
                 {
-                    Logger.Write(LogType.Warn, LogLevel.Core, e.Message);
+                    Logger.Warn(LogMask.Aegis, e.Message);
                 }
             }
         }

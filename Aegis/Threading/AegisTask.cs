@@ -41,12 +41,12 @@ namespace Aegis.Threading
                     {
                         //  로그출력 여부는 Delegator의 리턴값으로 결정한다.
                         if (actionOnFail(e) == false)
-                            Logger.Write(LogType.Err, LogLevel.Core, e.ToString());
+                            Logger.Err(LogMask.Aegis, e.ToString());
                     }, null);
                 }
                 //  actionOnFail이 정의되지 않은 경우 항상 로그를 출력한다.
                 else
-                    Logger.Write(LogType.Err, LogLevel.Core, e.ToString());
+                    Logger.Err(LogMask.Aegis, e.ToString());
             }
         }
 
@@ -65,12 +65,12 @@ namespace Aegis.Threading
                     {
                         //  로그출력 여부는 Delegator의 리턴값으로 결정한다.
                         if (actionOnFail(e) == false)
-                            Logger.Write(LogType.Err, LogLevel.Core, e.ToString());
+                            Logger.Err(LogMask.Aegis, e.ToString());
                     }, null);
                 }
                 //  actionOnFail이 정의되지 않은 경우 항상 로그를 출력한다.
                 else
-                    Logger.Write(LogType.Err, LogLevel.Core, e.ToString());
+                    Logger.Err(LogMask.Aegis, e.ToString());
             }
 
             return default(TResult);

@@ -101,7 +101,7 @@ namespace Aegis.Network
             }
             catch (Exception e)
             {
-                Logger.Write(LogType.Err, LogLevel.Core, e.ToString());
+                Logger.Err(LogMask.Aegis, e.ToString());
             }
         }
 
@@ -136,7 +136,7 @@ namespace Aegis.Network
             }
             catch (Exception e)
             {
-                Logger.Write(LogType.Err, LogLevel.Core, e.ToString());
+                Logger.Err(LogMask.Aegis, e.ToString());
             };
         }
     }

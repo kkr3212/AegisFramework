@@ -44,11 +44,25 @@ namespace Aegis
         }
 
 
-        public static void Start()
+        public static void Start(bool startOnExecuteFileDirectory)
         {
+            string[] args = System.Environment.GetCommandLineArgs();
+
+
             //  프레임워크 초기화
             {
                 SpinWorker.Initialize();
+
+
+                //  실행파일의 디렉터리로 변경
+                if (startOnExecuteFileDirectory)
+                {
+                    string path = System.IO.Path.GetDirectoryName(ExecutingAssembly.Location);
+                    System.IO.Directory.SetCurrentDirectory(path);
+                }
+
+
+                Logger.Info(LogMask.Aegis, "Aegis Framework(v{0})", AegisVersion.ToString(3));
             }
 
 
@@ -59,7 +73,7 @@ namespace Aegis
                 AegisTask.SafeAction(() =>
                 {
                     if (Initialized == null ||
-                        Initialized.Invoke(System.Environment.GetCommandLineArgs()) == true)
+                        Initialized.Invoke(args) == true)
                         Running?.Invoke();
                 });
 
@@ -101,6 +115,9 @@ namespace Aegis
                 Calculate.IntervalTimer.DisposeAll();
                 NamedObjectManager.Clear();
                 SpinWorker.Release();
+
+
+                Logger.Info(LogMask.Aegis, "Aegis Framework finalized.");
                 Logger.RemoveAll();
 
                 Finalized?.Invoke();
