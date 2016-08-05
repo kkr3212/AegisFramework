@@ -104,6 +104,7 @@
     <Compile Include="IO\IOEventResult.cs" />
     <Compile Include="IO\NamedPipe.cs" />
     <Compile Include="IO\SerialPort.cs" />
+    <Compile Include="IO\SerialPortWatcher.cs" />
     <Compile Include="NamedObjectManager.cs" />
     <Compile Include="Network\UDPClient.cs" />
     <Compile Include="Network\UDPServer.cs" />

@@ -3,8 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading;
-using Aegis;
-using System.Management;
 
 
 
@@ -15,11 +13,11 @@ namespace Aegis.IO
         public event IOEventHandler EventClose, EventRead, EventWrite;
 
 
-        private System.IO.Ports.SerialPort _serialPort;
         private Thread _receiveThread;
-        private ManagementEventWatcher _watcherPortOpen, _watcherPortClose;
 
+        public System.IO.Ports.SerialPort Handle { get; private set; }
         public string PortName { get; set; }
+        public bool IsOpen { get { return Handle.IsOpen; } }
         public int BaudRate { get; set; } = 9600;
         public int DataBit { get; set; } = 8;
         public System.IO.Ports.Parity Parity { get; set; } = System.IO.Ports.Parity.None;
@@ -39,99 +37,40 @@ namespace Aegis.IO
 
         public void Open()
         {
-            if (_serialPort != null && _serialPort.IsOpen == true)
-                throw new AegisException(AegisResult.AlreadyInitialized, "{0} port already opened.", _serialPort.PortName);
+            if (Handle != null && Handle.IsOpen == true)
+                throw new AegisException(AegisResult.AlreadyInitialized, "{0} port already opened.", Handle.PortName);
 
 
-            _serialPort = new System.IO.Ports.SerialPort();
-            _serialPort.PortName = PortName;
-            _serialPort.BaudRate = BaudRate;
-            _serialPort.DataBits = DataBit;
-            _serialPort.Parity = Parity;
-            _serialPort.StopBits = StopBits;
-            _serialPort.ReadTimeout = ReadTimeout;
-            _serialPort.WriteTimeout = WriteTimeout;
-            _serialPort.Open();
+            Handle = new System.IO.Ports.SerialPort();
+            Handle.PortName = PortName;
+            Handle.BaudRate = BaudRate;
+            Handle.DataBits = DataBit;
+            Handle.Parity = Parity;
+            Handle.StopBits = StopBits;
+            Handle.ReadTimeout = ReadTimeout;
+            Handle.WriteTimeout = WriteTimeout;
+            Handle.Open();
 
             _receiveThread = new Thread(ReceiveThread);
             _receiveThread.Start();
-
-
-
-            {
-                WqlEventQuery query;
-
-                if (_watcherPortOpen == null)
-                {
-                    query = new WqlEventQuery("SELECT * FROM Win32_DeviceChangeEvent WHERE EventType = 2");
-                    _watcherPortOpen = new ManagementEventWatcher(query);
-                    _watcherPortOpen.EventArrived += (sender, e) =>
-                    {
-                        if (IsAvailablePort() == true)
-                            Open();
-                    };
-                    _watcherPortOpen.Start();
-                }
-
-
-                if (_watcherPortClose == null)
-                {
-                    query = new WqlEventQuery("SELECT * FROM Win32_DeviceChangeEvent WHERE EventType = 3");
-                    _watcherPortClose = new ManagementEventWatcher(query);
-                    _watcherPortClose.EventArrived += (sender, e) =>
-                    {
-                        Close(AegisResult.ClosedByRemote);
-                    };
-                    _watcherPortClose.Start();
-                }
-            }
         }
 
 
         public void Close()
         {
-            _serialPort?.Dispose();
-
-            if (_watcherPortOpen != null)
-            {
-                _watcherPortOpen.Stop();
-                _watcherPortOpen.Dispose();
-                _watcherPortOpen = null;
-            }
-
-            if (_watcherPortClose != null)
-            {
-                _watcherPortClose.Stop();
-                _watcherPortClose.Dispose();
-                _watcherPortClose = null;
-            }
-
-            Close(AegisResult.Ok);
-        }
-
-
-        private void Close(int reason)
-        {
             try
             {
-                EventClose?.Invoke(new IOEventResult(this, IOEventType.Close, reason));
-                _serialPort?.Close();
+                EventClose?.Invoke(new IOEventResult(this, IOEventType.Close, AegisResult.Ok));
+                Handle?.Close();
+                Handle?.Dispose();
             }
             catch (Exception)
             {
             }
 
 
-            _serialPort = null;
+            Handle = null;
             _receiveThread = null;
-            Logger.Info(LogMask.Aegis, "SerialPort({0}) closed.", PortName);
-        }
-
-
-        private bool IsAvailablePort()
-        {
-            return System.IO.Ports.SerialPort.GetPortNames()
-                    .Where(v => v == PortName).Count() != 0;
         }
 
 
@@ -144,11 +83,11 @@ namespace Aegis.IO
             {
                 try
                 {
-                    int readBytes = _serialPort.Read(buffer, 0, BaudRate);
+                    int readBytes = Handle.Read(buffer, 0, BaudRate);
                     if (readBytes == 0)
                     {
-                        _serialPort.Close();
-                        _serialPort = null;
+                        Handle.Close();
+                        Handle = null;
                         _receiveThread = null;
 
                         EventClose?.Invoke(new IOEventResult(this, IOEventType.Close, AegisResult.ClosedByRemote));
@@ -173,7 +112,7 @@ namespace Aegis.IO
 
         public void Write(byte[] buffer, int offset, int count)
         {
-            _serialPort?.Write(buffer, offset, count);
+            Handle?.Write(buffer, offset, count);
             EventWrite?.Invoke(new IOEventResult(this, IOEventType.Write, AegisResult.Ok));
         }
     }
