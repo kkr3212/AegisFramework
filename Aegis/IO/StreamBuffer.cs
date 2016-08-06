@@ -47,6 +47,16 @@ namespace Aegis.IO
         }
 
 
+        public StreamBuffer(byte[] source)
+        {
+            ReadBytes = 0;
+            WrittenBytes = 0;
+
+            Capacity(source.Length);
+            Write(source, 0, source.Length);
+        }
+
+
         public StreamBuffer(StreamBuffer source)
         {
             ReadBytes = 0;

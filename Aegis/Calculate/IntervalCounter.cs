@@ -13,7 +13,7 @@ namespace Aegis.Calculate
     [DebuggerDisplay("Name={Name} Value={Value}")]
     public sealed class IntervalCounter : IDisposable
     {
-        public static NamedObjectIndexer<IntervalCounter> Items = new NamedObjectIndexer<IntervalCounter>();
+        public static NamedObjectIndexer<IntervalCounter> Counters = new NamedObjectIndexer<IntervalCounter>();
 
         public string Name { get; private set; }
         public int Interval { get; set; }
@@ -52,14 +52,14 @@ namespace Aegis.Calculate
             _prevValue = 0;
             _curValue = 0;
 
-            Items.Add(name, this);
+            Counters.Add(name, this);
         }
 
 
         public void Dispose()
         {
             Stop();
-            Items.Remove(this);
+            Counters.Remove(this);
         }
 
 

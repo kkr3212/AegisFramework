@@ -142,7 +142,7 @@
             <param name="ipAddress">접속할 서버의 Ip Address</param>
             <param name="portNo">접속할 서버의 PortNo</param>
         </member>
-        <member name="M:Aegis.Network.Session.Close">
+        <member name="M:Aegis.Network.Session.Close(System.Int32)">
             <summary>
             사용중인 리소스를 반환하고 소켓을 종료하여 네트워크 작업을 종료합니다.
             종료 처리가 진행되기 이전에 OnClose 함수가 호출됩니다.
@@ -198,16 +198,6 @@
         <member name="M:Aegis.Network.NetworkChannel.Release">
             <summary>
             생성된 모든 NetworkChannel을 종료하고 사용중인 리소스를 반환합니다.
-            </summary>
-        </member>
-        <member name="M:Aegis.Network.NetworkChannel.OpenListener">
-            <summary>
-            클라이언트의 연결요청을 받을 수 있도록 Listener를 오픈합니다.
-            </summary>
-        </member>
-        <member name="M:Aegis.Network.NetworkChannel.CloseListener">
-            <summary>
-            Listener를 종료합니다.
             </summary>
         </member>
         <member name="T:Aegis.Network.Packet">
@@ -270,6 +260,14 @@
             <returns>현재 SecurePacket의 데이터가 복제된 객체</returns>
         </member>
         <member name="M:Aegis.Network.Packet.GetPacketId(System.Byte[])">
+            <summary>
+            지정된 버퍼에서 PacketId 값을 가져옵니다.
+            buffer는 패킷 헤더가 온전히 포함된 데이터로 지정되어야 합니다.
+            </summary>
+            <param name="buffer">패킷 데이터가 담긴 버퍼</param>
+            <returns>패킷의 PacketId를 반환합니다.</returns>
+        </member>
+        <member name="M:Aegis.Network.Packet.GetPacketId(Aegis.IO.StreamBuffer)">
             <summary>
             지정된 버퍼에서 PacketId 값을 가져옵니다.
             buffer는 패킷 헤더가 온전히 포함된 데이터로 지정되어야 합니다.
@@ -388,6 +386,14 @@
             <returns>현재 SecurePacket의 데이터가 복제된 객체</returns>
         </member>
         <member name="M:Aegis.Network.SecurePacket.GetPacketId(System.Byte[])">
+            <summary>
+            지정된 버퍼에서 PacketId 값을 가져옵니다.
+            buffer는 패킷 헤더가 온전히 포함된 데이터로 지정되어야 합니다.
+            </summary>
+            <param name="buffer">패킷 데이터가 담긴 버퍼</param>
+            <returns>패킷의 PacketId를 반환합니다.</returns>
+        </member>
+        <member name="M:Aegis.Network.SecurePacket.GetPacketId(Aegis.IO.StreamBuffer)">
             <summary>
             지정된 버퍼에서 PacketId 값을 가져옵니다.
             buffer는 패킷 헤더가 온전히 포함된 데이터로 지정되어야 합니다.

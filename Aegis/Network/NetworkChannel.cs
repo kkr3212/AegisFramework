@@ -25,7 +25,7 @@ namespace Aegis.Network
         public int MaxSessionCount { get; set; }
         public SessionGenerateDelegator SessionGenerator { get; set; }
 
-        internal Acceptor Acceptor { get; private set; }
+        public Acceptor Acceptor { get; private set; }
         private TreeNode _configNode;
 
 
@@ -98,7 +98,7 @@ namespace Aegis.Network
                         sessions.Add(session);
 
                     foreach (var session in sessions)
-                        session.Close();
+                        session.Close(AegisResult.Ok);
                 }
 
                 Channels.Clear();
@@ -115,15 +115,20 @@ namespace Aegis.Network
 
         public void Close()
         {
-            Acceptor.Close();
-            foreach (var session in ActiveSessions)
-                session.Close();
+            lock (Channels)
+            {
+                Acceptor.Close();
+
+                //  session.Close 에서 ActiveSessions가 변경되므로 복사본을 사용
+                foreach (var session in ActiveSessions.ToList())
+                    session.Close(AegisResult.Ok);
+            }
         }
 
 
         internal Session PopInactiveSession()
         {
-            lock (this)
+            lock (Channels)
             {
                 if (MaxSessionCount > 0 &&
                     ActiveSessions.Count + InactiveSessions.Count >= MaxSessionCount)
@@ -162,7 +167,7 @@ namespace Aegis.Network
 
         private void SessionActivated(Session session)
         {
-            lock (this)
+            lock (Channels)
             {
                 InactiveSessions.Remove(session);
                 ActiveSessions.Add(session);
@@ -172,29 +177,11 @@ namespace Aegis.Network
 
         private void SessionInactivated(Session session)
         {
-            lock (this)
+            lock (Channels)
             {
                 ActiveSessions.Remove(session);
                 InactiveSessions.Add(session);
             }
-        }
-
-
-        /// <summary>
-        /// 클라이언트의 연결요청을 받을 수 있도록 Listener를 오픈합니다.
-        /// </summary>
-        public void OpenListener()
-        {
-            Acceptor.Listen();
-        }
-
-
-        /// <summary>
-        /// Listener를 종료합니다.
-        /// </summary>
-        public void CloseListener()
-        {
-            Acceptor.Close();
         }
     }
 }

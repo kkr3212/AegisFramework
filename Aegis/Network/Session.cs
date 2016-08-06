@@ -38,8 +38,9 @@ namespace Aegis.Network
         public event IOEventHandler EventAccept, EventConnect, EventClose, EventReceive;
         public EventHandler_IsValidPacket PacketValidator;
 
-
         internal event Action<Session> Activated, Inactivated;
+
+        private MethodSelector _packetDispatcher;
 
 
 
@@ -100,6 +101,15 @@ namespace Aegis.Network
             {
                 Logger.Err(LogMask.Aegis, e.ToString());
             }
+        }
+
+
+        public void CreatePacketDispatcher(object targetInstance, MethodSelectHandler handler)
+        {
+            if (handler == null)
+                return;
+
+            _packetDispatcher = new MethodSelector(targetInstance, handler);
         }
 
 
@@ -180,7 +190,7 @@ namespace Aegis.Network
         /// 사용중인 리소스를 반환하고 소켓을 종료하여 네트워크 작업을 종료합니다.
         /// 종료 처리가 진행되기 이전에 OnClose 함수가 호출됩니다.
         /// </summary>
-        public virtual void Close()
+        public virtual void Close(int reason = AegisResult.Ok)
         {
             try
             {
@@ -200,7 +210,7 @@ namespace Aegis.Network
 
                     SpinWorker.Dispatch(() =>
                     {
-                        EventClose?.Invoke(new IOEventResult(this, IOEventType.Close, AegisResult.Ok));
+                        EventClose?.Invoke(new IOEventResult(this, IOEventType.Close, reason));
                     });
 
 
@@ -257,7 +267,8 @@ namespace Aegis.Network
             StreamBuffer dispatchBuffer = new StreamBuffer(buffer);
             SpinWorker.Dispatch(() =>
             {
-                EventReceive?.Invoke(new IOEventResult(this, IOEventType.Read, dispatchBuffer.Buffer, AegisResult.Ok));
+                if (_packetDispatcher?.Dispatch(dispatchBuffer) == false)
+                    EventReceive?.Invoke(new IOEventResult(this, IOEventType.Read, dispatchBuffer.Buffer, AegisResult.Ok));
             });
         }
     }

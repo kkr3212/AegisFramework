@@ -29,7 +29,7 @@ namespace Aegis.Network
             _dispatchBuffer = new StreamBuffer(2048);
 
             _saeaRecv = new SocketAsyncEventArgs();
-            _saeaRecv.Completed += OnComplete_Receive;
+            _saeaRecv.Completed += ReceiveComplete;
             _responseSelector = new ResponseSelector(_session);
         }
 
@@ -58,20 +58,20 @@ namespace Aegis.Network
                     {
                         _saeaRecv.SetBuffer(_receivedBuffer.Buffer, _receivedBuffer.WrittenBytes, _receivedBuffer.WritableSize);
                         if (_session.Socket.ReceiveAsync(_saeaRecv) == false)
-                            OnComplete_Receive(null, _saeaRecv);
+                            ReceiveComplete(null, _saeaRecv);
                     }
                     else
-                        _session.Close();
+                        _session.Close(AegisResult.UnknownError);
                 }
             }
             catch (Exception)
             {
-                _session.Close();
+                _session.Close(AegisResult.UnknownError);
             }
         }
 
 
-        private void OnComplete_Receive(object sender, SocketAsyncEventArgs saea)
+        private void ReceiveComplete(object sender, SocketAsyncEventArgs saea)
         {
             try
             {
@@ -81,7 +81,7 @@ namespace Aegis.Network
                     int transBytes = saea.BytesTransferred;
                     if (transBytes == 0)
                     {
-                        _session.Close();
+                        _session.Close(AegisResult.ClosedByRemote);
                         return;
                     }
 
@@ -127,7 +127,7 @@ namespace Aegis.Network
             }
             catch (SocketException)
             {
-                _session.Close();
+                _session.Close(AegisResult.ClosedByRemote);
             }
             catch (Exception e)
             {
@@ -147,13 +147,13 @@ namespace Aegis.Network
 
 
                     SocketAsyncEventArgs saea = new SocketAsyncEventArgs();
-                    saea.Completed += OnComplete_Send;
+                    saea.Completed += SendComplete;
                     saea.SetBuffer(buffer, offset, size);
                     if (onSent != null)
                         saea.UserToken = new NetworkSendToken(new StreamBuffer(buffer, offset, size), onSent);
 
                     if (_session.Socket.SendAsync(saea) == false)
-                        OnComplete_Receive(null, saea);
+                        ReceiveComplete(null, saea);
                 }
             }
             catch (SocketException)
@@ -181,13 +181,13 @@ namespace Aegis.Network
 
 
                     SocketAsyncEventArgs saea = new SocketAsyncEventArgs();
-                    saea.Completed += OnComplete_Send;
+                    saea.Completed += SendComplete;
                     saea.SetBuffer(buffer.Buffer, 0, buffer.WrittenBytes);
                     if (onSent != null)
                         saea.UserToken = new NetworkSendToken(buffer, onSent);
 
                     if (_session.Socket.SendAsync(saea) == false)
-                        OnComplete_Receive(null, saea);
+                        ReceiveComplete(null, saea);
                 }
             }
             catch (SocketException)
@@ -218,7 +218,7 @@ namespace Aegis.Network
 
 
                     SocketAsyncEventArgs saea = new SocketAsyncEventArgs();
-                    saea.Completed += OnComplete_Send;
+                    saea.Completed += SendComplete;
                     saea.SetBuffer(buffer.Buffer, 0, buffer.WrittenBytes);
                     if (onSent != null)
                         saea.UserToken = new NetworkSendToken(buffer, onSent);
@@ -226,7 +226,7 @@ namespace Aegis.Network
                     _responseSelector.Add(predicate, dispatcher);
 
                     if (_session.Socket.SendAsync(saea) == false)
-                        OnComplete_Receive(null, saea);
+                        ReceiveComplete(null, saea);
                 }
             }
             catch (SocketException)
@@ -239,7 +239,7 @@ namespace Aegis.Network
         }
 
 
-        private void OnComplete_Send(object sender, SocketAsyncEventArgs saea)
+        private void SendComplete(object sender, SocketAsyncEventArgs saea)
         {
             try
             {
@@ -252,6 +252,9 @@ namespace Aegis.Network
                 }
             }
             catch (SocketException)
+            {
+            }
+            catch (ArgumentException)
             {
             }
             catch (Exception e)

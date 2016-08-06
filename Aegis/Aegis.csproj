@@ -106,6 +106,7 @@
     <Compile Include="IO\SerialPort.cs" />
     <Compile Include="IO\SerialPortWatcher.cs" />
     <Compile Include="NamedObjectManager.cs" />
+    <Compile Include="MethodSelector.cs" />
     <Compile Include="Network\UDPClient.cs" />
     <Compile Include="Network\UDPServer.cs" />
     <Compile Include="Converter\DateTimeConverter.cs" />
@@ -129,7 +130,7 @@
     <Compile Include="Calculate\SequentialNumber.cs" />
     <Compile Include="Threading\AegisTask.cs" />
     <Compile Include="Definitions.cs" />
-    <Compile Include="Exceptions.cs" />
+    <Compile Include="AegisException.cs" />
     <Compile Include="Logger.cs" />
     <Compile Include="Calculate\MinMaxValue.cs" />
     <Compile Include="Network\Acceptor.cs" />

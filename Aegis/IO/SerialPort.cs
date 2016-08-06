@@ -37,40 +37,46 @@ namespace Aegis.IO
 
         public void Open()
         {
-            if (Handle != null && Handle.IsOpen == true)
-                throw new AegisException(AegisResult.AlreadyInitialized, "{0} port already opened.", Handle.PortName);
+            lock (this)
+            {
+                if (Handle != null && Handle.IsOpen == true)
+                    throw new AegisException(AegisResult.AlreadyInitialized, "{0} port already opened.", Handle.PortName);
 
 
-            Handle = new System.IO.Ports.SerialPort();
-            Handle.PortName = PortName;
-            Handle.BaudRate = BaudRate;
-            Handle.DataBits = DataBit;
-            Handle.Parity = Parity;
-            Handle.StopBits = StopBits;
-            Handle.ReadTimeout = ReadTimeout;
-            Handle.WriteTimeout = WriteTimeout;
-            Handle.Open();
+                Handle = new System.IO.Ports.SerialPort();
+                Handle.PortName = PortName;
+                Handle.BaudRate = BaudRate;
+                Handle.DataBits = DataBit;
+                Handle.Parity = Parity;
+                Handle.StopBits = StopBits;
+                Handle.ReadTimeout = ReadTimeout;
+                Handle.WriteTimeout = WriteTimeout;
+                Handle.Open();
 
-            _receiveThread = new Thread(ReceiveThread);
-            _receiveThread.Start();
+                _receiveThread = new Thread(ReceiveThread);
+                _receiveThread.Start();
+            }
         }
 
 
         public void Close()
         {
-            try
+            lock (this)
             {
-                EventClose?.Invoke(new IOEventResult(this, IOEventType.Close, AegisResult.Ok));
-                Handle?.Close();
-                Handle?.Dispose();
-            }
-            catch (Exception)
-            {
-            }
+                try
+                {
+                    EventClose?.Invoke(new IOEventResult(this, IOEventType.Close, AegisResult.Ok));
+                    Handle?.Close();
+                    Handle?.Dispose();
+                }
+                catch (Exception)
+                {
+                }
 
 
-            Handle = null;
-            _receiveThread = null;
+                Handle = null;
+                _receiveThread = null;
+            }
         }
 
 
@@ -79,16 +85,19 @@ namespace Aegis.IO
             byte[] buffer = new byte[BaudRate * 2];
 
 
-            while (_receiveThread != null)
+            while (_receiveThread != null && Handle != null)
             {
                 try
                 {
                     int readBytes = Handle.Read(buffer, 0, BaudRate);
                     if (readBytes == 0)
                     {
-                        Handle.Close();
-                        Handle = null;
-                        _receiveThread = null;
+                        lock (this)
+                        {
+                            Handle.Close();
+                            Handle = null;
+                            _receiveThread = null;
+                        }
 
                         EventClose?.Invoke(new IOEventResult(this, IOEventType.Close, AegisResult.ClosedByRemote));
                         break;
@@ -98,8 +107,14 @@ namespace Aegis.IO
                 }
                 catch (System.IO.IOException)
                 {
-                    //  Close 호출로 인한 예외
-                    _receiveThread = null;
+                    lock (this)
+                    {
+                        Handle.Close();
+                        Handle = null;
+                        _receiveThread = null;
+
+                        EventClose?.Invoke(new IOEventResult(this, IOEventType.Close, AegisResult.ClosedByRemote));
+                    }
                     break;
                 }
                 catch (Exception e)
@@ -112,8 +127,11 @@ namespace Aegis.IO
 
         public void Write(byte[] buffer, int offset, int count)
         {
-            Handle?.Write(buffer, offset, count);
-            EventWrite?.Invoke(new IOEventResult(this, IOEventType.Write, AegisResult.Ok));
+            lock (this)
+            {
+                Handle?.Write(buffer, offset, count);
+                EventWrite?.Invoke(new IOEventResult(this, IOEventType.Write, AegisResult.Ok));
+            }
         }
     }
 }

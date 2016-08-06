@@ -51,19 +51,19 @@ namespace Aegis.Network
                         _receivedBuffer.Resize(_receivedBuffer.BufferSize * 2);
 
                     if (_session.Socket.Connected)
-                        _session.Socket.BeginReceive(_receivedBuffer.Buffer, _receivedBuffer.WrittenBytes, _receivedBuffer.WritableSize, 0, OnSocket_Read, null);
+                        _session.Socket.BeginReceive(_receivedBuffer.Buffer, _receivedBuffer.WrittenBytes, _receivedBuffer.WritableSize, 0, Socket_Read, null);
                     else
-                        _session.Close();
+                        _session.Close(AegisResult.UnknownError);
                 }
             }
             catch (Exception)
             {
-                _session.Close();
+                _session.Close(AegisResult.UnknownError);
             }
         }
 
 
-        private void OnSocket_Read(IAsyncResult ar)
+        private void Socket_Read(IAsyncResult ar)
         {
             try
             {
@@ -76,7 +76,7 @@ namespace Aegis.Network
                     int transBytes = _session.Socket.EndReceive(ar);
                     if (transBytes == 0)
                     {
-                        _session.Close();
+                        _session.Close(AegisResult.ClosedByRemote);
                         return;
                     }
 
@@ -127,7 +127,7 @@ namespace Aegis.Network
             }
             catch (SocketException)
             {
-                _session.Close();
+                _session.Close(AegisResult.ClosedByRemote);
             }
             catch (Exception e)
             {
@@ -145,9 +145,9 @@ namespace Aegis.Network
                     if (_session.Socket != null)
                     {
                         if (onSent == null)
-                            _session.Socket.BeginSend(buffer, offset, size, SocketFlags.None, OnSocket_Send, null);
+                            _session.Socket.BeginSend(buffer, offset, size, SocketFlags.None, Socket_Send, null);
                         else
-                            _session.Socket.BeginSend(buffer, offset, size, SocketFlags.None, OnSocket_Send,
+                            _session.Socket.BeginSend(buffer, offset, size, SocketFlags.None, Socket_Send,
                                              new NetworkSendToken(new StreamBuffer(buffer, offset, size), onSent));
                     }
                 }
@@ -174,9 +174,9 @@ namespace Aegis.Network
                         buffer.ResetReadIndex();
 
                         if (onSent == null)
-                            _session.Socket.BeginSend(buffer.Buffer, 0, buffer.WrittenBytes, SocketFlags.None, OnSocket_Send, null);
+                            _session.Socket.BeginSend(buffer.Buffer, 0, buffer.WrittenBytes, SocketFlags.None, Socket_Send, null);
                         else
-                            _session.Socket.BeginSend(buffer.Buffer, 0, buffer.WrittenBytes, SocketFlags.None, OnSocket_Send,
+                            _session.Socket.BeginSend(buffer.Buffer, 0, buffer.WrittenBytes, SocketFlags.None, Socket_Send,
                                              new NetworkSendToken(buffer, onSent));
                     }
                 }
@@ -207,9 +207,9 @@ namespace Aegis.Network
                         buffer.ResetReadIndex();
 
                         if (onSent == null)
-                            _session.Socket.BeginSend(buffer.Buffer, 0, buffer.WrittenBytes, SocketFlags.None, OnSocket_Send, null);
+                            _session.Socket.BeginSend(buffer.Buffer, 0, buffer.WrittenBytes, SocketFlags.None, Socket_Send, null);
                         else
-                            _session.Socket.BeginSend(buffer.Buffer, 0, buffer.WrittenBytes, SocketFlags.None, OnSocket_Send,
+                            _session.Socket.BeginSend(buffer.Buffer, 0, buffer.WrittenBytes, SocketFlags.None, Socket_Send,
                                              new NetworkSendToken(buffer, onSent));
                     }
                 }
@@ -224,7 +224,7 @@ namespace Aegis.Network
         }
 
 
-        private void OnSocket_Send(IAsyncResult ar)
+        private void Socket_Send(IAsyncResult ar)
         {
             try
             {
@@ -246,6 +246,9 @@ namespace Aegis.Network
                 }
             }
             catch (SocketException)
+            {
+            }
+            catch (ArgumentException)
             {
             }
             catch (Exception e)

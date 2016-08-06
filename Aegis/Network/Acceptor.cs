@@ -12,7 +12,7 @@ using Aegis;
 
 namespace Aegis.Network
 {
-    internal class Acceptor
+    public class Acceptor
     {
         private NetworkChannel _networkChannel;
         private IPEndPoint _listenEndPoint;
@@ -30,11 +30,11 @@ namespace Aegis.Network
         {
             _networkChannel = networkChannel;
             _eventAccept = new SocketAsyncEventArgs();
-            _eventAccept.Completed += OnAccepted;
+            _eventAccept.Completed += Accepted;
         }
 
 
-        internal void Listen()
+        public void Listen()
         {
             try
             {
@@ -66,7 +66,7 @@ namespace Aegis.Network
         }
 
 
-        internal void Close()
+        public void Close()
         {
             if (_listenSocket == null)
                 return;
@@ -80,7 +80,7 @@ namespace Aegis.Network
         }
 
 
-        private void OnAccepted(object sender, SocketAsyncEventArgs eventArgs)
+        private void Accepted(object sender, SocketAsyncEventArgs eventArgs)
         {
             try
             {

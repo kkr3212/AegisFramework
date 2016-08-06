@@ -82,6 +82,15 @@ namespace Aegis
         {
             ResultCodeNo = resultCode;
         }
+
+
+        public override string ToString()
+        {
+            string msg = string.Format("{0}\r\nResultCodeNo=0x{1}\r\n{2}",
+                base.Message, ResultCodeNo, StackTrace);
+
+            return msg;
+        }
     }
 
 

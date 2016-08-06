@@ -131,6 +131,21 @@ namespace Aegis.Network
 
 
         /// <summary>
+        /// 지정된 버퍼에서 PacketId 값을 가져옵니다.
+        /// buffer는 패킷 헤더가 온전히 포함된 데이터로 지정되어야 합니다.
+        /// </summary>
+        /// <param name="buffer">패킷 데이터가 담긴 버퍼</param>
+        /// <returns>패킷의 PacketId를 반환합니다.</returns>
+        public static ushort GetPacketId(StreamBuffer buffer)
+        {
+            if (buffer.Buffer.Length < 4)
+                return 0;
+
+            return BitConverter.ToUInt16(buffer.Buffer, 2);
+        }
+
+
+        /// <summary>
         /// 수신된 데이터가 유효한 패킷인지 여부를 확인합니다.
         /// 유효한 패킷으로 판단되면 packetSize에 이 패킷의 정확한 크기를 입력하고 true를 반환해야 합니다.
         /// </summary>

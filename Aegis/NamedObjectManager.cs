@@ -48,7 +48,7 @@ namespace Aegis
             {
                 object tmp;
                 if (_objects.TryGetValue(name, out tmp) == true)
-                    throw new AegisException(AegisResult.AlreadyExistName);
+                    throw new AegisException(AegisResult.AlreadyExistName, "'{0}' is already exists in {1}.", name, nameof(NamedObjectManager));
 
                 _objects.Add(name, obj);
             }
@@ -61,7 +61,7 @@ namespace Aegis
             {
                 object tmp;
                 if (_objects.TryGetValue(name, out tmp) == true)
-                    throw new AegisException(AegisResult.AlreadyExistName);
+                    throw new AegisException(AegisResult.AlreadyExistName, "'{0}' is already exists in {1}.", name, nameof(NamedObjectManager));
 
                 _objects.Add(name, obj);
 

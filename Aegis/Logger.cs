@@ -10,12 +10,12 @@ namespace Aegis
 {
     public static class LogMask
     {
-        public const int Info = 0x01000000;
-        public const int Warn = 0x02000000;
-        public const int Err = 0x04000000;
-        public const int Debug = 0x08000000;
+        public const int Info = 0x0001;
+        public const int Warn = 0x0002;
+        public const int Err = 0x0004;
+        public const int Debug = 0x0008;
 
-        public const int Aegis = 0x00010000;
+        public const int Aegis = 0x0010;
     }
 
 
