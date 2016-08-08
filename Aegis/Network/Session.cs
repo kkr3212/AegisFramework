@@ -40,7 +40,7 @@ namespace Aegis.Network
 
         internal event Action<Session> Activated, Inactivated;
 
-        private MethodSelector _packetDispatcher;
+        private MethodSelector<StreamBuffer> _packetDispatcher;
 
 
 
@@ -104,12 +104,12 @@ namespace Aegis.Network
         }
 
 
-        public void CreatePacketDispatcher(object targetInstance, MethodSelectHandler handler)
+        public void CreatePacketDispatcher(object targetInstance, MethodSelector<StreamBuffer>.MethodSelectHandler handler)
         {
             if (handler == null)
                 return;
 
-            _packetDispatcher = new MethodSelector(targetInstance, handler);
+            _packetDispatcher = new MethodSelector<StreamBuffer>(targetInstance, handler);
         }
 
 

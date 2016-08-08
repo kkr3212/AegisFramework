@@ -6,13 +6,14 @@ using System.Threading.Tasks;
 
 
 
-namespace Aegis.Converter
+namespace Aegis.Calculate
 {
-    public static class StringConverter
+    public static class ConvertMethods
     {
+        #region string
         public static bool ToBoolean(this string src)
         {
-            if (ToInt16(src) == 0)
+            if (ToInt16(src) == 0 || src.ToLower() == "false")
                 return false;
 
             return true;
@@ -87,5 +88,44 @@ namespace Aegis.Converter
 
             return val;
         }
+        #endregion
+
+
+
+
+
+        #region int
+        public static bool CheckBitMask(this int src, int mask)
+        {
+            return ((src & mask) == mask);
+        }
+        #endregion
+
+
+
+
+
+        #region DateTime
+        /// <summary>
+        /// DateTime을 UnixTimeStamp 값으로 변환합니다.
+        /// </summary>
+        /// <returns>UnixTimeStamp</returns>
+        public static double UnixTimeStamp(this DateTime dt)
+        {
+            DateTime dt1970 = new DateTime(1970, 1, 1);
+            return dt.Subtract(dt1970).TotalSeconds;
+        }
+
+
+        /// <summary>
+        /// UnixTimeStamp 값을 DateTime으로 변환합니다.
+        /// </summary>
+        /// <returns>UnixTimeStamp를 변환한 DateTime값</returns>
+        public static DateTime ToDateTime(this double unixTimeStamp)
+        {
+            DateTime dt1970 = new DateTime(1970, 1, 1);
+            return dt1970.AddSeconds(TimeSpan.FromSeconds(unixTimeStamp).TotalSeconds);
+        }
+        #endregion
     }
 }

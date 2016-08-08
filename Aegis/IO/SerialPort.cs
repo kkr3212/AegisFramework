@@ -94,7 +94,7 @@ namespace Aegis.IO
                     {
                         lock (this)
                         {
-                            Handle.Close();
+                            Handle?.Close();
                             Handle = null;
                             _receiveThread = null;
                         }
@@ -109,7 +109,7 @@ namespace Aegis.IO
                 {
                     lock (this)
                     {
-                        Handle.Close();
+                        Handle?.Close();
                         Handle = null;
                         _receiveThread = null;
 

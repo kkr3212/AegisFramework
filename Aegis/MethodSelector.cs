@@ -13,10 +13,42 @@ namespace Aegis
     [AttributeUsage(AttributeTargets.Method)]
     public class TargetMethodAttribute : Attribute
     {
-        public readonly int Key;
-        public TargetMethodAttribute(int key)
+        internal readonly string Key;
+
+
+        public TargetMethodAttribute(string key)
         {
             Key = key;
+        }
+
+
+        public TargetMethodAttribute(ulong key)
+        {
+            Key = key.ToString();
+        }
+
+
+        public TargetMethodAttribute(long key)
+        {
+            Key = key.ToString();
+        }
+
+
+        public TargetMethodAttribute(uint key)
+        {
+            Key = key.ToString();
+        }
+
+
+        public TargetMethodAttribute(int key)
+        {
+            Key = key.ToString();
+        }
+
+
+        public TargetMethodAttribute(double key)
+        {
+            Key = key.ToString();
         }
     }
 
@@ -24,12 +56,12 @@ namespace Aegis
 
 
 
-    public delegate void MethodSelectHandler(ref object source, out int key);
-
-    public class MethodSelector
+    public class MethodSelector<T>
     {
+        public delegate void MethodSelectHandler(ref T source, out string key);
+
         private object _target;
-        private Dictionary<int, MethodInfo> _methods = new Dictionary<int, MethodInfo>();
+        private Dictionary<string, MethodInfo> _methods = new Dictionary<string, MethodInfo>();
         private MethodSelectHandler _handler;
 
 
@@ -48,26 +80,25 @@ namespace Aegis
                 {
                     if (attr is TargetMethodAttribute)
                     {
-                        int packetId = (attr as TargetMethodAttribute).Key;
+                        string key = (attr as TargetMethodAttribute).Key;
                         MethodInfo tmp;
 
-                        if (_methods.TryGetValue(packetId, out tmp) == true)
+                        if (_methods.TryGetValue(key, out tmp) == true)
                         {
-                            Logger.Err(LogMask.Aegis, "DispatchAttribute({0}) already defined on {1}.{2}().",
-                                packetId, _target.GetType().Name, tmp.Name);
+                            Logger.Err(LogMask.Aegis, "MethodSelector key(={0}) duplicated defined.", key);
                             break;
                         }
 
-                        _methods.Add(packetId, methodInfo);
+                        _methods.Add(key, methodInfo);
                     }
                 }
             }
         }
 
 
-        public bool Dispatch(object source)
+        public bool Dispatch(T source)
         {
-            int key;
+            string key;
             _handler(ref source, out key);
 
 
@@ -75,7 +106,7 @@ namespace Aegis
             if (_methods.TryGetValue(key, out method) == false)
                 return false;
 
-            method.Invoke(_target, new[] { source });
+            method.Invoke(_target, new object [] { source });
             return true;
         }
     }
