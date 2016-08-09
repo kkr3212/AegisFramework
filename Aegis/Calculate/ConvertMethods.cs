@@ -13,10 +13,10 @@ namespace Aegis.Calculate
         #region string
         public static bool ToBoolean(this string src)
         {
-            if (ToInt16(src) == 0 || src.ToLower() == "false")
-                return false;
+            if (ToInt16(src) == 1 || src.ToLower() == "true")
+                return true;
 
-            return true;
+            return false;
         }
 
 
