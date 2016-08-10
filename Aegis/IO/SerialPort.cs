@@ -127,10 +127,17 @@ namespace Aegis.IO
 
         public void Write(byte[] buffer, int offset, int count)
         {
-            lock (this)
+            try
             {
-                Handle?.Write(buffer, offset, count);
-                EventWrite?.Invoke(new IOEventResult(this, IOEventType.Write, AegisResult.Ok));
+                lock (this)
+                {
+                    Handle?.Write(buffer, offset, count);
+                    EventWrite?.Invoke(new IOEventResult(this, IOEventType.Write, AegisResult.Ok));
+                }
+            }
+            catch (Exception e)
+            {
+                Logger.Err(LogMask.Aegis, e.Message);
             }
         }
     }
