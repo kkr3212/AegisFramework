@@ -11,14 +11,14 @@ namespace Aegis.Data
 {
     public partial class TreeNode
     {
-        public static TreeNode LoadFromXml(string filename, string nodeName)
+        public static TreeNode LoadFromXml(string xml, string nodeName)
         {
             TreeNode root = new TreeNode(null, nodeName, "");
-            XmlDocument xml = new XmlDocument();
-            xml.Load(filename);
+            XmlDocument xmlDoc = new XmlDocument();
+            xmlDoc.LoadXml(xml);
 
 
-            XmlNode node = xml.SelectSingleNode(nodeName);
+            XmlNode node = xmlDoc.SelectSingleNode(nodeName);
             Xml_GetChilds(node, root);
 
             return root;

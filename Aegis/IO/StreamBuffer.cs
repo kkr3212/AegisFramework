@@ -287,7 +287,7 @@ namespace Aegis.IO
                     case "Int16": PutInt16((short)v); break;
                     case "UInt16": PutUInt16((ushort)v); break;
                     case "Int32": PutInt32((int)v); break;
-                    case "UInt32": PutUInt32((UInt32)v); break;
+                    case "UInt32": PutUInt32((uint)v); break;
                     case "Int64": PutInt64((long)v); break;
                     case "UInt64": PutUInt64((ulong)v); break;
                     case "String": PutStringAsUtf16((string)v); break;
@@ -459,13 +459,13 @@ namespace Aegis.IO
         }
 
 
-        public UInt32 GetUInt32()
+        public uint GetUInt32()
         {
-            if (ReadBytes + sizeof(UInt32) > WrittenBytes)
+            if (ReadBytes + sizeof(uint) > WrittenBytes)
                 throw new AegisException(AegisResult.BufferUnderflow, "No more readable buffer.");
 
             var val = BitConverter.ToUInt32(Buffer, ReadBytes);
-            ReadBytes += sizeof(UInt32);
+            ReadBytes += sizeof(uint);
             return val;
         }
 
@@ -610,9 +610,9 @@ namespace Aegis.IO
         }
 
 
-        public UInt32 GetUInt32(int readIndex)
+        public uint GetUInt32(int readIndex)
         {
-            if (readIndex + sizeof(UInt32) > WrittenBytes)
+            if (readIndex + sizeof(uint) > WrittenBytes)
                 throw new AegisException(AegisResult.BufferUnderflow, "No more readable buffer.");
 
             return BitConverter.ToUInt32(Buffer, readIndex);
@@ -749,9 +749,9 @@ namespace Aegis.IO
         }
 
 
-        public static UInt32 GetUInt32(StreamBuffer source, int readIndex)
+        public static uint GetUInt32(StreamBuffer source, int readIndex)
         {
-            if (readIndex + sizeof(UInt32) > source.WrittenBytes)
+            if (readIndex + sizeof(uint) > source.WrittenBytes)
                 throw new AegisException(AegisResult.BufferUnderflow, "No more readable buffer.");
 
             return BitConverter.ToUInt32(source.Buffer, readIndex);
@@ -869,7 +869,7 @@ namespace Aegis.IO
         }
 
 
-        public int PutUInt32(UInt32 var)
+        public int PutUInt32(uint var)
         {
             int prevIndex = WrittenBytes;
 
@@ -969,9 +969,9 @@ namespace Aegis.IO
         }
 
 
-        public void OverwriteUInt32(int writeIndex, UInt32 var)
+        public void OverwriteUInt32(int writeIndex, uint var)
         {
-            Overwrite(BitConverter.GetBytes(var), 0, sizeof(UInt32), writeIndex);
+            Overwrite(BitConverter.GetBytes(var), 0, sizeof(uint), writeIndex);
         }
 
 

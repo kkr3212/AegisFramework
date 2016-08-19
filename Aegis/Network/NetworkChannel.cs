@@ -72,7 +72,7 @@ namespace Aegis.Network
                 NetworkChannel channel = new NetworkChannel(channelName);
                 channel._configNode = node;
                 channel.SessionGenerator = delegate { return GenerateSession(node.GetValue("sessionClass")); };
-                channel.MaxSessionCount = node.GetValue("maxSessionPoolCount").ToInt32();
+                channel.MaxSessionCount = node.GetValue("maxSessionCount").ToInt32();
                 channel.Acceptor.ListenIpAddress = node.GetValue("listenIpAddress");
                 channel.Acceptor.ListenPortNo = node.GetValue("listenPortNo").ToInt32();
                 Channels.Add(channelName, channel);

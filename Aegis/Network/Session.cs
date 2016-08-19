@@ -114,18 +114,20 @@ namespace Aegis.Network
 
 
         /// <summary>
-        /// 서버에 연결을 요청합니다. 연결요청의 결과는 OnConnect를 통해 전달됩니다.
+        /// 서버에 연결을 요청합니다. 연결요청의 결과는 EventConnect 통해 전달됩니다.
         /// 현재 이 Session이 비활성 상태인 경우에만 수행됩니다.
         /// </summary>
-        /// <param name="ipAddress">접속할 서버의 Ip Address</param>
+        /// <param name="hostName">접속할 서버의 Dns 혹은 Ip Address</param>
         /// <param name="portNo">접속할 서버의 PortNo</param>
-        public virtual void Connect(string ipAddress, int portNo)
+        public virtual void Connect(string hostName, int portNo)
         {
             lock (this)
             {
                 if (Socket != null)
                     throw new AegisException(AegisResult.ActivatedSession, "This session has already been activated.");
 
+
+                string ipAddress = Dns.GetHostAddresses(hostName)[0].ToString();
 
                 //  연결 시도
                 IPEndPoint ipEndPoint = new IPEndPoint(IPAddress.Parse(ipAddress), portNo);
@@ -188,7 +190,7 @@ namespace Aegis.Network
 
         /// <summary>
         /// 사용중인 리소스를 반환하고 소켓을 종료하여 네트워크 작업을 종료합니다.
-        /// 종료 처리가 진행되기 이전에 OnClose 함수가 호출됩니다.
+        /// 종료 처리가 진행되기 이전에 EventClose가 호출됩니다.
         /// </summary>
         public virtual void Close(int reason = AegisResult.Ok)
         {
@@ -268,7 +270,7 @@ namespace Aegis.Network
             SpinWorker.Dispatch(() =>
             {
                 if (_packetDispatcher?.Dispatch(dispatchBuffer) == false)
-                    EventReceive?.Invoke(new IOEventResult(this, IOEventType.Read, dispatchBuffer.Buffer, AegisResult.Ok));
+                    EventReceive?.Invoke(new IOEventResult(this, IOEventType.Read, dispatchBuffer.Buffer, 0, dispatchBuffer.WrittenBytes, AegisResult.Ok));
             });
         }
     }

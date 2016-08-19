@@ -12,12 +12,19 @@ namespace Aegis.Data
     [DebuggerDisplay("Name={Name} Value={Value}")]
     public partial class TreeNode
     {
-        public readonly TreeNode Parent;
-        public readonly List<TreeNode> Childs = new List<TreeNode>();
-        public readonly string Name;
-        public readonly string Value;
+        public TreeNode Parent { get; private set; }
+        public List<TreeNode> Childs { get; private set; } = new List<TreeNode>();
+        public string Name { get; private set; }
+        public string Value { get; private set; }
 
-        public string this[string path] { get { return GetValue(path); } }
+        public string this[string path]
+        {
+            get { return GetValue(path); }
+            set { SetValue(path, value); }
+        }
+
+        public delegate string InvalidPathDelegator(string path);
+        public InvalidPathDelegator InvalidPathHandler;
 
 
 
@@ -31,6 +38,29 @@ namespace Aegis.Data
 
             if (parent != null)
                 parent.Childs.Add(this);
+        }
+
+
+        public TreeNode AddNode(string path, string value)
+        {
+            string[] names = path.Split(new char[] { '\\', '/' });
+            TreeNode node = this;
+
+            foreach (string name in names)
+            {
+                var childNode = node.Childs.Find(v => v.Name == name);
+                if (childNode == null)
+                {
+                    if (names.Last() == name)
+                        childNode = new TreeNode(node, name, value);
+                    else
+                        childNode = new TreeNode(node, name, null);
+                }
+
+                node = childNode;
+            }
+
+            return GetNode(path);
         }
 
 
@@ -51,9 +81,25 @@ namespace Aegis.Data
         }
 
 
+        public TreeNode TryGetNode(string path)
+        {
+            string[] names = path.Split(new char[] { '\\', '/' });
+            TreeNode node = this;
+
+
+            foreach (string name in names)
+            {
+                node = node.Childs.Find(v => v.Name == name);
+                if (node == null)
+                    return null;
+            }
+
+            return node;
+        }
+
+
         /// <summary>
         /// 지정된 Path에서 값을 가져옵니다.
-        /// 지정한 Path가 XmlAttribute가 아닌 경우, null을 반환할 수 있습니다.
         /// </summary>
         /// <param name="path">구분자는 \ 혹은 / 를 사용할 수 있습니다.</param>
         /// <returns>지정된 Path에 정의된 값</returns>
@@ -67,7 +113,12 @@ namespace Aegis.Data
             {
                 node = node.Childs.Find(v => v.Name == name);
                 if (node == null)
-                    throw new AegisException(AegisResult.InvalidArgument, "Invalid node name({0}).", name);
+                {
+                    if (InvalidPathHandler != null)
+                        return InvalidPathHandler(path);
+                    else
+                        throw new AegisException(AegisResult.InvalidArgument, "Invalid node name({0}).", name);
+                }
             }
 
             return node.Value;
@@ -76,7 +127,6 @@ namespace Aegis.Data
 
         /// <summary>
         /// 지정된 Path에서 값을 가져옵니다.
-        /// 지정한 Path가 XmlAttribute가 아닌 경우, null을 반환할 수 있습니다.
         /// </summary>
         /// <param name="path">구분자는 \ 혹은 / 를 사용할 수 있습니다.</param>
         /// <param name="defaultValue">path에서 값을 가져올 수 없으면 default값을 반환합니다.</param>
@@ -91,10 +141,20 @@ namespace Aegis.Data
             {
                 node = node.Childs.Find(v => v.Name == name);
                 if (node == null)
-                    return defaultValue;
+                    return InvalidPathHandler?.Invoke(path) ?? defaultValue;
             }
 
             return node.Value;
+        }
+
+
+        public void SetValue(string path, string value)
+        {
+            TreeNode node = TryGetNode(path);
+            if (node == null)
+                node = AddNode(path, value);
+            else
+                node.Value = value;
         }
     }
 }

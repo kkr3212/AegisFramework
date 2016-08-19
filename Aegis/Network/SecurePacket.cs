@@ -14,7 +14,7 @@ namespace Aegis.Network
     public class SecurePacket : StreamBuffer
     {
         private static byte[] _tempBuffer = new byte[32];
-        private static UInt32[] _crcTable =
+        private static uint[] _crcTable =
         {
             0x00000000, 0x77073096, 0xee0e612c, 0x990951ba, 0x076dc419,
             0x706af48f, 0xe963a535, 0x9e6495a3, 0x0edb8832, 0x79dcb8a4,
@@ -304,9 +304,9 @@ namespace Aegis.Network
         }
 
 
-        protected static UInt32 GetCRC32(byte[] data, int startOffset, int length)
+        protected static uint GetCRC32(byte[] data, int startOffset, int length)
         {
-            UInt32 crc = 0xffffffff;
+            uint crc = 0xffffffff;
             for (int i = 0; i < length; i++)
                 crc = _crcTable[(crc ^ data[startOffset + i]) & 0xff] ^ (crc >> 8);
 
@@ -334,7 +334,7 @@ namespace Aegis.Network
 
             //  CRC
             {
-                UInt32 crc = GetCRC32(Buffer, 2, Size - 2);
+                uint crc = GetCRC32(Buffer, 2, Size - 2);
                 PutUInt32(crc);
             }
 
@@ -409,8 +409,8 @@ namespace Aegis.Network
 
             //  Check CRC
             {
-                UInt32 crc = GetCRC32(Buffer, 2, packetSize - 4 - 2);
-                UInt32 packetCRC = BitConverter.ToUInt32(Buffer, packetSize - 4);
+                uint crc = GetCRC32(Buffer, 2, packetSize - 4 - 2);
+                uint packetCRC = BitConverter.ToUInt32(Buffer, packetSize - 4);
 
 
                 if (crc != packetCRC)

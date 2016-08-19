@@ -114,11 +114,11 @@ namespace Aegis.Network.Web
                 {
                     ProcessContext(_listener.GetContext());
                 }
-                catch (Exception e) when ((UInt32)e.HResult == 0x80004005)
+                catch (Exception e) when ((uint)e.HResult == 0x80004005)
                 {
                     break;
                 }
-                catch (Exception e) when ((UInt32)e.HResult == 0x80131509)
+                catch (Exception e) when ((uint)e.HResult == 0x80131509)
                 {
                     Logger.Err(LogMask.Aegis, e.ToString());
                     break;

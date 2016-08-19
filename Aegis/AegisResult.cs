@@ -26,8 +26,9 @@ namespace Aegis
         public const int NotInitialized = 12;         //  초기화되지 않은 객체입니다.
         public const int AlreadyInitialized = 13;     //  이미 초기화된 객체입니다.
         public const int ClosedByRemote = 15;         //  핸들이 원격지에 의해 종료되었습니다.
-        public const int TimerIsRunning = 16;         //  타이머가 이미 실행중입니다.
-        public const int ConnectionFailed = 17;       //  대상 호스트에 접속할 수 없습니다.
+        public const int ClosedByUser = 16;           //  핸들이 사용자에 의해 종료되었습니다.
+        public const int TimerIsRunning = 17;         //  타이머가 이미 실행중입니다.
+        public const int ConnectionFailed = 18;       //  대상 호스트에 접속할 수 없습니다.
 
         public const int MySqlConnectionFailed = 100; //  MySql Database에 접속할 수 없습니다.
         public const int DataReaderNotClosed = 101;   //  DataReader가 사용중입니다. 먼저 진행중인 쿼리를 종료해야 합니다.

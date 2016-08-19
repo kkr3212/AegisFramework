@@ -11,13 +11,13 @@ using Aegis.Threading;
 
 namespace Aegis.Data.MySQL
 {
-    [DebuggerDisplay("Name={DBName}, Host={IpAddress}, {PortNo}")]
+    [DebuggerDisplay("Name={DBName}, Host={IpAddress},{PortNo}")]
     public sealed class ConnectionPool
     {
-        private List<DBConnector> _listPoolDBC = new List<DBConnector>();
-        private List<DBConnector> _listActiveDBC = new List<DBConnector>();
-        private RWLock _lock = new RWLock();
+        private BlockingQueue<DBConnector> _poolDBC = new BlockingQueue<DBConnector>();
+        private List<DBConnector> _dbConnectors = new List<DBConnector>();
         private CancellationTokenSource _cancelTasks;
+        private int _maxDBCCount = 4;
 
 
         public string DBName { get; private set; }
@@ -26,8 +26,17 @@ namespace Aegis.Data.MySQL
         public string CharSet { get; private set; }
         public string IpAddress { get; private set; }
         public int PortNo { get; private set; }
-        public int PooledDBCCount { get { return _listPoolDBC.Count; } }
-        public int ActiveDBCCount { get { return _listActiveDBC.Count; } }
+        public int PooledDBCCount { get { return _poolDBC.Count; } }
+        public int ActiveDBCCount { get { return _dbConnectors.Count - _poolDBC.Count; } }
+        public int MaxDBCCount
+        {
+            get { return _maxDBCCount; }
+            set
+            {
+                if (value > _maxDBCCount)
+                    _maxDBCCount = value;
+            }
+        }
 
 
 
@@ -78,18 +87,16 @@ namespace Aegis.Data.MySQL
 
         public void Release()
         {
-            using (_lock.WriterLock)
+            lock (this)
             {
                 _cancelTasks?.Cancel();
                 _cancelTasks?.Dispose();
                 _cancelTasks = null;
 
 
-                _listPoolDBC.ForEach(v => v.Close());
-                _listActiveDBC.ForEach(v => v.Close());
-
-                _listPoolDBC.Clear();
-                _listActiveDBC.Clear();
+                _dbConnectors.ForEach(v => v.Close());
+                _poolDBC.Clear();
+                _dbConnectors.Clear();
             }
         }
 
@@ -104,7 +111,7 @@ namespace Aegis.Data.MySQL
 
 
                     //  연결유지를 위해 동작중이 아닌 DBConnector의 Ping을 한번씩 호출한다.
-                    int cnt = _listPoolDBC.Count;
+                    int cnt = _poolDBC.Count;
                     while (cnt-- > 0)
                     {
                         DBConnector dbc = GetDBC();
@@ -131,45 +138,38 @@ namespace Aegis.Data.MySQL
                 dbc.Connect(IpAddress, PortNo, CharSet, DBName, UserId, UserPwd);
 
 
-                using (_lock.WriterLock)
-                {
-                    _listPoolDBC.Add(dbc);
-                }
+                _poolDBC.Enqueue(dbc);
             }
+        }
+
+
+        public DBCommand NewCommand(int timeoutSec = 60)
+        {
+            return new DBCommand(this, timeoutSec);
         }
 
 
         internal DBConnector GetDBC()
         {
-            DBConnector dbc;
-
-
-            using (_lock.WriterLock)
+            lock (this)
             {
-                if (_listPoolDBC.Count == 0)
+                if (_poolDBC.Count == 0 &&
+                    PooledDBCCount + ActiveDBCCount < _maxDBCCount)
                 {
-                    dbc = new DBConnector();
+                    var dbc = new DBConnector();
                     dbc.Connect(IpAddress, PortNo, CharSet, DBName, UserId, UserPwd);
-                }
-                else
-                {
-                    dbc = _listPoolDBC.ElementAt(0);
-                    _listPoolDBC.RemoveAt(0);
-                    _listActiveDBC.Add(dbc);
+                    _poolDBC.Enqueue(dbc);
                 }
             }
 
-            return dbc;
+
+            return _poolDBC.Dequeue();
         }
 
 
         internal void ReturnDBC(DBConnector dbc)
         {
-            using (_lock.WriterLock)
-            {
-                _listActiveDBC.Remove(dbc);
-                _listPoolDBC.Add(dbc);
-            }
+            _poolDBC.Enqueue(dbc);
         }
 
 
@@ -178,10 +178,9 @@ namespace Aegis.Data.MySQL
             int qps = 0;
 
 
-            using (_lock.ReaderLock)
+            lock (_dbConnectors)
             {
-                _listPoolDBC.ForEach(v => qps += v.QPS.Value);
-                _listActiveDBC.ForEach(v => qps += v.QPS.Value);
+                _dbConnectors.ForEach(v => qps += v.QPS.Value);
             }
 
             return qps;

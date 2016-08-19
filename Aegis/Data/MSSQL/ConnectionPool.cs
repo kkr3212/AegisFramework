@@ -11,7 +11,7 @@ using Aegis.Threading;
 
 namespace Aegis.Data.MSSQL
 {
-    [DebuggerDisplay("Name={DBName}, Host={IpAddress}, {PortNo}")]
+    [DebuggerDisplay("Name={DBName}, Host={IpAddress},{PortNo}")]
     public sealed class ConnectionPool
     {
         private List<DBConnector> _listPoolDBC = new List<DBConnector>();

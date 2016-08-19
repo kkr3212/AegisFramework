@@ -54,7 +54,7 @@ namespace Aegis.Network
                     try
                     {
                         _listResponseAction.Remove(data);
-                        data.Dispatcher(new IOEventResult(_session, IOEventType.Read, buffer.Buffer, AegisResult.Ok));
+                        data.Dispatcher(new IOEventResult(_session, IOEventType.Read, buffer.Buffer, 0, buffer.WrittenBytes, AegisResult.Ok));
                     }
                     catch (Exception e)
                     {

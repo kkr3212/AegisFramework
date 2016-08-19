@@ -16,6 +16,11 @@ Samples/EchoClient/obj/
 Samples/EchoClient_Connector/bin/
 Samples/EchoClient_Connector/obj/
 
+Examples/UDPTest/Client/bin/
+Examples/UDPTest/Client/obj/
+Examples/UDPTest/Server/bin/
+Examples/UDPTest/Server/obj/
+
 
 Aegis.Client/bin/
 Aegis.Client/obj/

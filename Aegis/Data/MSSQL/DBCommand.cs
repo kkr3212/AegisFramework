@@ -141,7 +141,7 @@ namespace Aegis.Data.MSSQL
                     Dispose();
                 }
             },
-            () => { actionOnCompletion(exception); });
+            () => { actionOnCompletion?.Invoke(exception); });
         }
 
 
@@ -168,7 +168,7 @@ namespace Aegis.Data.MSSQL
                     throw;  //  상위 Exception Handler가 처리하도록 예외를 던진다.
                 }
             },
-            () => { actionOnCompletion(exception); });
+            () => { actionOnCompletion?.Invoke(exception); });
         }
 
 
@@ -195,7 +195,7 @@ namespace Aegis.Data.MSSQL
                     throw;  //  상위 Exception Handler가 처리하도록 예외를 던진다.
                 }
             },
-            () => { actionOnCompletion(exception); });
+            () => { actionOnCompletion?.Invoke(exception); });
         }
 
 
