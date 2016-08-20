@@ -17,7 +17,7 @@ namespace Aegis.IO
 
         public System.IO.Ports.SerialPort Handle { get; private set; }
         public string PortName { get; set; }
-        public bool IsOpen { get { return Handle.IsOpen; } }
+        public bool IsOpen { get { return Handle?.IsOpen ?? false; } }
         public int BaudRate { get; set; } = 9600;
         public int DataBit { get; set; } = 8;
         public System.IO.Ports.Parity Parity { get; set; } = System.IO.Ports.Parity.None;

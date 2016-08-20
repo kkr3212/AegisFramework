@@ -16,6 +16,7 @@ namespace Aegis.Data
         public List<TreeNode> Childs { get; private set; } = new List<TreeNode>();
         public string Name { get; private set; }
         public string Value { get; private set; }
+        public string Path { get; private set; }
 
         public string this[string path]
         {
@@ -23,7 +24,7 @@ namespace Aegis.Data
             set { SetValue(path, value); }
         }
 
-        public delegate string InvalidPathDelegator(string path);
+        public delegate string InvalidPathDelegator(TreeNode sender, string path);
         public InvalidPathDelegator InvalidPathHandler;
 
 
@@ -35,6 +36,11 @@ namespace Aegis.Data
             Parent = parent;
             Name = name;
             Value = value;
+
+            if (parent == null)
+                Path = Name;
+            else
+                Path = parent.Name + "\\" + Name;
 
             if (parent != null)
                 parent.Childs.Add(this);
@@ -115,7 +121,7 @@ namespace Aegis.Data
                 if (node == null)
                 {
                     if (InvalidPathHandler != null)
-                        return InvalidPathHandler(path);
+                        return InvalidPathHandler(this, path);
                     else
                         throw new AegisException(AegisResult.InvalidArgument, "Invalid node name({0}).", name);
                 }
@@ -141,7 +147,7 @@ namespace Aegis.Data
             {
                 node = node.Childs.Find(v => v.Name == name);
                 if (node == null)
-                    return InvalidPathHandler?.Invoke(path) ?? defaultValue;
+                    return InvalidPathHandler?.Invoke(this, path) ?? defaultValue;
             }
 
             return node.Value;
