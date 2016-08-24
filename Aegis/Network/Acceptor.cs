@@ -52,7 +52,11 @@ namespace Aegis.Network
                 _listenSocket.Bind(_listenEndPoint);
                 _listenSocket.Listen(100);
 
-                Logger.Info(LogMask.Aegis, "Listening on {0}, {1}", _listenEndPoint.Address, _listenEndPoint.Port);
+                if (_networkChannel.Name != "")
+                    Logger.Info(LogMask.Aegis, "{0} listening on {1}, {2}", _networkChannel.Name, _listenEndPoint.Address, _listenEndPoint.Port);
+                else
+                    Logger.Info(LogMask.Aegis, "Listening on {0}, {1}", _listenEndPoint.Address, _listenEndPoint.Port);
+
                 _listenSocket.AcceptAsync(_eventAccept);
             }
             catch (AegisException)
@@ -72,7 +76,11 @@ namespace Aegis.Network
                 return;
 
             _listenSocket.Close();
-            Logger.Info(LogMask.Aegis, "Listening stopped({0}, {1})", _listenEndPoint.Address, _listenEndPoint.Port);
+
+            if (_networkChannel.Name != "")
+                Logger.Info(LogMask.Aegis, "{0} listening stopped({1}, {2})", _networkChannel.Name, _listenEndPoint.Address, _listenEndPoint.Port);
+            else
+                Logger.Info(LogMask.Aegis, "Listening stopped({0}, {1})", _listenEndPoint.Address, _listenEndPoint.Port);
 
 
             _listenSocket = null;

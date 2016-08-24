@@ -89,27 +89,28 @@ namespace Aegis.Network
                     _receivedBuffer.Write(transBytes);
                     while (_receivedBuffer.ReadableSize > 0)
                     {
-                        _dispatchBuffer.Clear();
-                        _dispatchBuffer.Write(_receivedBuffer.Buffer, _receivedBuffer.ReadBytes, _receivedBuffer.ReadableSize);
-
-
                         //  패킷 하나가 정상적으로 수신되었는지 확인
                         int packetSize;
-
-                        _dispatchBuffer.ResetReadIndex();
+                        StreamBuffer tmpBuffer = new StreamBuffer(_receivedBuffer, _receivedBuffer.ReadBytes, _receivedBuffer.ReadableSize);
                         if (_session.PacketValidator == null ||
-                            _session.PacketValidator(_dispatchBuffer, out packetSize) == false)
+                            _session.PacketValidator(tmpBuffer, out packetSize) == false)
                             break;
 
                         try
                         {
-                            //  수신처리(Dispatch)
+                            //  수신 이벤트 처리 중 종료 이벤트가 발생한 경우
+                            if (_session.Socket == null)
+                                return;
+
+
+                            //  수신버퍼에서 제거
                             _receivedBuffer.Read(packetSize);
-                            _dispatchBuffer.ResetReadIndex();
 
 
-                            if (_responseSelector.Dispatch(_dispatchBuffer) == false)
-                                _session.OnReceived(_dispatchBuffer);
+                            //  수신처리(Dispatch)
+                            StreamBuffer dispatchBuffer = new StreamBuffer(tmpBuffer, 0, packetSize);
+                            if (_responseSelector.Dispatch(dispatchBuffer) == false)
+                                _session.OnReceived(dispatchBuffer);
                         }
                         catch (Exception e)
                         {

@@ -14,7 +14,7 @@ namespace Aegis.Network
     internal class SessionMethodAsyncResult : ISessionMethod
     {
         private Session _session;
-        private StreamBuffer _receivedBuffer, _dispatchBuffer;
+        private StreamBuffer _receivedBuffer;
 
         private ResponseSelector _responseSelector;
 
@@ -26,7 +26,6 @@ namespace Aegis.Network
         {
             _session = session;
             _receivedBuffer = new StreamBuffer(2048);
-            _dispatchBuffer = new StreamBuffer(2048);
             _responseSelector = new ResponseSelector(_session);
         }
 
@@ -34,7 +33,6 @@ namespace Aegis.Network
         public void Clear()
         {
             _receivedBuffer.Clear();
-            _dispatchBuffer.Clear();
         }
 
 
@@ -84,16 +82,11 @@ namespace Aegis.Network
                     _receivedBuffer.Write(transBytes);
                     while (_receivedBuffer.ReadableSize > 0)
                     {
-                        _dispatchBuffer.Clear();
-                        _dispatchBuffer.Write(_receivedBuffer.Buffer, _receivedBuffer.ReadBytes, _receivedBuffer.ReadableSize);
-
-
                         //  패킷 하나가 정상적으로 수신되었는지 확인
                         int packetSize;
-
-                        _dispatchBuffer.ResetReadIndex();
+                        StreamBuffer tmpBuffer = new StreamBuffer(_receivedBuffer, _receivedBuffer.ReadBytes, _receivedBuffer.ReadableSize);
                         if (_session.PacketValidator == null ||
-                            _session.PacketValidator(_dispatchBuffer, out packetSize) == false)
+                            _session.PacketValidator(tmpBuffer, out packetSize) == false)
                             break;
 
                         try
@@ -103,13 +96,14 @@ namespace Aegis.Network
                                 return;
 
 
-                            //  수신처리(Dispatch)
+                            //  수신버퍼에서 제거
                             _receivedBuffer.Read(packetSize);
-                            _dispatchBuffer.ResetReadIndex();
 
 
-                            if (_responseSelector.Dispatch(_dispatchBuffer) == false)
-                                _session.OnReceived(_dispatchBuffer);
+                            //  수신처리(Dispatch)
+                            StreamBuffer dispatchBuffer = new StreamBuffer(tmpBuffer, 0, packetSize);
+                            if (_responseSelector.Dispatch(dispatchBuffer) == false)
+                                _session.OnReceived(dispatchBuffer);
                         }
                         catch (Exception e)
                         {

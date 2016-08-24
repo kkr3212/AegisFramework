@@ -210,8 +210,8 @@ namespace Aegis.Network
         /// <param name="source">저장할 데이터</param>
         public virtual void Clear(StreamBuffer source)
         {
-            if (source.BufferSize < 4)
-                throw new AegisException(AegisResult.InvalidArgument, "The source size must be at lest 4 bytes.");
+            if (source.BufferSize < HeaderSize)
+                throw new AegisException(AegisResult.InvalidArgument, "The source size must be at lest {0} bytes.", HeaderSize);
 
             base.Clear();
             Write(source.Buffer, 0, source.WrittenBytes);

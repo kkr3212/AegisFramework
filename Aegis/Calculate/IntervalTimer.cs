@@ -128,9 +128,13 @@ namespace Aegis.Calculate
                 List<IntervalTimer> timers = new List<IntervalTimer>();
                 foreach (var timer in Timers.Values)
                     timers.Add(timer);
+                foreach (var timer in _queue)
+                    timers.Add(timer);
+
 
                 foreach (var timer in timers)
                     timer.Dispose();
+                _queue.Clear();
             }
         }
 

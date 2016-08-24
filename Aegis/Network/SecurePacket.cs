@@ -218,7 +218,7 @@ namespace Aegis.Network
         /// </summary>
         /// <param name="buffer">수신된 데이터가 담긴 버퍼</param>
         /// <param name="packetSize">유효한 패킷의 크기</param>
-        /// <returns>true를 반환하면 OnReceive를 통해 수신된 데이터가 전달됩니다.</returns>
+        /// <returns>true를 반환하면 EventReceive 통해 수신된 데이터가 전달됩니다.</returns>
         public static bool IsValidPacket(StreamBuffer buffer, out int packetSize)
         {
             if (buffer.WrittenBytes < HeaderSize)
@@ -254,8 +254,8 @@ namespace Aegis.Network
         /// <param name="source">저장할 데이터</param>
         public virtual void Clear(StreamBuffer source)
         {
-            if (source.BufferSize < 4)
-                throw new AegisException(AegisResult.InvalidArgument, "The source size must be at lest 4 bytes.");
+            if (source.BufferSize < HeaderSize)
+                throw new AegisException(AegisResult.InvalidArgument, "The source size must be at lest {0} bytes.", HeaderSize);
 
             base.Clear();
             Write(source.Buffer, 0, source.WrittenBytes);

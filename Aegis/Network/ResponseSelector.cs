@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Aegis.IO;
+using Aegis.Threading;
 
 
 
@@ -51,15 +52,16 @@ namespace Aegis.Network
             {
                 if (data.Predicate(buffer) == true)
                 {
-                    try
+                    AegisTask.SafeAction(() =>
                     {
                         _listResponseAction.Remove(data);
-                        data.Dispatcher(new IOEventResult(_session, IOEventType.Read, buffer.Buffer, 0, buffer.WrittenBytes, AegisResult.Ok));
-                    }
-                    catch (Exception e)
-                    {
-                        Logger.Err(LogMask.Aegis, e.ToString());
-                    }
+                        var result = new IOEventResult(_session, IOEventType.Read, buffer.Buffer, 0, buffer.WrittenBytes, AegisResult.Ok);
+
+                        SpinWorker.Dispatch(() =>
+                        {
+                            data.Dispatcher(result);
+                        });
+                    });
                     return true;
                 }
             }
