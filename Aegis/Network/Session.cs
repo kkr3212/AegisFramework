@@ -266,11 +266,8 @@ namespace Aegis.Network
 
         internal void OnReceived(StreamBuffer buffer)
         {
-            SpinWorker.Dispatch(() =>
-            {
-                if (_packetDispatcher?.Dispatch(buffer) == false)
-                    EventReceive?.Invoke(new IOEventResult(this, IOEventType.Read, buffer.Buffer, 0, buffer.WrittenBytes, AegisResult.Ok));
-            });
+            if (_packetDispatcher?.Dispatch(buffer) == false)
+                EventReceive?.Invoke(new IOEventResult(this, IOEventType.Read, buffer.Buffer, 0, buffer.WrittenBytes, AegisResult.Ok));
         }
     }
 }

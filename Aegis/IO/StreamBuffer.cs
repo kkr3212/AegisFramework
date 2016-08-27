@@ -171,9 +171,22 @@ namespace Aegis.IO
         }
 
 
-        public void Write(Byte source)
+        public void Write(char source)
         {
-            int srcSize = sizeof(Byte);
+            int srcSize = sizeof(char);
+            if (WrittenBytes + srcSize > BufferSize)
+                Resize(BufferSize + srcSize);
+
+            Buffer[WrittenBytes] = (byte)source;
+            WrittenBytes += srcSize;
+
+            OnWritten();
+        }
+
+
+        public void Write(byte source)
+        {
+            int srcSize = sizeof(byte);
             if (WrittenBytes + srcSize > BufferSize)
                 Resize(BufferSize + srcSize);
 
@@ -184,7 +197,7 @@ namespace Aegis.IO
         }
 
 
-        public void Write(Byte[] source)
+        public void Write(byte[] source)
         {
             int srcSize = source.Length;
             if (WrittenBytes + srcSize > BufferSize)
@@ -210,64 +223,64 @@ namespace Aegis.IO
         }
 
 
-        public void Write(Byte[] source, int index)
+        public void Write(byte[] source, int sourceIndex)
         {
-            if (index >= source.Length)
-                throw new AegisException(AegisResult.BufferUnderflow, "The argument index(={0}) is larger then source size(={1}).", index, source.Length);
+            if (sourceIndex >= source.Length)
+                throw new AegisException(AegisResult.BufferUnderflow, "The argument index(={0}) is larger then source size(={1}).", sourceIndex, source.Length);
 
-            int copyBytes = source.Length - index;
+            int copyBytes = source.Length - sourceIndex;
             if (WrittenBytes + copyBytes > BufferSize)
                 Resize(BufferSize + copyBytes);
 
-            Array.Copy(source, index, Buffer, WrittenBytes, copyBytes);
+            Array.Copy(source, sourceIndex, Buffer, WrittenBytes, copyBytes);
             WrittenBytes += copyBytes;
 
             OnWritten();
         }
 
 
-        public void Write(Byte[] source, int index, int size)
+        public void Write(byte[] source, int sourceIndex, int length)
         {
-            if (index + size > source.Length)
+            if (sourceIndex + length > source.Length)
                 throw new AegisException(AegisResult.BufferUnderflow, "The source buffer is small then requested.");
 
-            int copyBytes = size;
+            int copyBytes = length;
             if (WrittenBytes + copyBytes > BufferSize)
                 Resize(BufferSize + copyBytes);
 
-            Array.Copy(source, index, Buffer, WrittenBytes, copyBytes);
+            Array.Copy(source, sourceIndex, Buffer, WrittenBytes, copyBytes);
             WrittenBytes += copyBytes;
 
             OnWritten();
         }
 
 
-        public void Write(StreamBuffer source, int index)
+        public void Write(StreamBuffer source, int sourceIndex)
         {
-            if (index >= source.WrittenBytes)
-                throw new AegisException(AegisResult.BufferUnderflow, "The argument index(={0}) is larger then source size(={1}).", index, source.WrittenBytes);
+            if (sourceIndex >= source.WrittenBytes)
+                throw new AegisException(AegisResult.BufferUnderflow, "The argument index(={0}) is larger then source size(={1}).", sourceIndex, source.WrittenBytes);
 
-            int copyBytes = source.WrittenBytes - index;
+            int copyBytes = source.WrittenBytes - sourceIndex;
             if (WrittenBytes + copyBytes > BufferSize)
                 Resize(BufferSize + copyBytes);
 
-            Array.Copy(source.Buffer, index, Buffer, WrittenBytes, copyBytes);
+            Array.Copy(source.Buffer, sourceIndex, Buffer, WrittenBytes, copyBytes);
             WrittenBytes += copyBytes;
 
             OnWritten();
         }
 
 
-        public void Write(StreamBuffer source, int index, int size)
+        public void Write(StreamBuffer source, int sourceIndex, int length)
         {
-            if (index + size > source.WrittenBytes)
+            if (sourceIndex + length > source.WrittenBytes)
                 throw new AegisException(AegisResult.BufferUnderflow, "The source buffer is small then requested.");
 
-            int copyBytes = size;
+            int copyBytes = length;
             if (WrittenBytes + copyBytes > BufferSize)
                 Resize(BufferSize + copyBytes);
 
-            Array.Copy(source.Buffer, index, Buffer, WrittenBytes, copyBytes);
+            Array.Copy(source.Buffer, sourceIndex, Buffer, WrittenBytes, copyBytes);
             WrittenBytes += copyBytes;
 
             OnWritten();
@@ -281,9 +294,9 @@ namespace Aegis.IO
                 switch (v.GetType().Name)
                 {
                     case "Bool": PutBoolean((bool)v); break;
-                    case "Byte": PutByte((Byte)v); break;
-                    case "SByte": PutSByte((SByte)v); break;
-                    case "Char": PutChar((Char)v); break;
+                    case "Byte": PutByte((byte)v); break;
+                    case "SByte": PutSByte((sbyte)v); break;
+                    case "Char": PutChar((char)v); break;
                     case "Int16": PutInt16((short)v); break;
                     case "UInt16": PutUInt16((ushort)v); break;
                     case "Int32": PutInt32((int)v); break;
@@ -297,9 +310,25 @@ namespace Aegis.IO
         }
 
 
-        public void Overwrite(Byte source, int writeIndex)
+        public void Overwrite(char source, int writeIndex)
         {
-            int copyBytes = sizeof(Byte);
+            int copyBytes = sizeof(char);
+            if (writeIndex + copyBytes >= BufferSize)
+                Resize(BufferSize + copyBytes);
+
+            Buffer[writeIndex] = (byte)source;
+
+            if (writeIndex + copyBytes > WrittenBytes)
+            {
+                WrittenBytes = writeIndex + copyBytes;
+                OnWritten();
+            }
+        }
+
+
+        public void Overwrite(byte source, int writeIndex)
+        {
+            int copyBytes = sizeof(byte);
             if (writeIndex + copyBytes >= BufferSize)
                 Resize(BufferSize + copyBytes);
 
@@ -313,7 +342,7 @@ namespace Aegis.IO
         }
 
 
-        public void Overwrite(Byte[] source, int index, int size, int writeIndex)
+        public void Overwrite(byte[] source, int index, int size, int writeIndex)
         {
             if (index + size > source.Length)
                 throw new AegisException(AegisResult.BufferUnderflow, "The source buffer is small then requested.");
@@ -341,19 +370,19 @@ namespace Aegis.IO
         }
 
 
-        public Byte Read()
+        public byte Read()
         {
-            if (ReadBytes + sizeof(Byte) > WrittenBytes)
+            if (ReadBytes + sizeof(byte) > WrittenBytes)
                 throw new AegisException(AegisResult.BufferUnderflow, "No more readable buffer.");
 
             var value = Buffer[ReadBytes];
-            ReadBytes += sizeof(Byte);
+            ReadBytes += sizeof(byte);
 
             return value;
         }
 
 
-        public void Read(Byte[] destination)
+        public void Read(byte[] destination)
         {
             if (destination.Length < BufferSize)
                 throw new AegisException(AegisResult.BufferUnderflow, "Destination buffer size too small.");
@@ -363,22 +392,24 @@ namespace Aegis.IO
         }
 
 
-        public void Read(Byte[] destination, int index)
+        public void Read(byte[] destination, int destinationIndex)
         {
-            if (destination.Length - index < BufferSize)
+            int copyBytes = WrittenBytes - ReadBytes;
+            if (destination.Length - destinationIndex < copyBytes)
                 throw new AegisException(AegisResult.BufferUnderflow, "Destination buffer size too small.");
 
-            Array.Copy(Buffer, 0, destination, index, BufferSize);
-            ReadBytes += BufferSize;
+            Array.Copy(Buffer, ReadBytes, destination, destinationIndex, copyBytes);
+            ReadBytes += copyBytes;
         }
 
 
-        public void Read(Byte[] destination, int index, int readIndex, int size)
+        public void Read(byte[] destination, int destinationIndex, int length)
         {
-            if (destination.Length - index < size)
+            if (destination.Length - destinationIndex < length)
                 throw new AegisException(AegisResult.BufferUnderflow, "Destination buffer size too small.");
 
-            Array.Copy(Buffer, readIndex, destination, index, size);
+            Array.Copy(Buffer, ReadBytes, destination, destinationIndex, length);
+            ReadBytes += length;
         }
 
 
@@ -393,24 +424,24 @@ namespace Aegis.IO
         }
 
 
-        public SByte GetSByte()
+        public sbyte GetSByte()
         {
-            if (ReadBytes + sizeof(SByte) > WrittenBytes)
+            if (ReadBytes + sizeof(sbyte) > WrittenBytes)
                 throw new AegisException(AegisResult.BufferUnderflow, "No more readable buffer.");
 
-            var val = (SByte)Buffer[ReadBytes];
-            ReadBytes += sizeof(SByte);
+            var val = (sbyte)Buffer[ReadBytes];
+            ReadBytes += sizeof(sbyte);
             return val;
         }
 
 
-        public Byte GetByte()
+        public byte GetByte()
         {
-            if (ReadBytes + sizeof(Byte) > WrittenBytes)
+            if (ReadBytes + sizeof(byte) > WrittenBytes)
                 throw new AegisException(AegisResult.BufferUnderflow, "No more readable buffer.");
 
-            var val = (Byte)Buffer[ReadBytes];
-            ReadBytes += sizeof(Byte);
+            var val = (byte)Buffer[ReadBytes];
+            ReadBytes += sizeof(byte);
             return val;
         }
 
@@ -556,27 +587,27 @@ namespace Aegis.IO
         }
 
 
-        public SByte GetSByte(int readIndex)
+        public sbyte GetSByte(int readIndex)
         {
-            if (readIndex + sizeof(SByte) > WrittenBytes)
+            if (readIndex + sizeof(sbyte) > WrittenBytes)
                 throw new AegisException(AegisResult.BufferUnderflow, "No more readable buffer.");
 
-            return (SByte)Buffer[readIndex];
+            return (sbyte)Buffer[readIndex];
         }
 
 
-        public Byte GetByte(int readIndex)
+        public byte GetByte(int readIndex)
         {
-            if (readIndex + sizeof(Byte) > WrittenBytes)
+            if (readIndex + sizeof(byte) > WrittenBytes)
                 throw new AegisException(AegisResult.BufferUnderflow, "No more readable buffer.");
 
             return Buffer[readIndex];
         }
 
 
-        public Char GetChar(int readIndex)
+        public char GetChar(int readIndex)
         {
-            if (readIndex + sizeof(Char) > WrittenBytes)
+            if (readIndex + sizeof(char) > WrittenBytes)
                 throw new AegisException(AegisResult.BufferUnderflow, "No more readable buffer.");
 
             return BitConverter.ToChar(Buffer, readIndex);
@@ -695,27 +726,27 @@ namespace Aegis.IO
         }
 
 
-        public static SByte GetSByte(StreamBuffer source, int readIndex)
+        public static sbyte GetSByte(StreamBuffer source, int readIndex)
         {
-            if (readIndex + sizeof(SByte) > source.WrittenBytes)
+            if (readIndex + sizeof(sbyte) > source.WrittenBytes)
                 throw new AegisException(AegisResult.BufferUnderflow, "No more readable buffer.");
 
-            return (SByte)source.Buffer[readIndex];
+            return (sbyte)source.Buffer[readIndex];
         }
 
 
-        public static Byte GetByte(StreamBuffer source, int readIndex)
+        public static byte GetByte(StreamBuffer source, int readIndex)
         {
-            if (readIndex + sizeof(Byte) > source.WrittenBytes)
+            if (readIndex + sizeof(byte) > source.WrittenBytes)
                 throw new AegisException(AegisResult.BufferUnderflow, "No more readable buffer.");
 
             return source.Buffer[readIndex];
         }
 
 
-        public static Char GetChar(StreamBuffer source, int readIndex)
+        public static char GetChar(StreamBuffer source, int readIndex)
         {
-            if (readIndex + sizeof(Char) > source.WrittenBytes)
+            if (readIndex + sizeof(char) > source.WrittenBytes)
                 throw new AegisException(AegisResult.BufferUnderflow, "No more readable buffer.");
 
             return BitConverter.ToChar(source.Buffer, readIndex);
@@ -815,29 +846,29 @@ namespace Aegis.IO
         }
 
 
-        public int PutSByte(SByte var)
+        public int PutSByte(sbyte var)
         {
             int prevIndex = WrittenBytes;
 
-            Write(BitConverter.GetBytes(var), 0, sizeof(SByte));
+            Write(BitConverter.GetBytes(var), 0, sizeof(sbyte));
             return prevIndex;
         }
 
 
-        public int PutByte(Byte var)
+        public int PutByte(byte var)
         {
             int prevIndex = WrittenBytes;
 
-            Write(BitConverter.GetBytes(var), 0, sizeof(Byte));
+            Write(BitConverter.GetBytes(var), 0, sizeof(byte));
             return prevIndex;
         }
 
 
-        public int PutChar(Char var)
+        public int PutChar(char var)
         {
             int prevIndex = WrittenBytes;
 
-            Write(BitConverter.GetBytes(var), 0, sizeof(Char));
+            Write(BitConverter.GetBytes(var), 0, sizeof(char));
             return prevIndex;
         }
 
@@ -933,21 +964,21 @@ namespace Aegis.IO
         }
 
 
-        public void OverwriteSByte(int writeIndex, SByte var)
+        public void OverwriteSByte(int writeIndex, sbyte var)
         {
-            Overwrite((Byte)var, writeIndex);
+            Overwrite((byte)var, writeIndex);
         }
 
 
-        public void OverwriteByte(int writeIndex, Byte var)
+        public void OverwriteByte(int writeIndex, byte var)
         {
-            Overwrite((Byte)var, writeIndex);
+            Overwrite((byte)var, writeIndex);
         }
 
 
-        public void OverwriteChar(int writeIndex, Char var)
+        public void OverwriteChar(int writeIndex, char var)
         {
-            Overwrite(BitConverter.GetBytes(var), 0, sizeof(Char), writeIndex);
+            Overwrite(BitConverter.GetBytes(var), 0, sizeof(char), writeIndex);
         }
 
 

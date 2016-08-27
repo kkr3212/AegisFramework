@@ -42,26 +42,31 @@ namespace Aegis.Network
 
         public void Add(PacketPredicate predicate, IOEventHandler dispatcher)
         {
-            _listResponseAction.Add(new Data(predicate, dispatcher));
+            lock (_listResponseAction)
+                _listResponseAction.Add(new Data(predicate, dispatcher));
         }
 
 
         public bool Dispatch(StreamBuffer buffer)
         {
-            foreach (var data in _listResponseAction)
+            var responses = new List<Data>();
+
+            lock (_listResponseAction)
+            {
+                foreach (var data in _listResponseAction)
+                    responses.Add(data);
+            }
+
+            foreach (var data in responses)
             {
                 if (data.Predicate(buffer) == true)
                 {
-                    AegisTask.SafeAction(() =>
-                    {
+                    lock (_listResponseAction)
                         _listResponseAction.Remove(data);
-                        var result = new IOEventResult(_session, IOEventType.Read, buffer.Buffer, 0, buffer.WrittenBytes, AegisResult.Ok);
 
-                        SpinWorker.Dispatch(() =>
-                        {
-                            data.Dispatcher(result);
-                        });
-                    });
+                    var result = new IOEventResult(_session, IOEventType.Read,
+                                                   buffer.Buffer, 0, buffer.WrittenBytes, AegisResult.Ok);
+                    data.Dispatcher(result);
                     return true;
                 }
             }

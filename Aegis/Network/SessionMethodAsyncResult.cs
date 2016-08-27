@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using System.Net;
 using System.Net.Sockets;
 using Aegis.IO;
+using Aegis.Threading;
 
 
 
@@ -102,8 +103,11 @@ namespace Aegis.Network
 
                             //  수신처리(Dispatch)
                             StreamBuffer dispatchBuffer = new StreamBuffer(tmpBuffer, 0, packetSize);
-                            if (_responseSelector.Dispatch(dispatchBuffer) == false)
-                                _session.OnReceived(dispatchBuffer);
+                            SpinWorker.Dispatch(() =>
+                            {
+                                if (_responseSelector.Dispatch(dispatchBuffer) == false)
+                                    _session.OnReceived(dispatchBuffer);
+                            });
                         }
                         catch (Exception e)
                         {

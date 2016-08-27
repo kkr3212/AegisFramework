@@ -22,7 +22,6 @@ namespace Aegis.Threading
         public static int DispatchThreadCount
         {
             get { return _dispatchThread.ThreadCount; }
-            set { IncreaseThread(_dispatchThread, value); }
         }
 
 
