@@ -7,7 +7,7 @@ using Aegis.Threading;
 
 namespace Aegis
 {
-    public delegate Session SessionGenerateDelegator();
+    public delegate Session SessionGenerateHandler();
     /// <summary>
     /// 수신된 데이터가 유효한 패킷인지 여부를 확인합니다.
     /// 유효한 패킷으로 판단되면 packetSize에 이 패킷의 정확한 크기를 입력하고 true를 반환해야 합니다.

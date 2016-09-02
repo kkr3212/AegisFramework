@@ -113,6 +113,7 @@ namespace Aegis
             //  프레임워크 종료
             {
                 Calculate.IntervalTimer.DisposeAll();
+                NamedThread.DisposeAll();
                 NamedObjectManager.Clear();
                 SpinWorker.Release();
 

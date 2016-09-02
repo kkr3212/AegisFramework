@@ -9,11 +9,11 @@ using System.Xml;
 
 namespace Aegis.Data
 {
-    public partial class TreeNode
+    public partial class TreeNode<T>
     {
-        public static TreeNode LoadFromXml(string xml, string nodeName)
+        public static TreeNode<string> LoadFromXml(string xml, string nodeName)
         {
-            TreeNode root = new TreeNode(null, nodeName, "");
+            TreeNode<string> root = new TreeNode<string>(null, nodeName, "");
             XmlDocument xmlDoc = new XmlDocument();
             xmlDoc.LoadXml(xml);
 
@@ -25,21 +25,21 @@ namespace Aegis.Data
         }
 
 
-        private static void Xml_GetAttributes(XmlNode node, TreeNode target)
+        private static void Xml_GetAttributes(XmlNode node, TreeNode<string> target)
         {
             foreach (XmlAttribute attr in node.Attributes)
             {
-                new TreeNode(target, attr.Name, attr.Value);
+                new TreeNode<string>(target, attr.Name, attr.Value);
             }
         }
 
 
-        private static void Xml_GetChilds(XmlNode node, TreeNode target)
+        private static void Xml_GetChilds(XmlNode node, TreeNode<string> target)
         {
             Xml_GetAttributes(node, target);
             foreach (XmlNode child in node.ChildNodes)
             {
-                TreeNode newNode = new TreeNode(target, child.Name, "");
+                TreeNode<string> newNode = new TreeNode<string>(target, child.Name, "");
                 Xml_GetChilds(child, newNode);
             }
         }

@@ -23,10 +23,10 @@ namespace Aegis.Network
         public List<Session> ActiveSessions { get; } = new List<Session>();
         public List<Session> InactiveSessions { get; } = new List<Session>();
         public int MaxSessionCount { get; set; }
-        public SessionGenerateDelegator SessionGenerator { get; set; }
+        public SessionGenerateHandler SessionGenerator { get; set; }
 
         public Acceptor Acceptor { get; private set; }
-        private TreeNode _configNode;
+        private TreeNode<string> _configNode;
 
 
 
@@ -37,8 +37,9 @@ namespace Aegis.Network
         /// name은 이전에 생성된 NetworkChannel과 동일한 문자열을 사용할 수 없습니다.
         /// </summary>
         /// <param name="name">생성할 NetworkChannel의 고유한 이름.</param>
+        /// <param name="sessionGenerator">Session 객체를 생성할 핸들러. null이면 기본 Session 객체가 생성됩니다.</param>
         /// <returns>생성된 NetworkChannel 객체</returns>
-        public static NetworkChannel CreateChannel(string name)
+        public static NetworkChannel CreateChannel(string name, SessionGenerateHandler sessionGenerator)
         {
             lock (Channels)
             {
@@ -47,6 +48,10 @@ namespace Aegis.Network
 
 
                 NetworkChannel channel = new NetworkChannel(name);
+                if (sessionGenerator == null)
+                    channel.SessionGenerator = delegate { return GenerateSession("Aegis.Network.Session"); };
+                else
+                    channel.SessionGenerator = sessionGenerator;
                 Channels.Add(name, channel);
 
                 return channel;
@@ -60,11 +65,11 @@ namespace Aegis.Network
         /// </summary>
         /// <param name="node">생성할 NetworkChannel의 데이터가 정의된 TreeNode</param>
         /// <returns>생성된 NetworkChannel 객체</returns>
-        public static NetworkChannel CreateChannelFromNode(TreeNode node)
+        public static NetworkChannel CreateChannelFromNode(TreeNode<string> node)
         {
             lock (Channels)
             {
-                string channelName = node.GetValue("name");
+                string channelName = node.GetValue("name").ToString();
                 if (Channels.Exists(channelName))
                     throw new AegisException(AegisResult.AlreadyExistName, "'{0}' is already exists channel name.", node.Name);
 

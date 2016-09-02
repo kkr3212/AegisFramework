@@ -53,8 +53,8 @@ namespace Aegis.Network
             if (_socket == null)
                 return;
 
-            _socket.Close();
-            _socket.Dispose();
+            _socket?.Close();
+            _socket?.Dispose();
             _socket = null;
         }
 

@@ -125,6 +125,9 @@
     <Compile Include="ServiceMain.cs">
       <SubType>Component</SubType>
     </Compile>
+    <Compile Include="SystemDll\Defines.cs" />
+    <Compile Include="SystemDll\User32.cs" />
+    <Compile Include="Threading\NamedThread.cs" />
     <Compile Include="Threading\SpinWorker.cs" />
     <Compile Include="Calculate\SequentialNumber.cs" />
     <Compile Include="Threading\AegisTask.cs" />
@@ -138,7 +141,6 @@
     <Compile Include="Network\SecurePacket.cs" />
     <Compile Include="ObjectPool.cs" />
     <Compile Include="Calculate\Randomizer.cs" />
-    <Compile Include="Threading\ThreadCancellable.cs" />
     <Compile Include="Threading\RWLock.cs" />
     <Compile Include="AegisResult.cs" />
     <Compile Include="BlockingQueue.cs" />
