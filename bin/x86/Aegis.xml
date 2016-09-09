@@ -4,21 +4,6 @@
         <name>Aegis</name>
     </assembly>
     <members>
-        <member name="M:Aegis.Data.TreeNode.GetValue(System.String)">
-            <summary>
-            지정된 Path에서 값을 가져옵니다.
-            </summary>
-            <param name="path">구분자는 \ 혹은 / 를 사용할 수 있습니다.</param>
-            <returns>지정된 Path에 정의된 값</returns>
-        </member>
-        <member name="M:Aegis.Data.TreeNode.GetValue(System.String,System.String)">
-            <summary>
-            지정된 Path에서 값을 가져옵니다.
-            </summary>
-            <param name="path">구분자는 \ 혹은 / 를 사용할 수 있습니다.</param>
-            <param name="defaultValue">path에서 값을 가져올 수 없으면 default값을 반환합니다.</param>
-            <returns>path에 값이 정의되어있으면 해당 값을 반환하고 path가 잘못되어있으면 defaultValue를 반환합니다.</returns>
-        </member>
         <member name="M:Aegis.Calculate.ConvertMethods.UnixTimeStamp(System.DateTime)">
             <summary>
             DateTime을 UnixTimeStamp 값으로 변환합니다.
@@ -110,6 +95,22 @@
             <param name="max">최대값</param>
             <returns>임의 값</returns>
         </member>
+        <member name="M:Aegis.Data.TreeNode`1.GetValue(System.String)">
+            <summary>
+            지정된 Path에서 값을 가져옵니다.
+            </summary>
+            <param name="path">구분자는 \ 혹은 / 를 사용할 수 있습니다.</param>
+            <returns>지정된 Path에 정의된 값</returns>
+        </member>
+        <member name="M:Aegis.Data.TreeNode`1.GetValue(System.String,`0)">
+            <summary>
+            지정된 Path에서 값을 가져옵니다.
+            Path가 존재하지 않는 경우 defaultValue를 반환하며, 이 때에는 InvalidPathHandler가 사용되지 않습니다.
+            </summary>
+            <param name="path">구분자는 \ 혹은 / 를 사용할 수 있습니다.</param>
+            <param name="defaultValue">path에서 값을 가져올 수 없으면 default값을 반환합니다.</param>
+            <returns>path에 값이 정의되어있으면 해당 값을 반환하고 path가 잘못되어있으면 defaultValue를 반환합니다.</returns>
+        </member>
         <member name="T:Aegis.IO.StreamBuffer">
             <summary>
             데이터를 순차적으로 읽거나 쓸 수 있는 버퍼입니다.
@@ -177,15 +178,16 @@
             이 NetworkChannel 객체의 고유한 이름입니다.
             </summary>
         </member>
-        <member name="M:Aegis.Network.NetworkChannel.CreateChannel(System.String)">
+        <member name="M:Aegis.Network.NetworkChannel.CreateChannel(System.String,Aegis.SessionGenerateHandler)">
             <summary>
             NetworkChannel 객체를 생성합니다.
             name은 이전에 생성된 NetworkChannel과 동일한 문자열을 사용할 수 없습니다.
             </summary>
             <param name="name">생성할 NetworkChannel의 고유한 이름.</param>
+            <param name="sessionGenerator">Session 객체를 생성할 핸들러. null이면 기본 Session 객체가 생성됩니다.</param>
             <returns>생성된 NetworkChannel 객체</returns>
         </member>
-        <member name="M:Aegis.Network.NetworkChannel.CreateChannelFromNode(Aegis.Data.TreeNode)">
+        <member name="M:Aegis.Network.NetworkChannel.CreateChannelFromNode(Aegis.Data.TreeNode{System.String})">
             <summary>
             TreeNode에 정의된 데이터를 기준으로 NetworkChannel 객체를 생성합니다.
             TreeNode에는 name, sessionClass, maxSessionPoolCount, listenIpAddress, listenPortNo가 정의되어있어야 합니다.

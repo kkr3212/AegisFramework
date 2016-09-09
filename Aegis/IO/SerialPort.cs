@@ -43,15 +43,24 @@ namespace Aegis.IO
                     throw new AegisException(AegisResult.AlreadyInitialized, "{0} port already opened.", Handle.PortName);
 
 
-                Handle = new System.IO.Ports.SerialPort();
-                Handle.PortName = PortName;
-                Handle.BaudRate = BaudRate;
-                Handle.DataBits = DataBit;
-                Handle.Parity = Parity;
-                Handle.StopBits = StopBits;
-                Handle.ReadTimeout = ReadTimeout;
-                Handle.WriteTimeout = WriteTimeout;
-                Handle.Open();
+                try
+                {
+                    Handle = new System.IO.Ports.SerialPort();
+                    Handle.PortName = PortName;
+                    Handle.BaudRate = BaudRate;
+                    Handle.DataBits = DataBit;
+                    Handle.Parity = Parity;
+                    Handle.StopBits = StopBits;
+                    Handle.ReadTimeout = ReadTimeout;
+                    Handle.WriteTimeout = WriteTimeout;
+                    Handle.Open();
+                }
+                catch (Exception e)
+                {
+                    Handle.Dispose();
+                    Handle = null;
+                    throw e;
+                }
 
                 _receiveThread = new Thread(ReceiveThread);
                 _receiveThread.Start();

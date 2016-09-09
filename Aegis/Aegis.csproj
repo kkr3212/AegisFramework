@@ -94,6 +94,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Calculate\HighResolutionTimer.cs" />
     <Compile Include="Data\MSSQL\ConnectionPool.cs" />
     <Compile Include="Data\MSSQL\DBCommand.cs" />
     <Compile Include="Data\MSSQL\DBConnector.cs" />
@@ -126,6 +127,7 @@
       <SubType>Component</SubType>
     </Compile>
     <Compile Include="SystemDll\Defines.cs" />
+    <Compile Include="SystemDll\Kernel32.cs" />
     <Compile Include="SystemDll\User32.cs" />
     <Compile Include="Threading\NamedThread.cs" />
     <Compile Include="Threading\SpinWorker.cs" />
