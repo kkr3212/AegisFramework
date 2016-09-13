@@ -4,7 +4,6 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Reflection;
-using System.ServiceProcess;
 using Aegis.Threading;
 
 
@@ -46,7 +45,7 @@ namespace Aegis
 
         public static void Start(bool startOnExecuteFileDirectory)
         {
-            string[] args = System.Environment.GetCommandLineArgs();
+            string[] args = Environment.GetCommandLineArgs();
 
 
             //  프레임워크 초기화

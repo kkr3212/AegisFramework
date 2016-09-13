@@ -19,9 +19,9 @@ namespace Aegis.Network
 
         private Socket _socket;
         private EndPoint _endPoint;
-
         private readonly byte[] _receivedBuffer = new byte[8192];
 
+        public event Action<Exception> ExceptionRaised;
 
 
 
@@ -70,7 +70,10 @@ namespace Aegis.Network
             }
             catch (Exception e)
             {
-                Logger.Err(LogMask.Aegis, e.ToString());
+                if (ExceptionRaised == null)
+                    Logger.Err(LogMask.Aegis, e.ToString());
+                else
+                    ExceptionRaised.Invoke(e);
             }
         }
 
@@ -99,7 +102,10 @@ namespace Aegis.Network
             }
             catch (Exception e)
             {
-                Logger.Err(LogMask.Aegis, e.ToString());
+                if (ExceptionRaised == null)
+                    Logger.Err(LogMask.Aegis, e.ToString());
+                else
+                    ExceptionRaised.Invoke(e);
             }
         }
 
@@ -134,7 +140,10 @@ namespace Aegis.Network
             }
             catch (Exception e)
             {
-                Logger.Err(LogMask.Aegis, e.Message);
+                if (ExceptionRaised == null)
+                    Logger.Err(LogMask.Aegis, e.ToString());
+                else
+                    ExceptionRaised.Invoke(e);
             };
         }
     }
