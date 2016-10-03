@@ -11,7 +11,7 @@ namespace Aegis.Threading
 {
     public class NamedThread : IDisposable
     {
-        private static NamedObjectIndexer<NamedThread> Threads = new NamedObjectIndexer<NamedThread>();
+        public static NamedObjectIndexer<NamedThread> Threads = new NamedObjectIndexer<NamedThread>();
         private readonly string Name;
         private CancellationTokenSource _cts = new CancellationTokenSource();
         private Thread _thread;
@@ -106,6 +106,19 @@ namespace Aegis.Threading
                     namedThread = new NamedThread(name, action);
 
                 return namedThread;
+            }
+        }
+
+
+        public static void Cancel(string name, int millisecondsTimeout = 1000)
+        {
+            lock (Threads)
+            {
+                NamedThread namedThread = Threads[name];
+                if (namedThread == null)
+                    return;
+
+                namedThread.Cancel(millisecondsTimeout);
             }
         }
     }
