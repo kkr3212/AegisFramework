@@ -17,6 +17,7 @@ namespace Aegis.Calculate
 
         public string Name { get; private set; }
         public int Interval { get; set; }
+        public int ElapsedMilliseconds { get { return _sw.IsRunning ? (int)_sw.ElapsedMilliseconds : 0; } }
         private Stopwatch _sw;
         private int _prevValue, _curValue;
 

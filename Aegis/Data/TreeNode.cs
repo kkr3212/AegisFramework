@@ -80,7 +80,15 @@ namespace Aegis.Data
             {
                 node = node.Childs.Find(v => v.Name == name);
                 if (node == null)
-                    throw new AegisException(AegisResult.InvalidArgument, "Invalid node name({0}).", name);
+                {
+                    if (InvalidPathHandler != null)
+                    {
+                        InvalidPathHandler(this, path);
+                        return GetNode(path);
+                    }
+                    else
+                        throw new AegisException(AegisResult.InvalidArgument, "Invalid node name({0}).", name);
+                }
             }
 
             return node;

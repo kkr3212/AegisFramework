@@ -58,7 +58,7 @@ namespace Aegis.Threading
         }
 
 
-        public void Cancel(int millisecondsTimeout = 1000)
+        public void Abort(int millisecondsTimeout = 1000)
         {
             try
             {
@@ -76,7 +76,7 @@ namespace Aegis.Threading
         }
 
 
-        public async void CancelAsync(int millisecondsTimeout = 1000)
+        public async void AbortAsync(int millisecondsTimeout = 1000)
         {
             await Task.Run(() =>
             {
@@ -110,7 +110,7 @@ namespace Aegis.Threading
         }
 
 
-        public static void Cancel(string name, int millisecondsTimeout = 1000)
+        public static void Abort(string name, int millisecondsTimeout = 1000)
         {
             lock (Threads)
             {
@@ -118,7 +118,7 @@ namespace Aegis.Threading
                 if (namedThread == null)
                     return;
 
-                namedThread.Cancel(millisecondsTimeout);
+                namedThread.Abort(millisecondsTimeout);
             }
         }
     }

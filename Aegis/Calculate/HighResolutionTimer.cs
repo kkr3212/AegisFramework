@@ -33,6 +33,7 @@ namespace Aegis.Calculate
                 return (double)(now - _startTime) / (double)_frequency;
             }
         }
+        public List<double> Laps { get; private set; } = new List<double>();
 
 
         public static NamedObjectIndexer<HighResolutionTimer> Items = new NamedObjectIndexer<HighResolutionTimer>();
@@ -84,6 +85,20 @@ namespace Aegis.Calculate
         public void Stop()
         {
             _startTime = 0;
+        }
+
+
+        public void Restart()
+        {
+            Stop();
+            Start();
+        }
+
+
+        public void Lap()
+        {
+            var elapsed = ElapsedSeconds;
+            Laps.Add(elapsed);
         }
 
 
