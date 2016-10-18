@@ -53,14 +53,17 @@ namespace Aegis.Calculate
             _prevValue = 0;
             _curValue = 0;
 
-            Counters.Add(name, this);
+            lock (Counters)
+                Counters.Add(name, this);
         }
 
 
         public void Dispose()
         {
             Stop();
-            Counters.Remove(this);
+
+            lock (Counters)
+                Counters.Remove(Name);
         }
 
 

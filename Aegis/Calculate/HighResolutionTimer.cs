@@ -85,6 +85,7 @@ namespace Aegis.Calculate
         public void Stop()
         {
             _startTime = 0;
+            Laps.Clear();
         }
 
 
@@ -104,6 +105,7 @@ namespace Aegis.Calculate
 
         public void Dispose()
         {
+            Stop();
             lock (Items)
                 Items.Remove(Name);
         }

@@ -45,6 +45,9 @@ namespace Aegis.Threading
                 _thread?.Abort();
 
             _cts?.Dispose();
+
+            lock (Threads)
+                Threads.Remove(Name);
         }
 
 
@@ -66,6 +69,9 @@ namespace Aegis.Threading
                 if (_thread.Join(millisecondsTimeout) == false)
                     _thread.Abort();
 
+                lock (Threads)
+                    Threads.Remove(Name);
+
                 _cts.Dispose();
                 _cts = null;
                 _thread = null;
@@ -85,6 +91,9 @@ namespace Aegis.Threading
                     _cts.Cancel();
                     if (_thread.Join(millisecondsTimeout) == false)
                         _thread.Abort();
+
+                    lock (Threads)
+                        Threads.Remove(Name);
 
                     _cts.Dispose();
                     _cts = null;
