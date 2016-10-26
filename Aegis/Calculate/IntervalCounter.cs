@@ -75,7 +75,7 @@ namespace Aegis.Calculate
 
         public void Stop()
         {
-            _sw = null;
+            _sw.Stop();
             _prevValue = 0;
             _curValue = 0;
         }
@@ -99,6 +99,9 @@ namespace Aegis.Calculate
 
         public void Add(int value)
         {
+            if (_sw.IsRunning == false)
+                return;
+
             Check();
             Interlocked.Add(ref _curValue, value);
         }

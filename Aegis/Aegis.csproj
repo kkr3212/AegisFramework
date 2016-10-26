@@ -149,9 +149,9 @@
     <Compile Include="Singleton.cs" />
     <Compile Include="IO\StreamBuffer.cs" />
     <Compile Include="Threading\WorkerThread.cs" />
-    <Content Include="Network\Web\Example.txt" />
-    <Compile Include="Network\Web\WebAPIRequest.cs" />
-    <Compile Include="Network\Web\WebAPIServer.cs" />
+    <Content Include="Network\Rest\Example.txt" />
+    <Compile Include="Network\Rest\RestRequest.cs" />
+    <Compile Include="Network\Rest\RestAPIServer.cs" />
   </ItemGroup>
   <ItemGroup>
     <Service Include="{508349B6-6B84-4DF5-91F0-309BEEBAD82D}" />

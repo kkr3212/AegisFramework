@@ -7,11 +7,11 @@ using System.Net;
 
 
 
-namespace Aegis.Network.Web
+namespace Aegis.Network.Rest
 {
-    public sealed class WebAPIRequest
+    public sealed class RestRequest
     {
-        public readonly WebMethodType MethodType;
+        public readonly HttpMethodType MethodType;
         public readonly string RawUrl, Path, MessageBody;
 
         public Dictionary<string, string> Arguments { get; } = new Dictionary<string, string>();
@@ -21,7 +21,7 @@ namespace Aegis.Network.Web
 
 
 
-        internal WebAPIRequest(WebMethodType methodType, string url, string path, string messageBody)
+        internal RestRequest(HttpMethodType methodType, string url, string path, string messageBody)
         {
             MethodType = methodType;
             RawUrl = url;

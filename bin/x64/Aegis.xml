@@ -441,7 +441,7 @@
             이 함수가 호출되면 ReadIndex는 4에 위치하지만, WriteIndex는 변하지 않습니다.
             </summary>
         </member>
-        <member name="M:Aegis.Network.Web.WebAPIServer.AddPrefix(System.String)">
+        <member name="M:Aegis.Network.Rest.RestAPIServer.AddPrefix(System.String)">
             <summary>
             WebAPIServer가 사용할 URL 및 포트정보를 지정합니다.
             http:// 혹은 https:// 로 시작되어야 하며, /로 끝나는 URI로 지정해야 합니다.

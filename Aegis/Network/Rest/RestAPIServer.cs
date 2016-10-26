@@ -9,11 +9,11 @@ using Aegis.Threading;
 
 
 
-namespace Aegis.Network.Web
+namespace Aegis.Network.Rest
 {
-    public delegate void RequestHandler(WebAPIRequest request, HttpListenerResponse response);
+    public delegate void RequestHandler(RestRequest request, HttpListenerResponse response);
 
-    public enum WebMethodType
+    public enum HttpMethodType
     {
         Get,
         Post
@@ -23,7 +23,7 @@ namespace Aegis.Network.Web
 
 
 
-    public class WebAPIServer
+    public class RestAPIServer
     {
         private Thread _thread;
         private HttpListener _listener = new HttpListener();
@@ -34,7 +34,7 @@ namespace Aegis.Network.Web
 
 
 
-        public WebAPIServer()
+        public RestAPIServer()
         {
         }
 
@@ -140,7 +140,7 @@ namespace Aegis.Network.Web
 
             string[] splitUrl = rawUrl.Split('?');
             string rawMessage;
-            WebAPIRequest request = null;
+            RestRequest request = null;
 
 
             //  Path 가져오기
@@ -158,17 +158,17 @@ namespace Aegis.Network.Web
                 if (splitUrl.Length > 1)
                 {
                     rawMessage = splitUrl[1];
-                    request = new WebAPIRequest(WebMethodType.Get, rawUrl, path, rawMessage);
+                    request = new RestRequest(HttpMethodType.Get, rawUrl, path, rawMessage);
                 }
                 else
-                    request = new WebAPIRequest(WebMethodType.Get, rawUrl, path, "");
+                    request = new RestRequest(HttpMethodType.Get, rawUrl, path, "");
             }
             if (context.Request.HttpMethod == "POST")
             {
                 using (var reader = new StreamReader(context.Request.InputStream, context.Request.ContentEncoding))
                 {
                     rawMessage = reader.ReadToEnd();
-                    request = new WebAPIRequest(WebMethodType.Post, rawUrl, path, rawMessage);
+                    request = new RestRequest(HttpMethodType.Post, rawUrl, path, rawMessage);
                 }
             }
 
