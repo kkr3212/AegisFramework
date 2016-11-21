@@ -11,42 +11,42 @@ using Aegis.IO;
 namespace Aegis
 {
     [AttributeUsage(AttributeTargets.Method)]
-    public class TargetMethodAttribute : Attribute
+    public class DispatchMethodAttribute : Attribute
     {
         internal readonly string Key;
 
 
-        public TargetMethodAttribute(string key)
+        public DispatchMethodAttribute(string key)
         {
             Key = key;
         }
 
 
-        public TargetMethodAttribute(ulong key)
+        public DispatchMethodAttribute(ulong key)
         {
             Key = key.ToString();
         }
 
 
-        public TargetMethodAttribute(long key)
+        public DispatchMethodAttribute(long key)
         {
             Key = key.ToString();
         }
 
 
-        public TargetMethodAttribute(uint key)
+        public DispatchMethodAttribute(uint key)
         {
             Key = key.ToString();
         }
 
 
-        public TargetMethodAttribute(int key)
+        public DispatchMethodAttribute(int key)
         {
             Key = key.ToString();
         }
 
 
-        public TargetMethodAttribute(double key)
+        public DispatchMethodAttribute(double key)
         {
             Key = key.ToString();
         }
@@ -56,7 +56,7 @@ namespace Aegis
 
 
 
-    public class MethodSelector<T>
+    public class DispatchMethodSelector<T>
     {
         public delegate void MethodSelectHandler(ref T source, out string key);
 
@@ -68,7 +68,7 @@ namespace Aegis
 
 
 
-        public MethodSelector(object targetInstance, MethodSelectHandler handler)
+        public DispatchMethodSelector(object targetInstance, MethodSelectHandler handler)
         {
             _target = targetInstance;
             _handler = handler;
@@ -78,9 +78,9 @@ namespace Aegis
             {
                 foreach (var attr in methodInfo.GetCustomAttributes())
                 {
-                    if (attr is TargetMethodAttribute)
+                    if (attr is DispatchMethodAttribute)
                     {
-                        string key = (attr as TargetMethodAttribute).Key;
+                        string key = (attr as DispatchMethodAttribute).Key;
                         MethodInfo tmp;
 
                         if (_methods.TryGetValue(key, out tmp) == true)

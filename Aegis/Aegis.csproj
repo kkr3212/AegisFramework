@@ -107,7 +107,7 @@
     <Compile Include="IO\SerialPort.cs" />
     <Compile Include="IO\SerialPortWatcher.cs" />
     <Compile Include="NamedObjectManager.cs" />
-    <Compile Include="MethodSelector.cs" />
+    <Compile Include="DispatchMethodSelector.cs" />
     <Compile Include="Network\UDPClient.cs" />
     <Compile Include="Network\UDPServer.cs" />
     <Compile Include="Calculate\ConvertMethods.cs" />

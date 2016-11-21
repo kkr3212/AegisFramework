@@ -534,7 +534,7 @@ namespace Aegis.IO
         }
 
 
-        public string GetStringFromUtf8()
+        public string GetStringAsUtf8()
         {
             int i, stringBytes = 0;
             for (i = ReadBytes; i < BufferSize; ++i)
@@ -555,7 +555,7 @@ namespace Aegis.IO
         }
 
 
-        public string GetStringFromUtf16()
+        public string GetStringAsUtf16()
         {
             int i, stringBytes = 0;
             for (i = ReadBytes; i < BufferSize; i += 2)
@@ -677,7 +677,7 @@ namespace Aegis.IO
         }
 
 
-        public string GetStringFromUtf8(int readIndex)
+        public string GetStringAsUtf8(int readIndex)
         {
             int i, stringBytes = 0;
             for (i = readIndex; i < BufferSize; ++i)
@@ -696,7 +696,7 @@ namespace Aegis.IO
         }
 
 
-        public string GetStringFromUtf16(int readIndex)
+        public string GetStringAsUtf16(int readIndex)
         {
             int i, stringBytes = 0;
             for (i = readIndex; i < BufferSize; i += 2)
@@ -816,7 +816,7 @@ namespace Aegis.IO
         }
 
 
-        public static string GetStringFromUtf16(StreamBuffer source, int readIndex)
+        public static string GetStringAsUtf16(StreamBuffer source, int readIndex)
         {
             int i, stringBytes = 0;
             for (i = readIndex; i < source.WrittenBytes; i += 2)

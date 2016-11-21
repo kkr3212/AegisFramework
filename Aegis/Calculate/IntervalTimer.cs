@@ -15,7 +15,7 @@ namespace Aegis.Calculate
     {
         public readonly string Name;
         public readonly int Interval;
-        private long _lastCallTime;
+        private long _lastCallTime, _remainCount = -1;
         private Action _action;
 
         public static NamedObjectIndexer<IntervalTimer> Timers = new NamedObjectIndexer<IntervalTimer>();
@@ -45,6 +45,21 @@ namespace Aegis.Calculate
             Name = name;
             Interval = interval;
             _action = action;
+        }
+
+
+        /// <summary>
+        /// 호출 횟수를 지정합니다.
+        /// </summary>
+        /// <param name="count">-1을 설정하면 무한호출이 되며, 1 이상의 값은 횟수를 지정합니다. 0은 허용되지 않습니다.</param>
+        /// <returns></returns>
+        public IntervalTimer SetCallCount(int count)
+        {
+            if (count == 0)
+                throw new AegisException(AegisResult.InvalidArgument);
+
+            _remainCount = count;
+            return this;
         }
 
 
@@ -142,17 +157,20 @@ namespace Aegis.Calculate
         private static void TimerThreadRunner()
         {
             MinMaxValue<long> sleepTime = new MinMaxValue<long>();
+            List<IntervalTimer> deprecated = new List<IntervalTimer>();
 
 
             while (true)
             {
-                if (_threadWait.WaitOne((int)sleepTime.Value) == true)
+                if (_threadWait.WaitOne((int)sleepTime.Min) == true)
                     break;
 
 
                 using (_lock.ReaderLock)
                 {
+                    deprecated.Clear();
                     sleepTime.Value = 100;
+
                     foreach (var timer in _queue)
                     {
                         long remainTime = timer.Interval - (_stopwatch.ElapsedMilliseconds - timer._lastCallTime);
@@ -162,9 +180,17 @@ namespace Aegis.Calculate
                         {
                             timer._lastCallTime = _stopwatch.ElapsedMilliseconds;
                             SpinWorker.Dispatch(timer._action);
+
+                            //  호출횟수 만료
+                            if (timer._remainCount != -1 &&
+                                --timer._remainCount == 0)
+                                deprecated.Add(timer);
                         }
                     }
                 }
+
+                foreach (var timer in deprecated)
+                    timer.Dispose();
             }
             _timerThread = null;
         }

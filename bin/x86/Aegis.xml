@@ -4,6 +4,13 @@
         <name>Aegis</name>
     </assembly>
     <members>
+        <member name="M:Aegis.Calculate.IntervalTimer.SetCallCount(System.Int32)">
+            <summary>
+            호출 횟수를 지정합니다.
+            </summary>
+            <param name="count">-1을 설정하면 무한호출이 되며, 1 이상의 값은 횟수를 지정합니다. 0은 허용되지 않습니다.</param>
+            <returns></returns>
+        </member>
         <member name="M:Aegis.Calculate.ConvertMethods.UnixTimeStamp(System.DateTime)">
             <summary>
             DateTime을 UnixTimeStamp 값으로 변환합니다.

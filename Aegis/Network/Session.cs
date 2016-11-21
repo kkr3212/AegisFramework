@@ -40,7 +40,7 @@ namespace Aegis.Network
 
         internal event Action<Session> Activated, Inactivated;
 
-        private MethodSelector<StreamBuffer> _packetDispatcher;
+        private DispatchMethodSelector<StreamBuffer> _methodSelector;
 
 
 
@@ -104,12 +104,12 @@ namespace Aegis.Network
         }
 
 
-        public void CreatePacketDispatcher(object targetInstance, MethodSelector<StreamBuffer>.MethodSelectHandler handler)
+        public void SetMethodSelectHandler(object targetInstance, DispatchMethodSelector<StreamBuffer>.MethodSelectHandler handler)
         {
             if (handler == null)
                 return;
 
-            _packetDispatcher = new MethodSelector<StreamBuffer>(targetInstance, handler);
+            _methodSelector = new DispatchMethodSelector<StreamBuffer>(targetInstance, handler);
         }
 
 
@@ -266,7 +266,7 @@ namespace Aegis.Network
 
         internal void OnReceived(StreamBuffer buffer)
         {
-            if (_packetDispatcher?.Dispatch(buffer) == false)
+            if (_methodSelector?.Dispatch(buffer) == false)
                 EventReceive?.Invoke(new IOEventResult(this, IOEventType.Read, buffer.Buffer, 0, buffer.WrittenBytes, AegisResult.Ok));
         }
     }

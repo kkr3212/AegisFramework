@@ -25,6 +25,7 @@ namespace Aegis.IO
         public System.IO.Ports.Handshake Handshake { get; set; } = System.IO.Ports.Handshake.None;
         public int ReadTimeout { get; set; } = System.IO.Ports.SerialPort.InfiniteTimeout;
         public int WriteTimeout { get; set; } = System.IO.Ports.SerialPort.InfiniteTimeout;
+        public Action<Exception> ErrorHandler { get; set; }
 
 
 
@@ -78,8 +79,9 @@ namespace Aegis.IO
                     Handle?.Close();
                     Handle?.Dispose();
                 }
-                catch (Exception)
+                catch (Exception e)
                 {
+                    Logger.Err(e.Message);
                 }
 
 
@@ -128,13 +130,14 @@ namespace Aegis.IO
                 }
                 catch (Exception e)
                 {
+                    ErrorHandler?.Invoke(e);
                     Logger.Err(LogMask.Aegis, e.Message);
                 }
             }
         }
 
 
-        public void Write(byte[] buffer, int offset, int count)
+        public bool Write(byte[] buffer, int offset, int count)
         {
             try
             {
@@ -143,10 +146,15 @@ namespace Aegis.IO
                     Handle?.Write(buffer, offset, count);
                     EventWrite?.Invoke(new IOEventResult(this, IOEventType.Write, AegisResult.Ok));
                 }
+
+                return true;
             }
             catch (Exception e)
             {
+                ErrorHandler?.Invoke(e);
                 Logger.Err(LogMask.Aegis, e.Message);
+
+                return false;
             }
         }
     }
