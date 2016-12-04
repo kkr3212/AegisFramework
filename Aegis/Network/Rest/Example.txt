@@ -1,6 +1,6 @@
 ﻿/* Server
 
-RestAPIServer http = new WebAPIServer();
+RestAPIServer http = new RestAPIServer();
 
 http.AddPrefix("http://*:8080/");
 http.Route("/", OnTest);

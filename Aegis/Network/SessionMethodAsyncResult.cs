@@ -16,7 +16,6 @@ namespace Aegis.Network
     {
         private Session _session;
         private StreamBuffer _receivedBuffer;
-
         private ResponseSelector _responseSelector;
 
 

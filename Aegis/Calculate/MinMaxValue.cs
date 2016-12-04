@@ -16,30 +16,43 @@ namespace Aegis.Calculate
     [DebuggerDisplay("Min={Min}, Max={Max}, Value={Value}")]
     public sealed class MinMaxValue<T> where T : struct, IComparable<T>
     {
-        private T? _value = default(T);
+        private T _value;
 
         public T Min { get; private set; }
         public T Max { get; private set; }
         public T Value
         {
-            get { return (_value == null ? default(T) : _value.Value); }
+            get { return _value; }
             set
             {
-                if (_value == null)
-                {
-                    _value = value;
-                    Min = _value.Value;
-                    Max = _value.Value;
-                }
-                else
-                {
-                    _value = value;
-                    if (Min.CompareTo(_value.Value) > 0)
-                        Min = _value.Value;
-                    if (Max.CompareTo(_value.Value) < 0)
-                        Max = _value.Value;
-                }
+                _value = value;
+                if (Min.CompareTo(_value) > 0)
+                    Min = _value;
+                if (Max.CompareTo(_value) < 0)
+                    Max = _value;
             }
+        }
+
+
+        /// <summary>
+        /// 초기값을 지정하는 생성자입니다.
+        /// </summary>
+        /// <param name="initialValue">Min, Max에 대한 초기값을 설정합니다.</param>
+        public MinMaxValue(T initialValue)
+        {
+            Min = initialValue;
+            Max = initialValue;
+        }
+
+
+        /// <summary>
+        /// Min, Max 값을 재설정합니다.
+        /// </summary>
+        /// <param name="initialValue">재설정할 Min, Max 값입니다.</param>
+        public void Reset(T initialValue)
+        {
+            Min = initialValue;
+            Max = initialValue;
         }
     }
 }

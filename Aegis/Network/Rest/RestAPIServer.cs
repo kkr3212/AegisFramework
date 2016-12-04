@@ -40,7 +40,7 @@ namespace Aegis.Network.Rest
 
 
         /// <summary>
-        /// WebAPIServer가 사용할 URL 및 포트정보를 지정합니다.
+        /// 사용할 URL 및 포트정보를 지정합니다.
         /// http:// 혹은 https:// 로 시작되어야 하며, /로 끝나는 URI로 지정해야 합니다.
         /// (ex. http://*:8080/)
         /// Start를 호출하기 전에 먼저 호출되어야 합니다.

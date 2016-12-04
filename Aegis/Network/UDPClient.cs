@@ -33,16 +33,19 @@ namespace Aegis.Network
 
         public void Connect(string ipAddress, int portNo)
         {
-            if (_socket != null)
-                throw new AegisException(AegisResult.ActivatedSession, "This session has already been activated.");
+            lock (this)
+            {
+                if (_socket != null)
+                    throw new AegisException(AegisResult.ActivatedSession, "This session has already been activated.");
 
 
-            Array.Clear(_receivedBuffer, 0, _receivedBuffer.Length);
+                Array.Clear(_receivedBuffer, 0, _receivedBuffer.Length);
 
 
-            _endPoint = new IPEndPoint(IPAddress.Parse(ipAddress), portNo);
-            _socket = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
-            _socket.Connect(_endPoint);
+                _endPoint = new IPEndPoint(IPAddress.Parse(ipAddress), portNo);
+                _socket = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
+                _socket.Connect(_endPoint);
+            }
 
 
             WaitForReceive();
@@ -51,21 +54,27 @@ namespace Aegis.Network
 
         public void Close()
         {
-            if (_socket == null)
-                return;
+            lock (this)
+            {
+                if (_socket == null)
+                    return;
 
-            EventClose?.Invoke(new IOEventResult(_endPoint, IOEventType.Close, 0));
+                EventClose?.Invoke(new IOEventResult(_endPoint, IOEventType.Close, 0));
 
-            _socket.Close();
-            _socket = null;
+                _socket.Close();
+                _socket = null;
+            }
         }
 
 
         private void WaitForReceive()
         {
-            var socket = _socket;
-            socket?.BeginReceiveFrom(_receivedBuffer, 0, _receivedBuffer.Length, SocketFlags.None,
-                ref _endPoint, SocketEvent_Receive, null);
+            lock (this)
+            {
+                var socket = _socket;
+                socket?.BeginReceiveFrom(_receivedBuffer, 0, _receivedBuffer.Length, SocketFlags.None,
+                    ref _endPoint, SocketEvent_Receive, null);
+            }
         }
 
 
@@ -73,15 +82,18 @@ namespace Aegis.Network
         {
             try
             {
-                EndPoint ep = new IPEndPoint(IPAddress.Any, 0);
-                var socket = _socket;
-                int transBytes = socket?.EndReceiveFrom(ar, ref ep) ?? -1;
-                if (transBytes == -1)
-                    return;
+                lock (this)
+                {
+                    EndPoint ep = new IPEndPoint(IPAddress.Any, 0);
+                    var socket = _socket;
+                    int transBytes = socket?.EndReceiveFrom(ar, ref ep) ?? -1;
+                    if (transBytes == -1)
+                        return;
 
-                EventRead?.Invoke(new IOEventResult(ep, IOEventType.Read, _receivedBuffer, 0, transBytes, 0));
+                    EventRead?.Invoke(new IOEventResult(ep, IOEventType.Read, _receivedBuffer, 0, transBytes, 0));
 
-                WaitForReceive();
+                    WaitForReceive();
+                }
             }
             catch (Exception e)
             {
@@ -93,22 +105,31 @@ namespace Aegis.Network
 
         public void Send(StreamBuffer buffer)
         {
-            var socket = _socket;
-            socket?.BeginSendTo(buffer.Buffer, 0, buffer.WrittenBytes, SocketFlags.None, _endPoint, Socket_Send, null);
+            lock (this)
+            {
+                var socket = _socket;
+                socket?.BeginSendTo(buffer.Buffer, 0, buffer.WrittenBytes, SocketFlags.None, _endPoint, Socket_Send, null);
+            }
         }
 
 
         public void Send(byte[] buffer)
         {
-            var socket = _socket;
-            socket?.BeginSendTo(buffer, 0, buffer.Length, SocketFlags.None, _endPoint, Socket_Send, null);
+            lock (this)
+            {
+                var socket = _socket;
+                socket?.BeginSendTo(buffer, 0, buffer.Length, SocketFlags.None, _endPoint, Socket_Send, null);
+            }
         }
 
 
         public void Send(byte[] buffer, int startIndex, int length)
         {
-            var socket = _socket;
-            socket?.BeginSendTo(buffer, startIndex, length, SocketFlags.None, _endPoint, Socket_Send, null);
+            lock (this)
+            {
+                var socket = _socket;
+                socket?.BeginSendTo(buffer, startIndex, length, SocketFlags.None, _endPoint, Socket_Send, null);
+            }
         }
 
 
@@ -116,8 +137,11 @@ namespace Aegis.Network
         {
             try
             {
-                var socket = _socket;
-                socket?.EndSend(ar);
+                lock (this)
+                {
+                    var socket = _socket;
+                    socket?.EndSend(ar);
+                }
             }
             catch (Exception e)
             {

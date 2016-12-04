@@ -83,6 +83,9 @@ namespace Aegis.Network
 
         internal void OnSocket_Accepted()
         {
+            if (PacketValidator == null)
+                throw new AegisException(AegisResult.InvalidArgument, "PacketValidator is not set.");
+
             try
             {
                 Activated?.Invoke(this);
@@ -121,6 +124,9 @@ namespace Aegis.Network
         /// <param name="portNo">접속할 서버의 PortNo</param>
         public virtual void Connect(string hostName, int portNo)
         {
+            if (PacketValidator == null)
+                throw new AegisException(AegisResult.InvalidArgument, "PacketValidator is not set.");
+
             lock (this)
             {
                 if (Socket != null)
@@ -133,6 +139,34 @@ namespace Aegis.Network
                 IPEndPoint ipEndPoint = new IPEndPoint(IPAddress.Parse(ipAddress), portNo);
                 Socket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
                 Socket.BeginConnect(ipEndPoint, Socket_Connect, null);
+            }
+        }
+
+
+        /// <summary>
+        /// 서버에 연결을 요청합니다. 연결요청의 결과는 EventConnect가 아닌 actionOnResult를 통해 전달됩니다.
+        /// 현재 이 Session이 비활성 상태인 경우에만 수행됩니다.
+        /// </summary>
+        /// <param name="hostName">접속할 서버의 Dns 혹은 Ip Address</param>
+        /// <param name="portNo">접속할 서버의 PortNo</param>
+        /// <param name="actionOnResult">연결 시도가 끝난 후 성공 또는 실패 코드를 처리할 함수</param>
+        public virtual void Connect(string hostName, int portNo, Action<int> actionOnResult)
+        {
+            if (PacketValidator == null)
+                throw new AegisException(AegisResult.InvalidArgument, "PacketValidator is not set.");
+
+            lock (this)
+            {
+                if (Socket != null)
+                    throw new AegisException(AegisResult.ActivatedSession, "This session has already been activated.");
+
+
+                string ipAddress = Dns.GetHostAddresses(hostName)[0].ToString();
+
+                //  연결 시도
+                IPEndPoint ipEndPoint = new IPEndPoint(IPAddress.Parse(ipAddress), portNo);
+                Socket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
+                Socket.BeginConnect(ipEndPoint, Socket_Connect, actionOnResult);
             }
         }
 
@@ -156,16 +190,20 @@ namespace Aegis.Network
                     }
 
 
-
+                    Action<int> resultHandler = (ar.AsyncState as Action<int>);
                     if (Socket.Connected == true)
                     {
                         Activated?.Invoke(this);
 
-
-                        SpinWorker.Dispatch(() =>
+                        if (resultHandler != null)
+                            resultHandler(AegisResult.Ok);
+                        else
                         {
-                            EventConnect?.Invoke(new IOEventResult(this, IOEventType.Connect, AegisResult.Ok));
-                        });
+                            SpinWorker.Dispatch(() =>
+                            {
+                                EventConnect?.Invoke(new IOEventResult(this, IOEventType.Connect, AegisResult.Ok));
+                            });
+                        }
 
                         _method.WaitForReceive();
                     }
@@ -174,10 +212,16 @@ namespace Aegis.Network
                         Socket.Close();
                         Socket = null;
 
-                        SpinWorker.Dispatch(() =>
+
+                        if (resultHandler != null)
+                            resultHandler(AegisResult.ConnectionFailed);
+                        else
                         {
-                            EventConnect?.Invoke(new IOEventResult(this, IOEventType.Accept, AegisResult.ConnectionFailed));
-                        });
+                            SpinWorker.Dispatch(() =>
+                            {
+                                EventConnect?.Invoke(new IOEventResult(this, IOEventType.Accept, AegisResult.ConnectionFailed));
+                            });
+                        }
                     }
                 }
             }

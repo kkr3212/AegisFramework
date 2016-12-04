@@ -156,7 +156,7 @@ namespace Aegis.Calculate
 
         private static void TimerThreadRunner()
         {
-            MinMaxValue<long> sleepTime = new MinMaxValue<long>();
+            MinMaxValue<long> sleepTime = new MinMaxValue<long>(0);
             List<IntervalTimer> deprecated = new List<IntervalTimer>();
 
 
@@ -169,7 +169,7 @@ namespace Aegis.Calculate
                 using (_lock.ReaderLock)
                 {
                     deprecated.Clear();
-                    sleepTime.Value = 100;
+                    sleepTime.Reset(100);
 
                     foreach (var timer in _queue)
                     {
