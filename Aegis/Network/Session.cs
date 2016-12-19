@@ -234,7 +234,7 @@ namespace Aegis.Network
 
         /// <summary>
         /// 사용중인 리소스를 반환하고 소켓을 종료하여 네트워크 작업을 종료합니다.
-        /// 종료 처리가 진행되기 이전에 EventClose가 호출됩니다.
+        /// 종료처리 후 EventClose가 호출됩니다.
         /// </summary>
         public virtual void Close(int reason = AegisResult.Ok)
         {

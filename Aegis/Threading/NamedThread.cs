@@ -65,20 +65,20 @@ namespace Aegis.Threading
         {
             try
             {
-                _cts.Cancel();
-                if (_thread.Join(millisecondsTimeout) == false)
-                    _thread.Abort();
-
                 lock (Threads)
                     Threads.Remove(Name);
 
-                _cts.Dispose();
-                _cts = null;
-                _thread = null;
+                _cts.Cancel();
+                if (_thread.Join(millisecondsTimeout) == false)
+                    _thread.Abort();
             }
             catch (Exception)
             {
             }
+
+            _cts.Dispose();
+            _cts = null;
+            _thread = null;
         }
 
 
@@ -88,20 +88,20 @@ namespace Aegis.Threading
             {
                 try
                 {
-                    _cts.Cancel();
-                    if (_thread.Join(millisecondsTimeout) == false)
-                        _thread.Abort();
-
                     lock (Threads)
                         Threads.Remove(Name);
 
-                    _cts.Dispose();
-                    _cts = null;
-                    _thread = null;
+                    _cts.Cancel();
+                    if (_thread.Join(millisecondsTimeout) == false)
+                        _thread.Abort();
                 }
                 catch (Exception)
                 {
                 }
+
+                _cts.Dispose();
+                _cts = null;
+                _thread = null;
             });
         }
 
