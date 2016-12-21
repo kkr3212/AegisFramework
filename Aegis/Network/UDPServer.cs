@@ -6,8 +6,7 @@ using System.Threading.Tasks;
 using System.Net;
 using System.Net.Sockets;
 using Aegis.IO;
-
-
+using Aegis.Threading;
 
 namespace Aegis.Network
 {
@@ -102,14 +101,23 @@ namespace Aegis.Network
                     if (transBytes == -1)
                         return;
 
-                    EventRead?.Invoke(new IOEventResult(remoteEP, IOEventType.Read, _receivedBuffer, 0, transBytes, 0));
+                    SpinWorker.Dispatch(() =>
+                    {
+                        byte[] buffer = new byte[transBytes];
+                        Array.Copy(_receivedBuffer, buffer, transBytes);
+
+                        EventRead?.Invoke(new IOEventResult(remoteEP, IOEventType.Read, buffer, 0, transBytes, 0));
+                    });
 
                     WaitForReceive();
                 }
             }
             catch (SocketException)
             {
-                EventClose?.Invoke(new IOEventResult(remoteEP, IOEventType.Close, AegisResult.ClosedByRemote));
+                SpinWorker.Dispatch(() =>
+                {
+                    EventClose?.Invoke(new IOEventResult(remoteEP, IOEventType.Close, AegisResult.ClosedByRemote));
+                });
 
                 WaitForReceive();
             }
