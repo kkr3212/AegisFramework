@@ -93,12 +93,11 @@ namespace Aegis.Network
                     if (transBytes == -1)
                         return;
 
+                    byte[] dispatchBuffer = new byte[transBytes];
+                    Array.Copy(_receivedBuffer, dispatchBuffer, transBytes);
                     SpinWorker.Dispatch(() =>
                     {
-                        byte[] buffer = new byte[transBytes];
-                        Array.Copy(_receivedBuffer, buffer, transBytes);
-
-                        EventRead?.Invoke(new IOEventResult(remoteEP, IOEventType.Read, buffer, 0, transBytes, 0));
+                        EventRead?.Invoke(new IOEventResult(remoteEP, IOEventType.Read, dispatchBuffer, 0, transBytes, 0));
                     });
 
                     WaitForReceive();
