@@ -28,5 +28,15 @@ namespace Aegis.SystemDll
 
         [DllImport("user32.dll", SetLastError = false)]
         public static extern IntPtr GetMessageExtraInfo();
+
+        public delegate IntPtr WindowsHookProc(int nCode, IntPtr wParam, IntPtr lParam);
+        [DllImport("user32.dll", SetLastError = true)]
+        public static extern IntPtr SetWindowsHookEx(int idHook, WindowsHookProc lpfn, IntPtr hMod, int dwThreadId);
+
+        [DllImport("user32.dll", SetLastError = true)]
+        public static extern bool UnhookWindowsHookEx(IntPtr hHook);
+
+        [DllImport("user32.dll", SetLastError = true)]
+        public static extern IntPtr CallNextHookEx(IntPtr hHook, int code, IntPtr wParam, IntPtr lParam);
     }
 }

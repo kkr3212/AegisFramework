@@ -55,7 +55,8 @@ namespace Aegis.Threading
         {
             lock (Threads)
             {
-                foreach (var item in Threads.Items)
+                var list = Threads.Items.ToList();
+                foreach (var item in list)
                     item.Item2.Dispose();
             }
         }

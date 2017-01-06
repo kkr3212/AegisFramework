@@ -52,10 +52,12 @@ namespace Aegis.Network
                 _listenSocket.Bind(_listenEndPoint);
                 _listenSocket.Listen(100);
 
+                /*
                 if (_networkChannel.Name != "")
                     Logger.Info(LogMask.Aegis, "{0} listening on {1}, {2}", _networkChannel.Name, _listenEndPoint.Address, _listenEndPoint.Port);
                 else
                     Logger.Info(LogMask.Aegis, "Listening on {0}, {1}", _listenEndPoint.Address, _listenEndPoint.Port);
+                */
 
                 _listenSocket.AcceptAsync(_eventAccept);
             }

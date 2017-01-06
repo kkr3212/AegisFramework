@@ -56,7 +56,7 @@ namespace Aegis
 
 
 
-    public class DispatchMethodSelector<T>
+    public class DispatchMethodSelector<T, TResult>
     {
         public delegate void MethodSelectHandler(ref T source, out string key);
 
@@ -70,6 +70,11 @@ namespace Aegis
 
         public DispatchMethodSelector(object targetInstance, MethodSelectHandler handler)
         {
+            if (targetInstance == null)
+                throw new AegisException(AegisResult.InvalidArgument, "{0} cannot be null.", nameof(targetInstance));
+            if (handler == null)
+                throw new AegisException(AegisResult.InvalidArgument, "{0} cannot be null.", nameof(handler));
+
             _target = targetInstance;
             _handler = handler;
 
@@ -96,7 +101,7 @@ namespace Aegis
         }
 
 
-        public bool Dispatch(T source)
+        public bool Dispatch(T source, out TResult result)
         {
             string key;
             _handler(ref source, out key);
@@ -104,9 +109,12 @@ namespace Aegis
 
             MethodInfo method;
             if (_methods.TryGetValue(key, out method) == false)
+            {
+                result = default(TResult);
                 return false;
+            }
 
-            method.Invoke(_target, new object [] { source });
+            result = (TResult)method.Invoke(_target, new object [] { source });
             return true;
         }
     }

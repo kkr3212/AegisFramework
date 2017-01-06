@@ -130,6 +130,31 @@
             <param name="defaultValue">path에서 값을 가져올 수 없으면 default값을 반환합니다.</param>
             <returns>path에 값이 정의되어있으면 해당 값을 반환하고 path가 잘못되어있으면 defaultValue를 반환합니다.</returns>
         </member>
+        <member name="F:Aegis.IO.GlobalKeyboardListener.LowLevelKeyboardInputEvent.VirtualCode">
+            <summary>
+            A virtual-key code. The code must be a value in the range 1 to 254.
+            </summary>
+        </member>
+        <member name="F:Aegis.IO.GlobalKeyboardListener.LowLevelKeyboardInputEvent.HardwareScanCode">
+            <summary>
+            A hardware scan code for the key. 
+            </summary>
+        </member>
+        <member name="F:Aegis.IO.GlobalKeyboardListener.LowLevelKeyboardInputEvent.Flags">
+            <summary>
+            The extended-key flag, event-injected Flags, context code, and transition-state flag. This member is specified as follows. An application can use the following values to test the keystroke Flags. Testing LLKHF_INJECTED (bit 4) will tell you whether the event was injected. If it was, then testing LLKHF_LOWER_IL_INJECTED (bit 1) will tell you whether or not the event was injected from a process running at lower integrity level.
+            </summary>
+        </member>
+        <member name="F:Aegis.IO.GlobalKeyboardListener.LowLevelKeyboardInputEvent.TimeStamp">
+            <summary>
+            The time stamp stamp for this message, equivalent to what GetMessageTime would return for this message.
+            </summary>
+        </member>
+        <member name="F:Aegis.IO.GlobalKeyboardListener.LowLevelKeyboardInputEvent.AdditionalInformation">
+            <summary>
+            Additional information associated with the message. 
+            </summary>
+        </member>
         <member name="T:Aegis.IO.StreamBuffer">
             <summary>
             데이터를 순차적으로 읽거나 쓸 수 있는 버퍼입니다.

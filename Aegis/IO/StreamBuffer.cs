@@ -816,6 +816,25 @@ namespace Aegis.IO
         }
 
 
+        public static string GetStringAsUtf8(StreamBuffer source, int readIndex)
+        {
+            int i, stringBytes = 0;
+            for (i = readIndex; i < source.BufferSize; ++i)
+            {
+                if (source.Buffer[i] == 0)
+                    break;
+
+                ++stringBytes;
+                if (i > source.WrittenBytes)
+                    throw new AegisException(AegisResult.BufferUnderflow, "No more readable buffer.");
+            }
+
+
+            //  String으로 변환할 때 Null terminate를 포함시켜서는 안된다.
+            return Encoding.UTF8.GetString(source.Buffer, readIndex, stringBytes);
+        }
+
+
         public static string GetStringAsUtf16(StreamBuffer source, int readIndex)
         {
             int i, stringBytes = 0;
@@ -954,6 +973,127 @@ namespace Aegis.IO
 
             Write(data);
             PutInt16(0);    //  Null terminate (2 byte)
+            return prevIndex;
+        }
+
+
+        public static int PutBoolean(StreamBuffer destination, bool var)
+        {
+            int prevIndex = destination.WrittenBytes;
+
+            destination.Write(BitConverter.GetBytes(var), 0, sizeof(bool));
+            return prevIndex;
+        }
+
+
+        public static int PutSByte(StreamBuffer destination, sbyte var)
+        {
+            int prevIndex = destination.WrittenBytes;
+
+            destination.Write(BitConverter.GetBytes(var), 0, sizeof(sbyte));
+            return prevIndex;
+        }
+
+
+        public static int PutByte(StreamBuffer destination, byte var)
+        {
+            int prevIndex = destination.WrittenBytes;
+
+            destination.Write(BitConverter.GetBytes(var), 0, sizeof(byte));
+            return prevIndex;
+        }
+
+
+        public static int PutChar(StreamBuffer destination, char var)
+        {
+            int prevIndex = destination.WrittenBytes;
+
+            destination.Write(BitConverter.GetBytes(var), 0, sizeof(char));
+            return prevIndex;
+        }
+
+
+        public static int PutInt16(StreamBuffer destination, short var)
+        {
+            int prevIndex = destination.WrittenBytes;
+
+            destination.Write(BitConverter.GetBytes(var));
+            return prevIndex;
+        }
+
+
+        public static int PutUInt16(StreamBuffer destination, ushort var)
+        {
+            int prevIndex = destination.WrittenBytes;
+
+            destination.Write(BitConverter.GetBytes(var));
+            return prevIndex;
+        }
+
+
+        public static int PutInt32(StreamBuffer destination, int var)
+        {
+            int prevIndex = destination.WrittenBytes;
+
+            destination.Write(BitConverter.GetBytes(var));
+            return prevIndex;
+        }
+
+
+        public static int PutUInt32(StreamBuffer destination, uint var)
+        {
+            int prevIndex = destination.WrittenBytes;
+
+            destination.Write(BitConverter.GetBytes(var));
+            return prevIndex;
+        }
+
+
+        public static int PutInt64(StreamBuffer destination, long var)
+        {
+            int prevIndex = destination.WrittenBytes;
+
+            destination.Write(BitConverter.GetBytes(var));
+            return prevIndex;
+        }
+
+
+        public static int PutUInt64(StreamBuffer destination, ulong var)
+        {
+            int prevIndex = destination.WrittenBytes;
+
+            destination.Write(BitConverter.GetBytes(var));
+            return prevIndex;
+        }
+
+
+        public static int PutDouble(StreamBuffer destination, double var)
+        {
+            int prevIndex = destination.WrittenBytes;
+
+            destination.Write(BitConverter.GetBytes(var));
+            return prevIndex;
+        }
+
+
+        public static int PutStringAsUtf8(StreamBuffer destination, string var)
+        {
+            int prevIndex = destination.WrittenBytes;
+            byte[] data = Encoding.UTF8.GetBytes(var);
+
+            destination.Write(data);
+            destination.PutByte(0);     //  Null terminate
+            return prevIndex;
+        }
+
+
+        public static int PutStringAsUtf16(StreamBuffer destination, string var)
+        {
+            int prevIndex = destination.WrittenBytes;
+            byte[] data = Encoding.Unicode.GetBytes(var);
+
+            destination.Write(data);
+            destination.PutInt16(0);    //  Null terminate (2 byte)
             return prevIndex;
         }
 

@@ -16,5 +16,11 @@ namespace Aegis.SystemDll
 
         [DllImport("Kernel32.dll")]
         public static extern bool QueryPerformanceCounter(out long lpPerformanceCount);
+
+        [DllImport("kernel32.dll")]
+        public static extern IntPtr LoadLibrary(string lpFileName);
+
+        [DllImport("kernel32.dll", CharSet = CharSet.Auto)]
+        public static extern bool FreeLibrary(IntPtr hModule);
     }
 }

@@ -102,6 +102,7 @@
     <Compile Include="Data\TreeNode.cs" />
     <Compile Include="Data\TreeNode_Xml.cs" />
     <Compile Include="Framework.cs" />
+    <Compile Include="IO\GlobalKeyboardListener.cs" />
     <Compile Include="IO\IOEventResult.cs" />
     <Compile Include="IO\NamedPipe.cs" />
     <Compile Include="IO\SerialPort.cs" />
