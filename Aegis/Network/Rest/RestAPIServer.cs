@@ -26,9 +26,12 @@ namespace Aegis.Network.Rest
     public class RestAPIServer
     {
         private Thread _thread;
-        private HttpListener _listener = new HttpListener();
+        public HttpListener HttpListener { get; private set; } = new HttpListener();
         private Dictionary<string, RequestHandler> _routes = new Dictionary<string, RequestHandler>();
         private RWLock _lock = new RWLock();
+
+        public delegate void InvalidRouteDelegator(RestRequest request, HttpListenerResponse response);
+        public InvalidRouteDelegator InvalidRouteHandler { get; set; }
 
 
 
@@ -48,7 +51,7 @@ namespace Aegis.Network.Rest
         /// <param name="prefix"></param>
         public void AddPrefix(string prefix)
         {
-            _listener.Prefixes.Add(prefix);
+            HttpListener.Prefixes.Add(prefix);
         }
 
 
@@ -58,7 +61,7 @@ namespace Aegis.Network.Rest
                 throw new AegisException(AegisResult.AlreadyInitialized);
 
 
-            _listener.Start();
+            HttpListener.Start();
 
             _thread = new Thread(Run);
             _thread.Start();
@@ -79,7 +82,7 @@ namespace Aegis.Network.Rest
             if (_thread == null)
                 throw new AegisException(AegisResult.NotInitialized);
 
-            _listener.Stop();
+            HttpListener.Stop();
             _thread = null;
         }
 
@@ -96,10 +99,7 @@ namespace Aegis.Network.Rest
             using (_lock.WriterLock)
             {
                 if (_routes.ContainsKey(path.ToLower()) == true)
-                {
-                    //  #! throw exception
-                    return;
-                }
+                    throw new AegisException(AegisResult.InvalidArgument, "'{0}' is already exists route path.", path);
 
                 _routes.Add(path.ToLower(), handler);
             }
@@ -108,11 +108,11 @@ namespace Aegis.Network.Rest
 
         private void Run()
         {
-            while (_listener.IsListening)
+            while (HttpListener.IsListening)
             {
                 try
                 {
-                    ProcessContext(_listener.GetContext());
+                    ProcessContext(HttpListener.GetContext());
                 }
                 catch (Exception e) when ((uint)e.HResult == 0x80004005)
                 {
@@ -171,18 +171,19 @@ namespace Aegis.Network.Rest
                     request = new RestRequest(HttpMethodType.Post, rawUrl, path, rawMessage);
                 }
             }
-
-
-            //  Routing
-            RequestHandler handler;
             if (request == null)
                 return;
 
 
+            //  Routing
+            RequestHandler handler;
             using (_lock.ReaderLock)
             {
                 if (_routes.TryGetValue(path, out handler) == false)
+                {
+                    InvalidRouteHandler?.Invoke(request, context.Response);
                     return;
+                }
             }
 
 
